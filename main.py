@@ -1,6 +1,7 @@
 import sys
 import json
 import os
+from dotenv import load_dotenv
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
 from PyQt5.QtGui import QPixmap, QPainter, QFont
 from PyQt5.QtCore import Qt, QTimer, QPoint
@@ -18,6 +19,9 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
 
     return os.path.join(base_path, relative_path)
+
+# Load .env file
+load_dotenv(resource_path('.env'))
 
 class SyntheticBandManager:
     def __init__(self):
