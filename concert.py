@@ -75,16 +75,25 @@ Finally, based on the overall rating, calculate the change in fan count. Use the
 Present the results in a clear, formatted manner."""
 
         try:
-            response = self.client.chat.completions.create(
+            self.result_area.clear()
+            self.result_area.append("Evaluating concert...")
+            
+            stream = self.client.chat.completions.create(
                 model="gpt-4",
                 messages=[
                     {"role": "system", "content": "You are a music critic and fan engagement analyst."},
                     {"role": "user", "content": prompt}
-                ]
+                ],
+                stream=True
             )
             
-            result = response.choices[0].message.content
-            self.result_area.setText(result)
+            result = ""
+            for chunk in stream:
+                if chunk.choices[0].delta.content is not None:
+                    content = chunk.choices[0].delta.content
+                    result += content
+                    self.result_area.insertPlainText(content)
+                    self.result_area.ensureCursorVisible()
 
             # Extract overall rating and update fan count
             overall_rating = float(result.split("Overall Rating:")[-1].split("/10")[0].strip())
@@ -115,7 +124,7 @@ Present the results in a clear, formatted manner."""
 
         # Update the result area with fan change information
         current_text = self.result_area.toPlainText()
-        self.result_area.setText(f"{current_text}\n\nFan count change: {change:+d}\nNew fan count: {self.target_fans}")
+        self.result_area.append(f"\n\nFan count change: {change:+d}\nNew fan count: {self.target_fans}")
 
     def update_fan_display(self):
         if self.fans != self.target_fans:
