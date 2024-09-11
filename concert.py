@@ -79,7 +79,7 @@ Present the results in a clear, formatted manner."""
             self.result_area.append("Evaluating concert...")
             
             stream = self.client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": "You are a music critic and fan engagement analyst."},
                     {"role": "user", "content": prompt}
