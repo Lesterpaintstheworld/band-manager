@@ -138,10 +138,10 @@ class ProductionTab(QWidget):
 
         try:
             stream = self.client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-4",
                 messages=[
                     {"role": "system", "content": self.system_prompt},
-                    {"role": "user", "content": user_message}
+                    {"role": "user", "content": f"Generate a JSON response for the following request: {user_message}"}
                 ],
                 response_format={"type": "json_object"},
                 stream=True
