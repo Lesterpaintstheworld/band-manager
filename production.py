@@ -85,17 +85,17 @@ class ProductionTab(QWidget):
         load_dotenv()
         self.udio_token = os.getenv('UDIO_AUTH_TOKEN')
         if not self.udio_token:
-            self.chat_area.append("Erreur : Token d'authentification Udio non trouvé dans le fichier .env. Veuillez ajouter UDIO_AUTH_TOKEN à votre fichier .env.")
+            self.chat_area.append("Error: Udio authentication token not found in .env file. Please add UDIO_AUTH_TOKEN to your .env file.")
             self.udio_wrapper = None
         else:
             try:
                 self.udio_wrapper = UdioWrapper(self.udio_token)
                 # Test the Udio wrapper
                 self.udio_wrapper.test_connection()
-                self.chat_area.append("Connexion Udio établie avec succès.")
+                self.chat_area.append("Udio connection established successfully.")
             except Exception as e:
-                self.chat_area.append(f"Erreur d'initialisation du wrapper Udio : {str(e)}")
-                self.chat_area.append("Veuillez vérifier votre token d'authentification Udio dans le fichier .env")
+                self.chat_area.append(f"Error initializing Udio wrapper: {str(e)}")
+                self.chat_area.append("Please check your Udio authentication token in the .env file")
                 self.udio_wrapper = None
 
     def load_system_prompt(self):
@@ -176,13 +176,13 @@ class ProductionTab(QWidget):
 
     def generate_song(self, gpt_response):
         if not self.udio_wrapper:
-            self.chat_area.append("Erreur : Le token d'authentification Udio n'est pas configuré correctement.")
+            self.chat_area.append("Error: The Udio authentication token is not configured correctly.")
             return
 
         try:
             self.result_area.clear()
-            self.result_area.append("Génération de la chanson en cours...")
-            self.chat_area.append("Début de la génération de la chanson...")
+            self.result_area.append("Generating song...")
+            self.chat_area.append("Starting song generation...")
 
             complete_song_sequence = self.udio_wrapper.create_complete_song(
                 short_prompt=gpt_response['short_prompt'],
@@ -195,7 +195,7 @@ class ProductionTab(QWidget):
             )
 
             if complete_song_sequence is None:
-                raise Exception("La séquence de chanson générée est vide.")
+                raise Exception("The generated song sequence is empty.")
 
             # Sauvegarder le fichier audio dans le dossier songs/
             song_filename = f"song_{int(time.time())}.mp3"
@@ -205,19 +205,19 @@ class ProductionTab(QWidget):
                 f.write(complete_song_sequence)
             
             self.result_area.clear()
-            self.result_area.append(f"Chanson générée et sauvegardée : {song_path}")
-            self.chat_area.append(f"Chanson générée et sauvegardée : {song_path}")
+            self.result_area.append(f"Song generated and saved: {song_path}")
+            self.chat_area.append(f"Song generated and saved: {song_path}")
             
             # Jouer la chanson dans le lecteur audio
             self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_path)))
             self.player.play()
             
-            QMessageBox.information(self, "Succès", "La chanson a été générée avec succès.")
+            QMessageBox.information(self, "Success", "The song has been generated successfully.")
             
             # Emit the production_updated signal with the new content
             self.production_updated.emit(song_path)
         except Exception as e:
-            error_message = f"Une erreur s'est produite lors de la génération de la chanson : {str(e)}"
+            error_message = f"An error occurred while generating the song: {str(e)}"
             self.chat_area.append(error_message)
-            self.result_area.append(f"Erreur : {str(e)}")
-            QMessageBox.critical(self, "Erreur", error_message)
+            self.result_area.append(f"Error: {str(e)}")
+            QMessageBox.critical(self, "Error", error_message)

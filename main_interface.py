@@ -69,7 +69,7 @@ class MainInterface(QWidget):
 
         # Créer le menu du groupe
         band_menu = menubar.addMenu(self.get_band_name())
-        change_name_action = QAction(QIcon('icons/edit.png'), 'Changer le nom du groupe', self)
+        change_name_action = QAction(QIcon('icons/edit.png'), 'Change band name', self)
         change_name_action.triggered.connect(self.change_band_name)
         band_menu.addAction(change_name_action)
 
@@ -90,10 +90,10 @@ class MainInterface(QWidget):
 
         self.tabs.addTab(self.song_management_tab, "Song Management")
         self.tabs.addTab(self.concept_tab, "Concept")
-        self.tabs.addTab(self.lyrics_tab, "Paroles")
+        self.tabs.addTab(self.lyrics_tab, "Lyrics")
         self.tabs.addTab(self.composition_tab, "Composition")
         self.tabs.addTab(self.production_tab, "Production")
-        self.tabs.addTab(self.visual_design_tab, "Design Visuel")
+        self.tabs.addTab(self.visual_design_tab, "Visual Design")
         self.tabs.addTab(self.critique_tab, "Critique")
         self.tabs.addTab(self.concert_tab, "Concert")
 
@@ -115,7 +115,7 @@ class MainInterface(QWidget):
         import json
         with open('band.json', 'r') as f:
             data = json.load(f)
-            return data.get('name', 'Groupe sans nom')
+            return data.get('name', 'Unnamed Band')
 
     def change_band_name(self):
         self.change_band_name_signal.emit()
