@@ -53,14 +53,17 @@ class ConcertTab(QWidget):
         layout.addLayout(right_layout, 1)
 
     def load_api_key(self):
-        with open('.env', 'r') as f:
-            for line in f:
-                if line.startswith('OPENAI_API_KEY='):
-                    api_key = line.split('=')[1].strip()
-                    self.client = OpenAI(api_key=api_key)
-                    break
-            else:
-                self.chat_area.append("Error: OpenAI API key not found in .env file.")
+        try:
+            with open('.env', 'r') as f:
+                for line in f:
+                    if line.startswith('OPENAI_API_KEY='):
+                        api_key = line.split('=')[1].strip()
+                        self.client = OpenAI(api_key=api_key)
+                        break
+                else:
+                    self.chat_area.append("Error: OpenAI API key not found in .env file.")
+        except FileNotFoundError:
+            self.chat_area.append("Error: .env file not found. Please make sure it exists and contains your OpenAI API key.")
 
     def start_concert(self):
         concept = self.read_file('concept.md')

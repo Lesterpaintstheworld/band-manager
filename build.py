@@ -25,6 +25,7 @@ options = [
     '--add-data', f'{current_dir}/style.css;.',
     '--add-binary', f'{current_dir}/style.css;.',
     '--add-data', f'{current_dir}/spinner.gif;.',
+    '--add-data', f'{current_dir}/.env;.',
     '--icon', f'{current_dir}/icon.ico',
     '--hidden-import=PyQt5.QtCore',
     '--hidden-import=PyQt5.QtGui',
