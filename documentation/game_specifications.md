@@ -53,6 +53,17 @@ At each stage:
 - Immediate feedback: number of new fans gained, performance score
 - Option to choose setlist for longer concerts as the band becomes more successful
 
+### Concert Evaluation System
+
+- Each phase of the song creation process (concept, lyrics, music prompts, image prompt) is evaluated separately
+- Scores range from 0 to 10 for each phase
+- The overall concert score is the average of these individual scores
+- Fan count changes based on the overall score:
+  - Score < 5: Lose 10% of current fans
+  - 5 ≤ Score < 7: Gain 5% more fans
+  - Score ≥ 7: Gain 20% more fans
+- The evaluation system provides detailed feedback to guide player improvement
+
 ## 6. Fan Management
 
 - Fans are represented by simple AI entities
