@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QApplication
 from PyQt5.QtCore import Qt, pyqtSignal, QTimer, QObject, pyqtSlot
 from dotenv import load_dotenv
 import os
