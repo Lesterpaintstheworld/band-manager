@@ -85,14 +85,17 @@ class ProductionTab(QWidget):
         load_dotenv()
         self.udio_token = os.getenv('UDIO_AUTH_TOKEN')
         if not self.udio_token:
-            print("Error: Udio auth token not found in .env file. Please add UDIO_AUTH_TOKEN to your .env file.")
+            self.chat_area.append("Erreur : Token d'authentification Udio non trouvé dans le fichier .env. Veuillez ajouter UDIO_AUTH_TOKEN à votre fichier .env.")
             self.udio_wrapper = None
         else:
             try:
                 self.udio_wrapper = UdioWrapper(self.udio_token)
+                # Test the Udio wrapper
+                self.udio_wrapper.test_connection()
+                self.chat_area.append("Connexion Udio établie avec succès.")
             except Exception as e:
-                print(f"Error initializing Udio wrapper: {str(e)}")
-                print("Please check your Udio auth token in the .env file")
+                self.chat_area.append(f"Erreur d'initialisation du wrapper Udio : {str(e)}")
+                self.chat_area.append("Veuillez vérifier votre token d'authentification Udio dans le fichier .env")
                 self.udio_wrapper = None
 
     def load_system_prompt(self):
@@ -173,12 +176,13 @@ class ProductionTab(QWidget):
 
     def generate_song(self, gpt_response):
         if not self.udio_wrapper:
-            QMessageBox.critical(self, "Erreur", "Le token d'authentification Udio n'est pas configuré correctement.")
+            self.chat_area.append("Erreur : Le token d'authentification Udio n'est pas configuré correctement.")
             return
 
         try:
             self.result_area.clear()
             self.result_area.append("Génération de la chanson en cours...")
+            self.chat_area.append("Début de la génération de la chanson...")
 
             complete_song_sequence = self.udio_wrapper.create_complete_song(
                 short_prompt=gpt_response['short_prompt'],
@@ -190,6 +194,9 @@ class ProductionTab(QWidget):
                 custom_lyrics_outro=gpt_response['custom_lyrics_outro']
             )
 
+            if complete_song_sequence is None:
+                raise Exception("La séquence de chanson générée est vide.")
+
             # Sauvegarder le fichier audio dans le dossier songs/
             song_filename = f"song_{int(time.time())}.mp3"
             song_path = os.path.join("songs", song_filename)
@@ -199,6 +206,7 @@ class ProductionTab(QWidget):
             
             self.result_area.clear()
             self.result_area.append(f"Chanson générée et sauvegardée : {song_path}")
+            self.chat_area.append(f"Chanson générée et sauvegardée : {song_path}")
             
             # Jouer la chanson dans le lecteur audio
             self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_path)))
@@ -209,5 +217,7 @@ class ProductionTab(QWidget):
             # Emit the production_updated signal with the new content
             self.production_updated.emit(song_path)
         except Exception as e:
-            QMessageBox.critical(self, "Erreur", f"Une erreur s'est produite lors de la génération de la chanson : {str(e)}")
+            error_message = f"Une erreur s'est produite lors de la génération de la chanson : {str(e)}"
+            self.chat_area.append(error_message)
             self.result_area.append(f"Erreur : {str(e)}")
+            QMessageBox.critical(self, "Erreur", error_message)
