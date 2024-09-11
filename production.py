@@ -83,19 +83,20 @@ class ProductionTab(QWidget):
 
     def load_udio_token(self):
         load_dotenv()
-        self.udio_token = os.getenv('UDIO_AUTH_TOKEN')
-        if not self.udio_token:
-            self.chat_area.append("Error: Udio authentication token not found in .env file. Please add UDIO_AUTH_TOKEN to your .env file.")
+        self.udio_token1 = os.getenv('UDIO_AUTH_TOKEN_1')
+        self.udio_token2 = os.getenv('UDIO_AUTH_TOKEN_2')
+        if not self.udio_token1 or not self.udio_token2:
+            self.chat_area.append("Error: Udio authentication tokens not found in .env file. Please add UDIO_AUTH_TOKEN_1 and UDIO_AUTH_TOKEN_2 to your .env file.")
             self.udio_wrapper = None
         else:
             try:
-                self.udio_wrapper = UdioWrapper(self.udio_token)
+                self.udio_wrapper = UdioWrapper(self.udio_token1, self.udio_token2)
                 # Test the connection
                 self.udio_wrapper.create_song("Test", "Test")
                 self.chat_area.append("Udio wrapper initialized successfully.")
             except Exception as e:
                 self.chat_area.append(f"Error initializing Udio wrapper: {str(e)}")
-                self.chat_area.append("Please check your Udio authentication token in the .env file.")
+                self.chat_area.append("Please check your Udio authentication tokens in the .env file.")
                 self.udio_wrapper = None
 
     def load_system_prompt(self):
