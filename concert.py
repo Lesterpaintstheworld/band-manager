@@ -88,39 +88,51 @@ Composition:
 Visual Design:
 {visual_design}
 
-Provide a rating out of 10 and a brief explanation for each aspect. Then, give an overall rating out of 10 for the entire song with an explanation."""
+Provide a rating out of 10 and a brief explanation for each aspect. Then, give an overall rating out of 10 for the entire song with an explanation. Format your response as a JSON object with the following structure:
+{{
+    "concept_rating": int,
+    "concept_explanation": "string",
+    "lyrics_rating": int,
+    "lyrics_explanation": "string",
+    "composition_rating": int,
+    "composition_explanation": "string",
+    "visual_design_rating": int,
+    "visual_design_explanation": "string",
+    "overall_rating": int,
+    "overall_explanation": "string"
+}}"""
 
         try:
             self.result_area.clear()
             self.result_area.append("Evaluating concert...")
             
-            completion = self.client.chat.completions.parse(
+            completion = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": "You are a music critic and fan engagement analyst."},
                     {"role": "user", "content": prompt}
                 ],
-                response_format=EvaluationResult
+                response_format={ "type": "json_object" }
             )
             
-            result = completion.choices[0].message.parsed
+            result = json.loads(completion.choices[0].message.content)
             
-            self.result_area.append(f"Concept Rating: {result.concept_rating}/10")
-            self.result_area.append(f"Explanation: {result.concept_explanation}\n")
+            self.result_area.append(f"Concept Rating: {result['concept_rating']}/10")
+            self.result_area.append(f"Explanation: {result['concept_explanation']}\n")
             
-            self.result_area.append(f"Lyrics Rating: {result.lyrics_rating}/10")
-            self.result_area.append(f"Explanation: {result.lyrics_explanation}\n")
+            self.result_area.append(f"Lyrics Rating: {result['lyrics_rating']}/10")
+            self.result_area.append(f"Explanation: {result['lyrics_explanation']}\n")
             
-            self.result_area.append(f"Composition Rating: {result.composition_rating}/10")
-            self.result_area.append(f"Explanation: {result.composition_explanation}\n")
+            self.result_area.append(f"Composition Rating: {result['composition_rating']}/10")
+            self.result_area.append(f"Explanation: {result['composition_explanation']}\n")
             
-            self.result_area.append(f"Visual Design Rating: {result.visual_design_rating}/10")
-            self.result_area.append(f"Explanation: {result.visual_design_explanation}\n")
+            self.result_area.append(f"Visual Design Rating: {result['visual_design_rating']}/10")
+            self.result_area.append(f"Explanation: {result['visual_design_explanation']}\n")
             
-            self.result_area.append(f"Overall Rating: {result.overall_rating}/10")
-            self.result_area.append(f"Explanation: {result.overall_explanation}")
+            self.result_area.append(f"Overall Rating: {result['overall_rating']}/10")
+            self.result_area.append(f"Explanation: {result['overall_explanation']}")
 
-            self.update_fans(result.overall_rating)
+            self.update_fans(result['overall_rating'])
 
         except Exception as e:
             self.result_area.append(f"Error during evaluation: {str(e)}")
