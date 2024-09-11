@@ -50,6 +50,7 @@ class SyntheticBandManager:
         self.main_interface.show()
 
     def show_main_interface(self):
+        from main_interface import MainInterface
         if self.welcome_screen:
             self.welcome_screen.close()
         self.main_interface = MainInterface()
