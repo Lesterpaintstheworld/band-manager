@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 import sys
 sys.path.append('.')  # Ajoute le dossier courant au chemin de recherche
-import openai
+from openai import OpenAI
 
 class ConceptTab(QWidget):
     concept_updated = pyqtSignal(str)
@@ -16,6 +16,7 @@ class ConceptTab(QWidget):
         self.current_stream = None
         self.stream_buffer = ""
         self.load_system_prompt()
+        self.client = None
 
     def initUI(self):
         layout = QHBoxLayout()
@@ -50,7 +51,7 @@ class ConceptTab(QWidget):
         if not self.api_key:
             self.chat_area.append("Erreur : Clé API OpenAI non trouvée dans le fichier .env. Veuillez ajouter OPENAI_API_KEY à votre fichier .env.")
         else:
-            openai.api_key = self.api_key
+            self.client = OpenAI(api_key=self.api_key)
 
     def load_system_prompt(self):
         try:
@@ -66,14 +67,14 @@ class ConceptTab(QWidget):
         self.input_field.clear()
 
         try:
-            response = openai.ChatCompletion.create(
+            response = self.client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": user_message}
                 ]
             )
-            assistant_message = response.choices[0].message['content']
+            assistant_message = response.choices[0].message.content
             self.chat_area.append("Assistant : " + assistant_message)
             self.update_concept(assistant_message)
         except Exception as e:
