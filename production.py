@@ -1,5 +1,7 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QPushButton, QHBoxLayout, QLineEdit, QApplication, QMessageBox
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QPushButton, QHBoxLayout, QLineEdit, QApplication, QMessageBox, QSplitter
+from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+from PyQt5.QtMultimediaWidgets import QVideoWidget
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
@@ -19,12 +21,17 @@ class ProductionTab(QWidget):
         self.load_udio_token()
 
     def initUI(self):
-        layout = QVBoxLayout()
-        self.setLayout(layout)
+        main_layout = QHBoxLayout()
+        self.setLayout(main_layout)
+
+        # Partie gauche
+        left_widget = QWidget()
+        left_layout = QVBoxLayout()
+        left_widget.setLayout(left_layout)
 
         self.chat_area = QTextEdit()
         self.chat_area.setReadOnly(True)
-        layout.addWidget(self.chat_area)
+        left_layout.addWidget(self.chat_area)
 
         input_layout = QHBoxLayout()
         self.input_field = QLineEdit()
@@ -33,11 +40,29 @@ class ProductionTab(QWidget):
         input_layout.addWidget(self.input_field)
         input_layout.addWidget(self.send_button)
 
-        layout.addLayout(input_layout)
+        left_layout.addLayout(input_layout)
 
         self.result_area = QTextEdit()
         self.result_area.setReadOnly(True)
-        layout.addWidget(self.result_area)
+        left_layout.addWidget(self.result_area)
+
+        # Partie droite
+        right_widget = QWidget()
+        right_layout = QVBoxLayout()
+        right_widget.setLayout(right_layout)
+
+        self.player = QMediaPlayer()
+        self.video_widget = QVideoWidget()
+        self.player.setVideoOutput(self.video_widget)
+        right_layout.addWidget(self.video_widget)
+
+        # Splitter pour diviser l'écran
+        splitter = QSplitter(Qt.Horizontal)
+        splitter.addWidget(left_widget)
+        splitter.addWidget(right_widget)
+        splitter.setSizes([int(self.width() * 0.5), int(self.width() * 0.5)])
+
+        main_layout.addWidget(splitter)
 
 
     def load_api_key(self):
@@ -146,7 +171,21 @@ class ProductionTab(QWidget):
 
         try:
             complete_song_sequence = self.udio_wrapper.create_complete_song(**gpt_response)
-            self.result_area.setPlainText(f"Séquence de chanson complète générée et téléchargée : {complete_song_sequence}")
+            
+            # Sauvegarder le fichier audio dans le dossier songs/
+            import os
+            song_filename = f"song_{int(time.time())}.mp3"
+            song_path = os.path.join("songs", song_filename)
+            os.makedirs("songs", exist_ok=True)
+            with open(song_path, "wb") as f:
+                f.write(complete_song_sequence)
+            
+            self.result_area.setPlainText(f"Chanson générée et sauvegardée : {song_path}")
+            
+            # Jouer la chanson dans le lecteur audio
+            self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_path)))
+            self.player.play()
+            
             QMessageBox.information(self, "Succès", "La chanson a été générée avec succès.")
             
             # Emit the production_updated signal with the new content
