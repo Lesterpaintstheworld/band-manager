@@ -144,16 +144,24 @@ class CritiqueTab(QWidget):
 
         try:
             self.chat_area.append("Assistant: Generating critique...")
-            response = self.client.chat.completions.create(
+            stream = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": f"Generate a JSON critique for the following: {user_message}"}
                 ],
-                response_format={"type": "json_object"}
+                stream=True
             )
             
-            critique_json = json.loads(response.choices[0].message.content)
+            json_response = ""
+            for chunk in stream:
+                if chunk.choices[0].delta.content is not None:
+                    content = chunk.choices[0].delta.content
+                    json_response += content
+                    self.chat_area.insertPlainText(content)
+                    QApplication.processEvents()
+            
+            critique_json = json.loads(json_response)
             self.update_critique(critique_json)
         except json.JSONDecodeError:
             self.chat_area.append("Error: Invalid JSON response from the API.")
