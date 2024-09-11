@@ -80,8 +80,21 @@ class CritiqueTab(QWidget):
         except (FileNotFoundError, json.JSONDecodeError):
             fan_count = 1
         
-        # Append fan count to the system prompt
-        self.system_prompt += f"\n\nCurrent fan count: {fan_count}"
+        # Append fan count and JSON instructions to the system prompt
+        self.system_prompt += f"\n\nCurrent fan count: {fan_count}\n\n"
+        self.system_prompt += "Please provide your critique in JSON format with the following structure:\n"
+        self.system_prompt += "{\n"
+        self.system_prompt += '  "concept_rating": <number>,\n'
+        self.system_prompt += '  "concept_explanation": "<text>",\n'
+        self.system_prompt += '  "lyrics_rating": <number>,\n'
+        self.system_prompt += '  "lyrics_explanation": "<text>",\n'
+        self.system_prompt += '  "composition_rating": <number>,\n'
+        self.system_prompt += '  "composition_explanation": "<text>",\n'
+        self.system_prompt += '  "visual_design_rating": <number>,\n'
+        self.system_prompt += '  "visual_design_explanation": "<text>",\n'
+        self.system_prompt += '  "overall_rating": <number>,\n'
+        self.system_prompt += '  "overall_explanation": "<text>"\n'
+        self.system_prompt += "}\n"
 
     def send_message(self):
         user_message = self.input_field.text()
@@ -106,13 +119,15 @@ class CritiqueTab(QWidget):
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": self.system_prompt},
-                    {"role": "user", "content": user_message}
+                    {"role": "user", "content": f"Generate a JSON critique for the following: {user_message}"}
                 ],
                 response_format={"type": "json_object"}
             )
             
             critique_json = json.loads(response.choices[0].message.content)
             self.update_critique(critique_json)
+        except json.JSONDecodeError:
+            self.chat_area.append("Error: Invalid JSON response from the API.")
         except Exception as e:
             self.chat_area.append(f"Error generating critique: {str(e)}")
 
