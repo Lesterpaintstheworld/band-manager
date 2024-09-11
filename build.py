@@ -2,7 +2,9 @@ import PyInstaller.__main__
 import os
 import sys
 
+# Ajouter le répertoire courant au chemin de recherche
 current_dir = os.path.abspath(os.path.dirname(__file__))
+sys.path.insert(0, current_dir)
 
 options = [
     'main.py',
