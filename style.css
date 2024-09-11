@@ -85,3 +85,18 @@ QLineEdit, QTextEdit {
 QLabel {
     font-size: 18px;
 }
+
+/* Bouton de fermeture */
+#close-button {
+    background-color: #e74c3c;
+    color: #ecf0f1;
+    border: none;
+    font-size: 24px;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+#close-button:hover {
+    background-color: #c0392b;
+}
