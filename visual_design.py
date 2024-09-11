@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QLabel, QApplication, QScrollArea
-from PyQt5.QtCore import Qt, pyqtSignal, QThread, pyqtSignal as Signal, QUrl
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QLabel, QApplication, QScrollArea, QProgressBar
+from PyQt5.QtCore import Qt, pyqtSignal, QThread, pyqtSignal as Signal, QUrl, QTimer
+from PyQt5.QtGui import QPixmap, QMovie
 from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 from dotenv import load_dotenv
 import os
@@ -94,6 +94,14 @@ class VisualDesignTab(QWidget):
 
         layout.addWidget(scroll_area)
 
+        # Add spinner
+        self.spinner = QLabel()
+        self.spinner.setAlignment(Qt.AlignCenter)
+        self.spinner_movie = QMovie("spinner.gif")  # Make sure to have a spinner.gif file in your project directory
+        self.spinner.setMovie(self.spinner_movie)
+        self.spinner.hide()
+        self.image_layout.addWidget(self.spinner)
+
     def load_api_key(self):
         load_dotenv()
         self.api_key = os.getenv('OPENAI_API_KEY')
@@ -184,6 +192,8 @@ class VisualDesignTab(QWidget):
 
     def generate_image(self, prompt):
         self.chat_area.append("Generating image...")
+        self.spinner.show()
+        self.spinner_movie.start()
         self.image_thread = ImageGenerationThread(self.client, prompt)
         self.image_thread.image_generated.connect(self.on_image_generated)
         self.image_thread.start()
@@ -191,6 +201,8 @@ class VisualDesignTab(QWidget):
     def on_image_generated(self, image_url):
         self.chat_area.append(f"Image generated: {image_url}")
         self.download_image(image_url)
+        self.spinner_movie.stop()
+        self.spinner.hide()
 
     def download_image(self, url):
         request = QNetworkRequest(QUrl(url))
