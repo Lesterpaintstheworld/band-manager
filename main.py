@@ -18,13 +18,17 @@ class SyntheticBandManager:
 
     def run(self):
         self.splash.show()
+        QTimer.singleShot(3000, self.after_splash)  # Show splash for 3 seconds
+        sys.exit(self.app.exec_())
+
+    def after_splash(self):
+        self.splash.close()
         if self.band_name_exists():
             self.show_main_interface()
         else:
             self.welcome_screen = WelcomeScreen()
             self.welcome_screen.submitted.connect(self.show_main_interface)
             self.welcome_screen.show()
-        sys.exit(self.app.exec_())
 
     def show_main_interface(self):
         if self.welcome_screen:
