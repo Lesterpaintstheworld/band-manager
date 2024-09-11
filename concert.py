@@ -130,7 +130,7 @@ Provide a rating out of 10 and a brief explanation for each aspect. Then, give a
             self.update_fans(result['overall_rating'])
 
             # Call the second GPT for concert feedback
-            asyncio.create_task(self.get_concert_feedback(concept, lyrics, composition))
+            self.loop.run_until_complete(self.get_concert_feedback(concept, lyrics, composition))
 
         except Exception as e:
             self.result_area.append(f"Error during evaluation: {str(e)}")
@@ -207,7 +207,7 @@ Provide a rating out of 10 and a brief explanation for each aspect. Then, give a
             self.concert_system_prompt = "You are an AI assistant providing feedback on concerts."
             print("Warning: prompts/concert.md not found. Using default prompt.")
 
-    async def get_concert_feedback(self, concept, lyrics, composition):
+    def get_concert_feedback(self, concept, lyrics, composition):
         prompt = f"""Provide feedback on the following concert:
 
 Concept:
