@@ -7,7 +7,7 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 from main import resource_path
-from udio_wrapper import UdioWrapper
+from udio_wrapper import CustomUdioWrapper
 from pydantic import BaseModel
 from typing import List
 
@@ -88,7 +88,7 @@ class ProductionTab(QWidget):
             self.chat_area.append("Error: Udio authentication token not found in .env file. Please add UDIO_AUTH_TOKEN to your .env file.")
             self.udio_wrapper = None
         else:
-            self.udio_wrapper = UdioWrapper(auth_token=self.udio_token)
+            self.udio_wrapper = CustomUdioWrapper(auth_token=self.udio_token)
             self.chat_area.append("Udio wrapper initialized successfully.")
 
     def load_system_prompt(self):
