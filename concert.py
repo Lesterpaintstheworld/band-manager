@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QLabel, QPushButton
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLabel, QPushButton
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QFont
 from openai import OpenAI
@@ -11,28 +11,36 @@ class ConcertTab(QWidget):
         self.fans = 1000  # Initial number of fans
         self.initUI()
         self.load_api_key()
-        self.update_speed = 100  # Initial update speed in milliseconds
+        self.update_speed = 1000  # Initial update speed in milliseconds
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_fan_display)
 
     def initUI(self):
-        layout = QVBoxLayout()
+        layout = QHBoxLayout()
         self.setLayout(layout)
 
+        # Left side - Chat area
+        left_layout = QVBoxLayout()
         self.result_area = QTextEdit()
         self.result_area.setReadOnly(True)
-        layout.addWidget(self.result_area)
-
-        self.fans_label = QLabel(str(self.fans))
-        self.fans_label.setAlignment(Qt.AlignCenter)
-        font = QFont()
-        font.setPointSize(48)  # Make the font size very large
-        self.fans_label.setFont(font)
-        layout.addWidget(self.fans_label)
+        left_layout.addWidget(self.result_area)
 
         self.start_concert_button = QPushButton("Start Concert")
         self.start_concert_button.clicked.connect(self.evaluate_concert)
-        layout.addWidget(self.start_concert_button)
+        left_layout.addWidget(self.start_concert_button)
+
+        layout.addLayout(left_layout)
+
+        # Right side - Fan count
+        right_layout = QVBoxLayout()
+        self.fans_label = QLabel(str(self.fans))
+        self.fans_label.setAlignment(Qt.AlignCenter)
+        font = QFont()
+        font.setPointSize(72)  # Make the font size very large
+        self.fans_label.setFont(font)
+        right_layout.addWidget(self.fans_label)
+
+        layout.addLayout(right_layout)
 
     def load_api_key(self):
         with open('.env', 'r') as f:
@@ -119,7 +127,8 @@ Present the results in a clear, formatted manner."""
 
         self.target_fans = max(0, self.fans + change)  # Ensure fan count doesn't go negative
         self.fan_change = change
-        self.update_speed = 100  # Reset update speed
+        self.update_speed = 1000  # Start with a slow update speed
+        self.update_acceleration = 0.95  # Factor to accelerate updates
         self.timer.start(self.update_speed)
 
         # Update the result area with fan change information
@@ -128,16 +137,15 @@ Present the results in a clear, formatted manner."""
 
     def update_fan_display(self):
         if self.fans != self.target_fans:
-            step = max(1, abs(self.fan_change) // 100)  # Adjust step size based on total change
             if self.fans < self.target_fans:
-                self.fans = min(self.fans + step, self.target_fans)
+                self.fans += 1
             else:
-                self.fans = max(self.fans - step, self.target_fans)
+                self.fans -= 1
             
-            self.fans_label.setText(str(self.fans))
+            self.fans_label.setText(f"{self.fans:,}")  # Format with commas for readability
             
             # Gradually increase update speed
-            self.update_speed = max(10, self.update_speed - 1)
+            self.update_speed = max(10, int(self.update_speed * self.update_acceleration))
             self.timer.setInterval(self.update_speed)
         else:
             self.timer.stop()
