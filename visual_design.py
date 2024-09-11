@@ -108,20 +108,15 @@ class VisualDesignTab(QWidget):
         load_dotenv()
         self.api_key = os.getenv('OPENAI_API_KEY')
         if not self.api_key:
-            self.chat_area.append("Error: OpenAI API key not found in .env file. Please add OPENAI_API_KEY to your .env file.")
+            print("Error: OpenAI API key not found in .env file. Please add OPENAI_API_KEY to your .env file.")
             self.client = None
         else:
-            # Display the first and last few characters of the API key
-            masked_key = f"{self.api_key[:5]}...{self.api_key[-5:]}"
-            self.chat_area.append(f"API key found: {masked_key}")
             try:
                 self.client = OpenAI(api_key=self.api_key)
-                # Test the client to ensure it's working
-                self.client.models.list()
-                self.chat_area.append("OpenAI client initialized successfully.")
+                self.client.models.list()  # Test the client to ensure it's working
             except Exception as e:
-                self.chat_area.append(f"Error initializing OpenAI client: {str(e)}")
-                self.chat_area.append("Please check your API key in the .env file")
+                print(f"Error initializing OpenAI client: {str(e)}")
+                print("Please check your API key in the .env file")
                 self.client = None
 
     def load_system_prompt(self):
