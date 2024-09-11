@@ -3,4 +3,4 @@ PyQt5-Qt5==5.15.2
 PyQt5-sip==12.15.0
 python-dotenv==1.0.1
 openai==1.44.1
-litellm==0.1.590
+litellm==1.26.3
