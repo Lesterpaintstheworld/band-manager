@@ -13,6 +13,7 @@ class ConcertTab(QWidget):
         super().__init__()
         self.fans = self.load_fan_count()
         self.initUI()
+        self.client = None
         self.load_api_key()
         self.update_speed = 1000
         self.timer = QTimer(self)
@@ -60,11 +61,11 @@ class ConcertTab(QWidget):
                     if line.startswith('OPENAI_API_KEY='):
                         api_key = line.split('=')[1].strip()
                         self.client = OpenAI(api_key=api_key)
-                        break
-                else:
-                    self.chat_area.append("Error: OpenAI API key not found in .env file.")
+                        return
+                self.chat_area.append("Error: OpenAI API key not found in .env file.")
         except FileNotFoundError:
             self.chat_area.append("Error: .env file not found. Please make sure it exists and contains your OpenAI API key.")
+        self.client = None
 
     def start_concert(self):
         concept = self.read_file('concept.md')
