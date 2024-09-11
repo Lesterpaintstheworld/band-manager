@@ -11,6 +11,9 @@ from concert import ConcertTab
 
 class MainInterface(QWidget):
     change_band_name_signal = pyqtSignal()
+    new_song_signal = pyqtSignal()
+    load_song_signal = pyqtSignal(str)
+    save_song_signal = pyqtSignal(str)
     exit_game_signal = pyqtSignal()
 
     def __init__(self):
