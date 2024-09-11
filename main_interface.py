@@ -8,6 +8,7 @@ from composition import CompositionTab
 from production import ProductionTab
 from visual_design import VisualDesignTab
 from concert import ConcertTab
+from song_management import SongManagementTab
 
 class MainInterface(QWidget):
     change_band_name_signal = pyqtSignal()
@@ -94,12 +95,17 @@ class MainInterface(QWidget):
         tabs.setMovable(True)
         tabs.setDocumentMode(True)
 
+        self.song_management_tab = SongManagementTab()
+        tabs.addTab(self.song_management_tab, "Song Management")
         tabs.addTab(ConceptTab(), "Concept")
         tabs.addTab(LyricsTab(), "Paroles")
         tabs.addTab(CompositionTab(), "Composition")
         tabs.addTab(ProductionTab(), "Production")
         tabs.addTab(VisualDesignTab(), "Design Visuel")
         tabs.addTab(ConcertTab(), "Concert")
+
+        self.song_management_tab.song_selected.connect(self.load_song)
+        self.song_management_tab.song_deleted.connect(self.on_song_deleted)
 
         layout.addWidget(tabs)
 
@@ -124,4 +130,12 @@ class MainInterface(QWidget):
         file_name, _ = QFileDialog.getSaveFileName(self, "Save Song", "", "JSON Files (*.json)")
         if file_name:
             self.save_song_signal.emit(file_name)
+
+    def load_song(self, song_title):
+        # Implement logic to load the selected song into the tabs
+        pass
+
+    def on_song_deleted(self, song_title):
+        # Implement logic to handle song deletion (e.g., clear tabs if the current song was deleted)
+        pass
 
