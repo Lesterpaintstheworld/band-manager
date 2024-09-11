@@ -78,9 +78,17 @@ class ConceptTab(QWidget):
         self.chat_area.append(f"Vous : {user_message}")
         self.input_field.clear()
 
-        if self.client is None:
-            self.chat_area.append("Erreur : Le client OpenAI n'est pas initialisé. Veuillez vérifier votre clé API.")
+        if not self.api_key:
+            self.chat_area.append("Erreur : Clé API OpenAI non trouvée. Veuillez vérifier votre fichier .env.")
             return
+
+        if self.client is None:
+            try:
+                self.client = OpenAI(api_key=self.api_key)
+                self.chat_area.append("Client OpenAI réinitialisé avec succès.")
+            except Exception as e:
+                self.chat_area.append(f"Erreur lors de la réinitialisation du client OpenAI : {str(e)}")
+                return
 
         try:
             self.stream_buffer = ""
