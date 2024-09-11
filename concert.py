@@ -168,9 +168,13 @@ Audience Size: {audience_size}
             json.dump(data, f)
 
     def load_system_prompt(self):
+        prompt_file = 'prompts/concert.md'
         try:
-            with open('prompts/concert.md', 'r', encoding='utf-8') as f:
+            if getattr(sys, 'frozen', False):
+                # Si l'application est "gelée" par PyInstaller
+                prompt_file = os.path.join(sys._MEIPASS, 'prompts', 'concert.md')
+            with open(prompt_file, 'r', encoding='utf-8') as f:
                 self.concert_system_prompt = f.read()
         except FileNotFoundError:
             self.concert_system_prompt = "Create an engaging story about the concert experience."
-            print("Warning: prompts/concert.md not found. Using default prompt.")
+            print(f"Warning: {prompt_file} not found. Using default prompt.")
