@@ -56,11 +56,6 @@ class MainInterface(QWidget):
         save_action.triggered.connect(self.save_song)
         song_menu.addAction(save_action)
 
-        # Ajouter le titre du jeu
-        title_label = QLabel("Synthetic Band Manager")
-        title_label.setObjectName("game-title")
-        main_layout.addWidget(title_label, alignment=Qt.AlignCenter)
-
         # Créer un layout horizontal pour le titre et le bouton de fermeture
         top_layout = QHBoxLayout()
         
