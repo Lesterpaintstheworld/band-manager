@@ -131,6 +131,19 @@ class CritiqueTab(QWidget):
                 return
 
         try:
+            if not user_message.strip():
+                self.chat_area.append("Assistant: It seems you haven't provided a specific song to critique. Here's how I would approach a song critique:")
+                self.chat_area.append("\n1. Listen to the song carefully, multiple times if necessary.")
+                self.chat_area.append("2. Analyze the following aspects:")
+                self.chat_area.append("   - Concept: The overall theme or idea behind the song")
+                self.chat_area.append("   - Lyrics: The quality and meaning of the words")
+                self.chat_area.append("   - Composition: The musical structure, melody, and harmony")
+                self.chat_area.append("   - Visual Design: If there's a music video or album art")
+                self.chat_area.append("3. Rate each aspect out of 10 and provide constructive feedback.")
+                self.chat_area.append("4. Give an overall rating and summarize your thoughts.")
+                self.chat_area.append("\nWhen you're ready to critique a specific song, please provide its details.")
+                return
+
             self.chat_area.append("Assistant: Generating critique...")
             stream = self.client.chat.completions.create(
                 model="gpt-4o-mini",
