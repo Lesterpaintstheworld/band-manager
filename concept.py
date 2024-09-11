@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QLabel, QApplication
-from PyQt5.QtCore import Qt, pyqtSignal, QTimer
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton
+from PyQt5.QtCore import Qt, pyqtSignal, QTimer, QObject, pyqtSlot
 from dotenv import load_dotenv
 import os
 import sys
@@ -76,16 +76,22 @@ class ConceptTab(QWidget):
             return
 
         try:
-            response = self.client.chat.completions.create(
-                model="gpt-3.5-turbo",
+            self.stream_buffer = ""
+            self.chat_area.append("Assistant : ")
+            stream = self.client.chat.completions.create(
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": user_message}
-                ]
+                ],
+                stream=True
             )
-            assistant_message = response.choices[0].message.content
-            self.chat_area.append("Assistant : " + assistant_message)
-            self.update_concept(assistant_message)
+            for chunk in stream:
+                if chunk.choices[0].delta.content is not None:
+                    self.stream_buffer += chunk.choices[0].delta.content
+                    self.chat_area.insertPlainText(chunk.choices[0].delta.content)
+                    QApplication.processEvents()
+            self.update_concept(self.stream_buffer)
         except Exception as e:
             self.chat_area.append(f"Erreur lors de l'envoi du message : {str(e)}")
             self.chat_area.append("Veuillez vérifier votre connexion internet et la validité de votre clé API.")
