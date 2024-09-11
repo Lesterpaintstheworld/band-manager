@@ -9,6 +9,7 @@ from production import ProductionTab
 from visual_design import VisualDesignTab
 from concert import ConcertTab
 from song_management import SongManagementTab
+from critique import CritiqueTab
 import os
 
 class MainInterface(QWidget):
@@ -100,6 +101,7 @@ class MainInterface(QWidget):
         self.production_tab = ProductionTab()
         self.visual_design_tab = VisualDesignTab()
         self.concert_tab = ConcertTab()
+        self.critique_tab = CritiqueTab()
 
         self.tabs.addTab(self.song_management_tab, "Song Management")
         self.tabs.addTab(self.concept_tab, "Concept")
@@ -107,6 +109,7 @@ class MainInterface(QWidget):
         self.tabs.addTab(self.composition_tab, "Composition")
         self.tabs.addTab(self.production_tab, "Production")
         self.tabs.addTab(self.visual_design_tab, "Design Visuel")
+        self.tabs.addTab(self.critique_tab, "Critique")
         self.tabs.addTab(self.concert_tab, "Concert")
 
         self.song_management_tab.song_selected.connect(self.load_song)
