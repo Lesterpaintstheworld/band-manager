@@ -52,6 +52,9 @@ class ConceptTab(QWidget):
             self.chat_area.append("Erreur : Clé API OpenAI non trouvée dans le fichier .env. Veuillez ajouter OPENAI_API_KEY à votre fichier .env.")
             self.client = None
         else:
+            # Afficher les premiers et derniers caractères de la clé API
+            masked_key = f"{self.api_key[:5]}...{self.api_key[-5:]}"
+            self.chat_area.append(f"Clé API trouvée : {masked_key}")
             try:
                 self.client = OpenAI(api_key=self.api_key)
                 # Test the client to ensure it's working
