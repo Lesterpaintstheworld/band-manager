@@ -91,6 +91,8 @@ class ConcertTab(QWidget):
         visual_design = self.read_file('visual_design.md')
 
         # Prepare the prompt for GPT
+        audience_size = math.ceil(self.fans * 1.2)  # Calculate audience size
+
         prompt = f"""Evaluate the following aspects of a song:
 
 Concept:
@@ -104,6 +106,8 @@ Composition:
 
 Visual Design:
 {visual_design}
+
+Audience Size: {audience_size}
 
 Provide a rating out of 10 and a brief explanation for each aspect. Then, give an overall rating out of 10 for the entire song with an explanation. Format your response as a JSON object with the following structure:
 {{
