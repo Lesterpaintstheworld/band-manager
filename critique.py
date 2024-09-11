@@ -1,5 +1,6 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QApplication
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QApplication, QLabel
 from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtGui import QFont
 from dotenv import load_dotenv
 import os
 import sys
@@ -41,10 +42,21 @@ class CritiqueTab(QWidget):
         layout.addLayout(chat_layout)
 
         # Critique display area
+        critique_layout = QVBoxLayout()
+        self.critic_name_label = QLabel()
+        self.critic_name_label.setAlignment(Qt.AlignCenter)
+        font = QFont()
+        font.setPointSize(14)
+        font.setBold(True)
+        self.critic_name_label.setFont(font)
+        critique_layout.addWidget(self.critic_name_label)
+
         self.result_area = QTextEdit()
         self.result_area.setReadOnly(True)
         self.result_area.textChanged.connect(lambda: self.result_area.ensureCursorVisible())
-        layout.addWidget(self.result_area)
+        critique_layout.addWidget(self.result_area)
+
+        layout.addLayout(critique_layout)
 
     def load_api_key(self):
         load_dotenv()
@@ -76,12 +88,15 @@ class CritiqueTab(QWidget):
         try:
             with open('band.json', 'r') as f:
                 data = json.load(f)
-                fan_count = data.get('fans', 1)
+                self.fan_count = data.get('fans', 1)
         except (FileNotFoundError, json.JSONDecodeError):
-            fan_count = 1
+            self.fan_count = 1
+        
+        # Set the critic name
+        self.set_critic_name()
         
         # Append fan count and JSON instructions to the system prompt
-        self.system_prompt += f"\n\nCurrent fan count: {fan_count}\n\n"
+        self.system_prompt += f"\n\nCurrent fan count: {self.fan_count}\n\n"
         self.system_prompt += "Please provide your critique in JSON format with the following structure:\n"
         self.system_prompt += "{\n"
         self.system_prompt += '  "concept_rating": <number>,\n'
@@ -95,6 +110,24 @@ class CritiqueTab(QWidget):
         self.system_prompt += '  "overall_rating": <number>,\n'
         self.system_prompt += '  "overall_explanation": "<text>"\n'
         self.system_prompt += "}\n"
+
+    def set_critic_name(self):
+        if self.fan_count <= 10:
+            critic_name = "Your Mom"
+        elif self.fan_count <= 100:
+            critic_name = "Local Music Blogger"
+        elif self.fan_count <= 1000:
+            critic_name = "College Radio DJ"
+        elif self.fan_count <= 10000:
+            critic_name = "Music Magazine Reviewer"
+        elif self.fan_count <= 100000:
+            critic_name = "Respected Music Journalist"
+        elif self.fan_count <= 1000000:
+            critic_name = "Renowned Music Critic"
+        else:
+            critic_name = "Worldwide Tastemaker"
+        
+        self.critic_name_label.setText(critic_name)
 
     def send_message(self):
         user_message = self.input_field.text()
