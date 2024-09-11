@@ -6,6 +6,7 @@ from pydantic import BaseModel
 import os
 import json
 import random
+import asyncio
 
 class EvaluationResult(BaseModel):
     concept_rating: int
@@ -28,6 +29,7 @@ class ConcertTab(QWidget):
         self.update_speed = 1000  # Initial update speed in milliseconds
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_fan_display)
+        self.load_system_prompt()
 
     def initUI(self):
         layout = QHBoxLayout()
@@ -38,6 +40,10 @@ class ConcertTab(QWidget):
         self.result_area = QTextEdit()
         self.result_area.setReadOnly(True)
         left_layout.addWidget(self.result_area)
+
+        self.chat_area = QTextEdit()
+        self.chat_area.setReadOnly(True)
+        left_layout.addWidget(self.chat_area)
 
         self.start_concert_button = QPushButton("Start Concert")
         self.start_concert_button.clicked.connect(self.evaluate_concert)
@@ -135,6 +141,9 @@ Provide a rating out of 10 and a brief explanation for each aspect. Then, give a
 
             self.update_fans(result['overall_rating'])
 
+            # Call the second GPT for concert feedback
+            asyncio.create_task(self.get_concert_feedback(concept, lyrics, composition))
+
         except Exception as e:
             self.result_area.append(f"Error during evaluation: {str(e)}")
 
@@ -185,3 +194,44 @@ Provide a rating out of 10 and a brief explanation for each aspect. Then, give a
         data = {'fans': self.fans}
         with open('band.json', 'w') as f:
             json.dump(data, f)
+
+    def load_system_prompt(self):
+        try:
+            with open('prompts/concert.md', 'r', encoding='utf-8') as f:
+                self.concert_system_prompt = f.read()
+        except FileNotFoundError:
+            self.concert_system_prompt = "You are an AI assistant providing feedback on concerts."
+            print("Warning: prompts/concert.md not found. Using default prompt.")
+
+    async def get_concert_feedback(self, concept, lyrics, composition):
+        prompt = f"""Provide feedback on the following concert:
+
+Concept:
+{concept}
+
+Lyrics:
+{lyrics}
+
+Composition:
+{composition}
+
+Give detailed feedback on the performance, audience reaction, and overall concert experience."""
+
+        try:
+            self.chat_area.clear()
+            self.chat_area.append("Getting concert feedback...")
+            
+            completion = self.client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": self.concert_system_prompt},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            
+            feedback = completion.choices[0].message.content
+            self.chat_area.append("Concert Feedback:")
+            self.chat_area.append(feedback)
+
+        except Exception as e:
+            self.chat_area.append(f"Error getting concert feedback: {str(e)}")
