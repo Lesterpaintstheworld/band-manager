@@ -4,6 +4,7 @@ import os
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtWidgets import QApplication
 from welcome_screen import WelcomeScreen
 # Import MainInterface will be done inside the after_splash method
 from style import set_dark_theme
@@ -24,7 +25,8 @@ class SyntheticBandManager:
         set_dark_theme(self.app)
         self.welcome_screen = None
         self.main_interface = None
-        self.splash = QSplashScreen(QPixmap(resource_path("splash.png")))
+        splash_pixmap = QPixmap(resource_path("splash.png"))
+        self.splash = QSplashScreen(splash_pixmap.scaled(QApplication.primaryScreen().size(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation))
 
     def run(self):
         self.splash.show()
