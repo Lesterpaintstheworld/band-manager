@@ -2,9 +2,22 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLabel
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QFont
 from openai import OpenAI
+from pydantic import BaseModel
 import os
 import json
 import random
+
+class EvaluationResult(BaseModel):
+    concept_rating: int
+    lyrics_rating: int
+    composition_rating: int
+    visual_design_rating: int
+    overall_rating: int
+    concept_explanation: str
+    lyrics_explanation: str
+    composition_explanation: str
+    visual_design_explanation: str
+    overall_explanation: str
 
 class ConcertTab(QWidget):
     def __init__(self):
@@ -61,7 +74,7 @@ class ConcertTab(QWidget):
         visual_design = self.read_file('visual_design.md')
 
         # Prepare the prompt for GPT
-        prompt = f"""Evaluate the following aspects of a song and give a rating out of 10 for each:
+        prompt = f"""Evaluate the following aspects of a song:
 
 Concept:
 {concept}
@@ -75,38 +88,39 @@ Composition:
 Visual Design:
 {visual_design}
 
-For each aspect, provide a brief explanation for the rating. Then, give an overall rating out of 10 for the entire song.
-Finally, based on the overall rating, calculate the change in fan count. Use these rules:
-- If the overall rating is less than 5, decrease fans by 10%
-- If the overall rating is between 5 and 7, increase fans by 5%
-- If the overall rating is above 7, increase fans by 20%
-
-Present the results in a clear, formatted manner."""
+Provide a rating out of 10 and a brief explanation for each aspect. Then, give an overall rating out of 10 for the entire song with an explanation."""
 
         try:
             self.result_area.clear()
             self.result_area.append("Evaluating concert...")
             
-            stream = self.client.chat.completions.create(
+            completion = self.client.chat.completions.parse(
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": "You are a music critic and fan engagement analyst."},
                     {"role": "user", "content": prompt}
                 ],
-                stream=True
+                response_format=EvaluationResult
             )
             
-            result = ""
-            for chunk in stream:
-                if chunk.choices[0].delta.content is not None:
-                    content = chunk.choices[0].delta.content
-                    result += content
-                    self.result_area.insertPlainText(content)
-                    self.result_area.ensureCursorVisible()
+            result = completion.choices[0].message.parsed
+            
+            self.result_area.append(f"Concept Rating: {result.concept_rating}/10")
+            self.result_area.append(f"Explanation: {result.concept_explanation}\n")
+            
+            self.result_area.append(f"Lyrics Rating: {result.lyrics_rating}/10")
+            self.result_area.append(f"Explanation: {result.lyrics_explanation}\n")
+            
+            self.result_area.append(f"Composition Rating: {result.composition_rating}/10")
+            self.result_area.append(f"Explanation: {result.composition_explanation}\n")
+            
+            self.result_area.append(f"Visual Design Rating: {result.visual_design_rating}/10")
+            self.result_area.append(f"Explanation: {result.visual_design_explanation}\n")
+            
+            self.result_area.append(f"Overall Rating: {result.overall_rating}/10")
+            self.result_area.append(f"Explanation: {result.overall_explanation}")
 
-            # Extract overall rating and update fan count
-            overall_rating = float(result.split("Overall Rating:")[-1].split("/10")[0].strip())
-            self.update_fans(overall_rating)
+            self.update_fans(result.overall_rating)
 
         except Exception as e:
             self.result_area.append(f"Error during evaluation: {str(e)}")
