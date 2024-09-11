@@ -1,11 +1,13 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QListWidget, QPushButton, QInputDialog, QMessageBox
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QListWidget, QPushButton, QInputDialog, QMessageBox, QFileDialog
 from PyQt5.QtCore import pyqtSignal
 import json
 import os
+import shutil
 
 class SongManagementTab(QWidget):
     song_selected = pyqtSignal(str)
     song_deleted = pyqtSignal(str)
+    song_saved = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
@@ -30,6 +32,10 @@ class SongManagementTab(QWidget):
         self.delete_song_button.clicked.connect(self.delete_song)
         button_layout.addWidget(self.delete_song_button)
 
+        self.save_song_button = QPushButton("Save Song")
+        self.save_song_button.clicked.connect(self.save_song)
+        button_layout.addWidget(self.save_song_button)
+
         self.song_list.itemClicked.connect(self.on_song_selected)
 
     def load_songs(self):
@@ -44,7 +50,7 @@ class SongManagementTab(QWidget):
         title, ok = QInputDialog.getText(self, 'New Song', 'Enter song title:')
         if ok and title:
             songs = self.get_songs()
-            songs.append({'title': title, 'lyrics': '', 'composition': '', 'visual_design': ''})
+            songs.append({'title': title, 'lyrics': '', 'composition': '', 'visual_design': '', 'concept': ''})
             self.save_songs(songs)
             self.load_songs()
             self.song_selected.emit(title)
@@ -61,6 +67,11 @@ class SongManagementTab(QWidget):
                 self.save_songs(songs)
                 self.load_songs()
                 self.song_deleted.emit(current_item.text())
+
+                # Delete the song folder if it exists
+                song_folder = os.path.join('songs', current_item.text())
+                if os.path.exists(song_folder):
+                    shutil.rmtree(song_folder)
 
     def on_song_selected(self, item):
         self.song_selected.emit(item.text())
@@ -91,3 +102,30 @@ class SongManagementTab(QWidget):
                 songs[i] = updated_song
                 break
         self.save_songs(songs)
+
+    def save_song(self):
+        current_song = self.get_current_song()
+        if current_song:
+            song_folder = os.path.join('songs', current_song['title'])
+            os.makedirs(song_folder, exist_ok=True)
+
+            # Save concept
+            with open(os.path.join(song_folder, 'concept.md'), 'w', encoding='utf-8') as f:
+                f.write(current_song.get('concept', ''))
+
+            # Save lyrics
+            with open(os.path.join(song_folder, 'lyrics.md'), 'w', encoding='utf-8') as f:
+                f.write(current_song.get('lyrics', ''))
+
+            # Save composition
+            with open(os.path.join(song_folder, 'composition.md'), 'w', encoding='utf-8') as f:
+                f.write(current_song.get('composition', ''))
+
+            # Save visual design
+            with open(os.path.join(song_folder, 'visual_design.md'), 'w', encoding='utf-8') as f:
+                f.write(current_song.get('visual_design', ''))
+
+            self.song_saved.emit(current_song['title'])
+            QMessageBox.information(self, "Save Successful", f"Song '{current_song['title']}' has been saved.")
+        else:
+            QMessageBox.warning(self, "Save Failed", "No song is currently selected.")

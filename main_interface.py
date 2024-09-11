@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QMenuBar, QAction, QLabel, QHBoxLayout, QFileDialog
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QMenuBar, QAction, QLabel, QHBoxLayout, QFileDialog, QMessageBox
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import QPushButton
@@ -9,6 +9,7 @@ from production import ProductionTab
 from visual_design import VisualDesignTab
 from concert import ConcertTab
 from song_management import SongManagementTab
+import os
 
 class MainInterface(QWidget):
     change_band_name_signal = pyqtSignal()
@@ -89,25 +90,33 @@ class MainInterface(QWidget):
         change_name_action.triggered.connect(self.change_band_name)
         band_menu.addAction(change_name_action)
 
-        tabs = QTabWidget()
-        tabs.setObjectName("game-tabs")
-        tabs.setTabPosition(QTabWidget.North)
-        tabs.setMovable(True)
-        tabs.setDocumentMode(True)
+        self.tabs = QTabWidget()
+        self.tabs.setObjectName("game-tabs")
+        self.tabs.setTabPosition(QTabWidget.North)
+        self.tabs.setMovable(True)
+        self.tabs.setDocumentMode(True)
 
         self.song_management_tab = SongManagementTab()
-        tabs.addTab(self.song_management_tab, "Song Management")
-        tabs.addTab(ConceptTab(), "Concept")
-        tabs.addTab(LyricsTab(), "Paroles")
-        tabs.addTab(CompositionTab(), "Composition")
-        tabs.addTab(ProductionTab(), "Production")
-        tabs.addTab(VisualDesignTab(), "Design Visuel")
-        tabs.addTab(ConcertTab(), "Concert")
+        self.concept_tab = ConceptTab()
+        self.lyrics_tab = LyricsTab()
+        self.composition_tab = CompositionTab()
+        self.production_tab = ProductionTab()
+        self.visual_design_tab = VisualDesignTab()
+        self.concert_tab = ConcertTab()
+
+        self.tabs.addTab(self.song_management_tab, "Song Management")
+        self.tabs.addTab(self.concept_tab, "Concept")
+        self.tabs.addTab(self.lyrics_tab, "Paroles")
+        self.tabs.addTab(self.composition_tab, "Composition")
+        self.tabs.addTab(self.production_tab, "Production")
+        self.tabs.addTab(self.visual_design_tab, "Design Visuel")
+        self.tabs.addTab(self.concert_tab, "Concert")
 
         self.song_management_tab.song_selected.connect(self.load_song)
         self.song_management_tab.song_deleted.connect(self.on_song_deleted)
+        self.song_management_tab.song_saved.connect(self.on_song_saved)
 
-        layout.addWidget(tabs)
+        layout.addWidget(self.tabs)
 
     def get_band_name(self):
         import json
@@ -121,21 +130,48 @@ class MainInterface(QWidget):
     def new_song(self):
         self.new_song_signal.emit()
 
-    def load_song(self):
-        file_name, _ = QFileDialog.getOpenFileName(self, "Load Song", "", "JSON Files (*.json)")
-        if file_name:
-            self.load_song_signal.emit(file_name)
+    def load_song(self, song_title):
+        song_folder = os.path.join('songs', song_title)
+        if os.path.exists(song_folder):
+            # Load concept
+            with open(os.path.join(song_folder, 'concept.md'), 'r', encoding='utf-8') as f:
+                self.concept_tab.result_area.setPlainText(f.read())
+
+            # Load lyrics
+            with open(os.path.join(song_folder, 'lyrics.md'), 'r', encoding='utf-8') as f:
+                self.lyrics_tab.result_area.setPlainText(f.read())
+
+            # Load composition
+            with open(os.path.join(song_folder, 'composition.md'), 'r', encoding='utf-8') as f:
+                self.composition_tab.result_area.setPlainText(f.read())
+
+            # Load visual design
+            with open(os.path.join(song_folder, 'visual_design.md'), 'r', encoding='utf-8') as f:
+                self.visual_design_tab.result_area.setPlainText(f.read())
+
+            QMessageBox.information(self, "Load Successful", f"Song '{song_title}' has been loaded.")
+        else:
+            QMessageBox.warning(self, "Load Failed", f"Song folder for '{song_title}' not found.")
 
     def save_song(self):
-        file_name, _ = QFileDialog.getSaveFileName(self, "Save Song", "", "JSON Files (*.json)")
-        if file_name:
-            self.save_song_signal.emit(file_name)
-
-    def load_song(self, song_title):
-        # Implement logic to load the selected song into the tabs
-        pass
+        current_song = self.song_management_tab.get_current_song()
+        if current_song:
+            current_song['concept'] = self.concept_tab.result_area.toPlainText()
+            current_song['lyrics'] = self.lyrics_tab.result_area.toPlainText()
+            current_song['composition'] = self.composition_tab.result_area.toPlainText()
+            current_song['visual_design'] = self.visual_design_tab.result_area.toPlainText()
+            self.song_management_tab.update_current_song(current_song)
+            self.song_management_tab.save_song()
+        else:
+            QMessageBox.warning(self, "Save Failed", "No song is currently selected.")
 
     def on_song_deleted(self, song_title):
-        # Implement logic to handle song deletion (e.g., clear tabs if the current song was deleted)
-        pass
+        # Clear all tabs when a song is deleted
+        self.concept_tab.result_area.clear()
+        self.lyrics_tab.result_area.clear()
+        self.composition_tab.result_area.clear()
+        self.visual_design_tab.result_area.clear()
+
+    def on_song_saved(self, song_title):
+        QMessageBox.information(self, "Save Successful", f"Song '{song_title}' has been saved.")
 
