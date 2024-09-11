@@ -163,31 +163,40 @@ Audience Size: {audience_size}
         with open('band.json', 'w') as f:
             json.dump(data, f)
 
-    def load_system_prompt(self):
-        prompt_file = 'prompts/concert.md'
+    def get_resource_path(self, relative_path):
+        """ Get absolute path to resource, works for dev and for PyInstaller """
         try:
-            if getattr(sys, 'frozen', False):
-                # Si l'application est "gelée" par PyInstaller
-                prompt_file = os.path.join(sys._MEIPASS, 'prompts', 'concert.md')
-            with open(prompt_file, 'r', encoding='utf-8') as f:
-                self.concert_system_prompt = f.read()
-        except FileNotFoundError:
-            self.concert_system_prompt = "Create an engaging story about the concert experience."
-            print(f"Warning: {prompt_file} not found. Using default prompt.")
-        
-        # Load other prompt files
-        self.concept_prompt = self.load_prompt_file('prompts/concept.md', "Describe the concept of the song.")
-        self.lyrics_prompt = self.load_prompt_file('prompts/lyrics.md', "Provide the lyrics of the song.")
-        self.composition_prompt = self.load_prompt_file('prompts/composition.md', "Describe the composition of the song.")
-        self.visual_design_prompt = self.load_prompt_file('prompts/visual_design.md', "Describe the visual design for the song or performance.")
-        self.critique_prompt = self.load_prompt_file('prompts/critique.md', "Provide a critique of the song.")
+            # PyInstaller creates a temp folder and stores path in _MEIPASS
+            base_path = sys._MEIPASS
+        except Exception:
+            base_path = os.path.abspath(".")
 
-    def load_prompt_file(self, filename, default_prompt):
-        try:
-            if getattr(sys, 'frozen', False):
-                filename = os.path.join(sys._MEIPASS, filename)
-            with open(filename, 'r', encoding='utf-8') as f:
-                return f.read()
-        except FileNotFoundError:
-            print(f"Warning: {filename} not found. Using default prompt.")
-            return default_prompt
+        return os.path.join(base_path, relative_path)
+
+    def load_system_prompt(self):
+        prompt_files = {
+            'concert': 'prompts/concert.md',
+            'concept': 'prompts/concept.md',
+            'lyrics': 'prompts/lyrics.md',
+            'composition': 'prompts/composition.md',
+            'visual_design': 'prompts/visual_design.md',
+            'critique': 'prompts/critique.md'
+        }
+
+        default_prompts = {
+            'concert': "Create an engaging story about the concert experience.",
+            'concept': "Describe the concept of the song.",
+            'lyrics': "Provide the lyrics of the song.",
+            'composition': "Describe the composition of the song.",
+            'visual_design': "Describe the visual design for the song or performance.",
+            'critique': "Provide a critique of the song."
+        }
+
+        for key, file_path in prompt_files.items():
+            full_path = self.get_resource_path(file_path)
+            try:
+                with open(full_path, 'r', encoding='utf-8') as f:
+                    setattr(self, f"{key}_prompt", f.read())
+            except FileNotFoundError:
+                print(f"Warning: {full_path} not found. Using default prompt.")
+                setattr(self, f"{key}_prompt", default_prompts[key])
