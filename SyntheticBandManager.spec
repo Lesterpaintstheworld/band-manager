@@ -7,7 +7,7 @@ block_cipher = None
 a = Analysis(
     ['main.py'],
     pathex=[],
-    binaries=[('C:\\Users\\conta\\synthetic-band-manager/style.css', '.'), ('C:\\Python312\\Lib\\site-packages\\PyQt5\\Qt5\\bin\\Qt5Core.dll', 'PyQt5/Qt5/bin'), ('C:\\Python312\\Lib\\site-packages\\PyQt5\\Qt5\\bin\\Qt5Gui.dll', 'PyQt5/Qt5/bin'), ('C:\\Python312\\Lib\\site-packages\\PyQt5\\Qt5\\bin\\Qt5Widgets.dll', 'PyQt5/Qt5/bin')],
+    binaries=[('C:\\Users\\conta\\synthetic-band-manager/style.css', '.'), ('C:\\Python312\\Lib\\site-packages\\PyQt5\\Qt5\\bin\\Qt5Core.dll', 'PyQt5/Qt5/bin'), ('C:\\Python312\\Lib\\site-packages\\PyQt5\\Qt5\\bin\\Qt5Gui.dll', 'PyQt5/Qt5/bin'), ('C:\\Python312\\Lib\\site-packages\\PyQt5\\Qt5\\bin\\Qt5Widgets.dll', 'PyQt5/Qt5/bin'), ('C:\\Python312\\Lib\\site-packages\\PyQt5\\Qt5\\plugins\\platforms\\qwindows.dll', 'PyQt5/Qt5/plugins/platforms')],
     datas=[('C:\\Users\\conta\\synthetic-band-manager/prompts', 'prompts'), ('C:\\Users\\conta\\synthetic-band-manager/*.md', '.'), ('C:\\Users\\conta\\synthetic-band-manager/*.json', '.'), ('C:\\Users\\conta\\synthetic-band-manager/style.css', '.'), ('C:\\Users\\conta\\synthetic-band-manager/spinner.gif', '.')],
     hiddenimports=['PyQt5.QtCore', 'PyQt5.QtGui', 'PyQt5.QtWidgets', 'openai', 'dotenv'],
     hookspath=[],
@@ -31,7 +31,7 @@ exe = EXE(
     name='SyntheticBandManager',
     debug=False,
     bootloader_ignore_signals=False,
-    strip=True,
+    strip=False,
     upx=False,
     upx_exclude=[],
     runtime_tmpdir=None,
