@@ -15,6 +15,7 @@ options = [
     '--add-data', f'{current_dir}/*.md;.',
     '--add-data', f'{current_dir}/*.json;.',
     '--add-data', f'{current_dir}/style.css;.',
+    '--add-binary', f'{current_dir}/style.css;.',
     '--add-data', f'{current_dir}/spinner.gif;.',
     '--icon', f'{current_dir}/icon.ico',
     '--hidden-import=PyQt5',

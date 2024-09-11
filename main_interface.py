@@ -11,6 +11,7 @@ from concert import ConcertTab
 from song_management import SongManagementTab
 from critique import CritiqueTab
 import os
+import sys
 
 class MainInterface(QWidget):
     change_band_name_signal = pyqtSignal()
@@ -28,8 +29,12 @@ class MainInterface(QWidget):
         self.showFullScreen()
 
         # Appliquer le style CSS
-        with open('style.css', 'r') as f:
-            self.setStyleSheet(f.read())
+        style_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'style.css')
+        if os.path.exists(style_path):
+            with open(style_path, 'r') as f:
+                self.setStyleSheet(f.read())
+        else:
+            print(f"Warning: style.css not found at {style_path}")
 
         main_layout = QVBoxLayout()
         self.setLayout(main_layout)
