@@ -50,8 +50,9 @@ class ConcertTab(QWidget):
         self.fans_label = QLabel(str(self.fans))
         self.fans_label.setAlignment(Qt.AlignCenter)
         font = QFont()
-        font.setPointSize(144)  # Make the font size very large
+        font.setPointSize(200)  # Increase the font size to make it very big
         self.fans_label.setFont(font)
+        self.fans_label.setMinimumSize(400, 300)  # Set a minimum size to ensure visibility
         right_layout.addWidget(self.fans_label)
 
         layout.addLayout(right_layout, 1)  # Set stretch factor to 1
