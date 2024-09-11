@@ -58,6 +58,13 @@ class MainInterface(QWidget):
         layout = QVBoxLayout()
         main_layout.addLayout(layout)
 
+    def reset_chats(self):
+        self.concept_tab.chat_area.clear()
+        self.lyrics_tab.chat_area.clear()
+        self.composition_tab.chat_area.clear()
+        self.production_tab.chat_area.clear()
+        self.visual_design_tab.chat_area.clear()
+
         # Ajouter le titre du jeu
         title_label = QLabel("Synthetic Band Manager")
         title_label.setObjectName("game-title")
@@ -129,6 +136,7 @@ class MainInterface(QWidget):
         self.change_band_name_signal.emit()
 
     def new_song(self):
+        self.reset_chats()
         self.new_song_signal.emit()
 
     def load_song(self, song_title):
