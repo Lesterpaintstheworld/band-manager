@@ -30,18 +30,18 @@ class ConcertTab(QWidget):
         self.start_concert_button.clicked.connect(self.evaluate_concert)
         left_layout.addWidget(self.start_concert_button)
 
-        layout.addLayout(left_layout)
+        layout.addLayout(left_layout, 1)  # Set stretch factor to 1
 
         # Right side - Fan count
         right_layout = QVBoxLayout()
         self.fans_label = QLabel(str(self.fans))
         self.fans_label.setAlignment(Qt.AlignCenter)
         font = QFont()
-        font.setPointSize(72)  # Make the font size very large
+        font.setPointSize(144)  # Make the font size very large
         self.fans_label.setFont(font)
         right_layout.addWidget(self.fans_label)
 
-        layout.addLayout(right_layout)
+        layout.addLayout(right_layout, 1)  # Set stretch factor to 1
 
     def load_api_key(self):
         with open('.env', 'r') as f:
