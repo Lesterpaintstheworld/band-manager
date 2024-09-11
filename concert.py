@@ -195,8 +195,14 @@ Audience Size: {audience_size}
         for key, file_path in prompt_files.items():
             full_path = self.get_resource_path(file_path)
             try:
-                with open(full_path, 'r', encoding='utf-8') as f:
-                    setattr(self, f"{key}_prompt", f.read())
+                if getattr(sys, 'frozen', False):
+                    # Si l'application est "gelée" par PyInstaller
+                    with open(full_path, 'r', encoding='utf-8') as f:
+                        setattr(self, f"{key}_prompt", f.read())
+                else:
+                    # En mode développement
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        setattr(self, f"{key}_prompt", f.read())
             except FileNotFoundError:
                 print(f"Warning: {full_path} not found. Using default prompt.")
                 setattr(self, f"{key}_prompt", default_prompts[key])
