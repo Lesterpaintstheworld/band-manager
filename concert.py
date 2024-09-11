@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLabel, QPushButton, QApplication
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLabel, QPushButton, QApplication, QMessageBox
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QFont
 from openai import OpenAI
@@ -183,26 +183,13 @@ Audience Size: {audience_size}
             'critique': 'prompts/critique.md'
         }
 
-        default_prompts = {
-            'concert': "Create an engaging story about the concert experience.",
-            'concept': "Describe the concept of the song.",
-            'lyrics': "Provide the lyrics of the song.",
-            'composition': "Describe the composition of the song.",
-            'visual_design': "Describe the visual design for the song or performance.",
-            'critique': "Provide a critique of the song."
-        }
-
         for key, file_path in prompt_files.items():
             full_path = self.get_resource_path(file_path)
             try:
-                if getattr(sys, 'frozen', False):
-                    # Si l'application est "gelée" par PyInstaller
-                    with open(full_path, 'r', encoding='utf-8') as f:
-                        setattr(self, f"{key}_prompt", f.read())
-                else:
-                    # En mode développement
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        setattr(self, f"{key}_prompt", f.read())
+                with open(full_path, 'r', encoding='utf-8') as f:
+                    setattr(self, f"{key}_prompt", f.read())
             except FileNotFoundError:
-                print(f"Warning: {full_path} not found. Using default prompt.")
-                setattr(self, f"{key}_prompt", default_prompts[key])
+                error_message = f"Erreur : Le fichier {full_path} n'a pas été trouvé. Veuillez vérifier que tous les fichiers de prompts sont présents dans le dossier 'prompts'."
+                print(error_message)
+                QMessageBox.critical(self, "Erreur de chargement", error_message)
+                sys.exit(1)
