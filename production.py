@@ -137,17 +137,32 @@ class ProductionTab(QWidget):
             return
 
         try:
-            # You might want to get these values from user input or other parts of your application
+            # Utiliser le contenu actuel des zones de texte pour générer la chanson
+            concept = self.parent().concept_tab.result_area.toPlainText()
+            lyrics = self.parent().lyrics_tab.result_area.toPlainText()
+            composition = self.parent().composition_tab.result_area.toPlainText()
+
+            # Créer les prompts à partir du contenu
+            short_prompt = concept[:100]  # Utiliser les 100 premiers caractères du concept comme prompt court
+            extend_prompts = [lyrics[:100], composition[:100]]  # Utiliser le début des paroles et de la composition comme prompts d'extension
+            outro_prompt = "Conclusion de la chanson basée sur le concept et la composition"
+
+            # Diviser les paroles en sections pour les différentes parties de la chanson
+            lyrics_lines = lyrics.split('\n')
+            custom_lyrics_short = '\n'.join(lyrics_lines[:5])  # 5 premières lignes pour la partie courte
+            custom_lyrics_extend = ['\n'.join(lyrics_lines[5:15]), '\n'.join(lyrics_lines[15:25])]  # 10 lignes pour chaque extension
+            custom_lyrics_outro = '\n'.join(lyrics_lines[25:])  # Le reste pour l'outro
+
             complete_song_sequence = self.udio_wrapper.create_complete_song(
-                short_prompt="On a full moon night",
-                extend_prompts=["the soft sound of the saxophone fills the air", "creating an atmosphere of mystery and romance"],
-                outro_prompt="Thus ends this melody, leaving an echo of emotions in the heart",
+                short_prompt=short_prompt,
+                extend_prompts=extend_prompts,
+                outro_prompt=outro_prompt,
                 num_extensions=2,
-                custom_lyrics_short="Short song lyrics here",
-                custom_lyrics_extend=["Lyrics for first extension", "Lyrics for second extension"],
-                custom_lyrics_outro="Outro lyrics here"
+                custom_lyrics_short=custom_lyrics_short,
+                custom_lyrics_extend=custom_lyrics_extend,
+                custom_lyrics_outro=custom_lyrics_outro
             )
-            self.result_area.setPlainText(f"Complete song sequence generated and downloaded: {complete_song_sequence}")
+            self.result_area.setPlainText(f"Séquence de chanson complète générée et téléchargée : {complete_song_sequence}")
             QMessageBox.information(self, "Succès", "La chanson a été générée avec succès.")
         except Exception as e:
             QMessageBox.critical(self, "Erreur", f"Une erreur s'est produite lors de la génération de la chanson : {str(e)}")
