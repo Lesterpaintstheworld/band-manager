@@ -28,8 +28,33 @@ class MainInterface(QWidget):
         with open('style.css', 'r') as f:
             self.setStyleSheet(f.read())
 
+        main_layout = QVBoxLayout()
+        self.setLayout(main_layout)
+
+        # Add menu bar
+        menubar = QMenuBar()
+        main_layout.addWidget(menubar)
+
+        # Add Song menu
+        song_menu = menubar.addMenu('Song')
+        
+        # Add New action
+        new_action = QAction('New', self)
+        new_action.triggered.connect(self.new_song)
+        song_menu.addAction(new_action)
+
+        # Add Load action
+        load_action = QAction('Load', self)
+        load_action.triggered.connect(self.load_song)
+        song_menu.addAction(load_action)
+
+        # Add Save action
+        save_action = QAction('Save', self)
+        save_action.triggered.connect(self.save_song)
+        song_menu.addAction(save_action)
+
         layout = QVBoxLayout()
-        self.setLayout(layout)
+        main_layout.addLayout(layout)
 
         # Ajouter le titre du jeu
         title_label = QLabel("Synthetic Band Manager")
@@ -86,4 +111,17 @@ class MainInterface(QWidget):
 
     def change_band_name(self):
         self.change_band_name_signal.emit()
+
+    def new_song(self):
+        self.new_song_signal.emit()
+
+    def load_song(self):
+        file_name, _ = QFileDialog.getOpenFileName(self, "Load Song", "", "JSON Files (*.json)")
+        if file_name:
+            self.load_song_signal.emit(file_name)
+
+    def save_song(self):
+        file_name, _ = QFileDialog.getSaveFileName(self, "Save Song", "", "JSON Files (*.json)")
+        if file_name:
+            self.save_song_signal.emit(file_name)
 
