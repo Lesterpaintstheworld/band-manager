@@ -1,4 +1,4 @@
-from udio_wrapper import UdioWrapper as UdioWrapperBase
+from udio_wrapper.wrapper import UdioWrapper as UdioWrapperBase
 
 class CustomUdioWrapper(UdioWrapperBase):
     def create_complete_song(self, short_prompt, extend_prompts, outro_prompt, num_extensions, custom_lyrics_short, custom_lyrics_extend, custom_lyrics_outro):
