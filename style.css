@@ -1,22 +1,24 @@
 /* Style général */
 QWidget {
-    background-color: #2c3e50;
-    color: #ecf0f1;
+    background-color: #1a0a1f;
+    color: #ff9900;
+    font-family: 'Segoe UI', Arial, sans-serif;
     font-size: 16px;
 }
 
 /* Titre du jeu */
 #game-title {
-    font-size: 36px;
+    font-size: 48px;
     font-weight: bold;
-    color: #e74c3c;
+    color: #ff3300;
     margin: 20px 0;
+    text-shadow: 0 0 10px #ff3300;
 }
 
 /* Menu du jeu */
 #game-menu {
-    background-color: #34495e;
-    color: #ecf0f1;
+    background-color: #2d1a33;
+    color: #ff9900;
     font-size: 18px;
     padding: 5px;
 }
@@ -26,14 +28,15 @@ QWidget {
 }
 
 #game-menu::item:selected {
-    background-color: #e74c3c;
+    background-color: #ff3300;
+    color: #1a0a1f;
 }
 
 /* Onglets */
 #game-tabs::pane {
-    border: 2px solid #e74c3c;
+    border: 2px solid #ff3300;
     border-radius: 6px;
-    background-color: #34495e;
+    background-color: #2d1a33;
 }
 
 #game-tabs::tab-bar {
@@ -41,9 +44,9 @@ QWidget {
 }
 
 #game-tabs::tab {
-    background-color: #2c3e50;
-    color: #ecf0f1;
-    border: 2px solid #e74c3c;
+    background-color: #1a0a1f;
+    color: #ff9900;
+    border: 2px solid #ff3300;
     border-bottom: none;
     border-top-left-radius: 6px;
     border-top-right-radius: 6px;
@@ -53,29 +56,30 @@ QWidget {
 }
 
 #game-tabs::tab:selected {
-    background-color: #e74c3c;
-    color: #ecf0f1;
+    background-color: #ff3300;
+    color: #1a0a1f;
 }
 
 /* Boutons */
 QPushButton {
-    background-color: #e74c3c;
-    color: #ecf0f1;
+    background-color: #ff3300;
+    color: #1a0a1f;
     border: none;
     padding: 10px 20px;
     font-size: 18px;
     border-radius: 5px;
+    font-weight: bold;
 }
 
 QPushButton:hover {
-    background-color: #c0392b;
+    background-color: #ff6600;
 }
 
 /* Champs de texte */
 QLineEdit, QTextEdit {
-    background-color: #34495e;
-    color: #ecf0f1;
-    border: 2px solid #e74c3c;
+    background-color: #2d1a33;
+    color: #ff9900;
+    border: 2px solid #ff3300;
     border-radius: 5px;
     padding: 5px;
     font-size: 16px;
@@ -84,12 +88,13 @@ QLineEdit, QTextEdit {
 /* Labels */
 QLabel {
     font-size: 18px;
+    color: #ff9900;
 }
 
 /* Bouton de fermeture */
 #close-button {
-    background-color: #e74c3c;
-    color: #ecf0f1;
+    background-color: #ff3300;
+    color: #1a0a1f;
     border: none;
     font-size: 24px;
     font-weight: bold;
@@ -98,5 +103,10 @@ QLabel {
 }
 
 #close-button:hover {
-    background-color: #c0392b;
+    background-color: #ff6600;
+}
+
+/* Effet néon */
+.neon {
+    text-shadow: 0 0 5px #ff3300, 0 0 10px #ff3300, 0 0 15px #ff3300, 0 0 20px #ff3300;
 }
