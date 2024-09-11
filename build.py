@@ -16,7 +16,7 @@ pyqt5_path = os.path.dirname(PyQt5.__file__)
 
 options = [
     'main.py',
-    '--name=SyntheticBandManager',
+    '--name=BandManager',
     '--onefile',
     '--windowed',
     '--add-data', f'{current_dir}/prompts;prompts',
