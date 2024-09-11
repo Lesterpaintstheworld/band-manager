@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt, QTimer
 from welcome_screen import WelcomeScreen
-from main_interface import MainInterface
+# Import MainInterface will be done inside the after_splash method
 from style import set_dark_theme
 
 def resource_path(relative_path):
@@ -39,6 +39,15 @@ class SyntheticBandManager:
             self.welcome_screen = WelcomeScreen()
             self.welcome_screen.submitted.connect(self.show_main_interface)
             self.welcome_screen.show()
+
+    def show_main_interface(self):
+        from main_interface import MainInterface  # Import here to avoid circular import
+        if self.welcome_screen:
+            self.welcome_screen.close()
+        self.main_interface = MainInterface()
+        self.main_interface.change_band_name_signal.connect(self.change_band_name)
+        self.main_interface.exit_game_signal.connect(self.exit_game)
+        self.main_interface.show()
 
     def show_main_interface(self):
         if self.welcome_screen:
