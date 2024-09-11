@@ -5,6 +5,8 @@ import os
 from dotenv import load_dotenv
 from main import resource_path
 from udio_wrapper import UdioWrapper
+from pydantic import BaseModel
+from typing import List
 
 class ProductionTab(QWidget):
     production_updated = pyqtSignal(str)
@@ -87,6 +89,15 @@ class ProductionTab(QWidget):
         except FileNotFoundError:
             return f"File {filepath} not found."
 
+    class SongResponse(BaseModel):
+        short_prompt: str
+        extend_prompts: List[str]
+        outro_prompt: str
+        num_extensions: int
+        custom_lyrics_short: str
+        custom_lyrics_extend: List[str]
+        custom_lyrics_outro: str
+
     def send_message(self):
         # Update the system prompt with the latest content
         self.load_system_prompt()
@@ -100,26 +111,20 @@ class ProductionTab(QWidget):
             return
 
         try:
-            response = self.client.chat.completions.create(
-                model="gpt-4",
+            completion = self.client.chat.completions.parse(
+                model="gpt-4o-2024-08-06",
                 messages=[
                     {"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": user_message}
                 ],
-                temperature=0.7,
-                max_tokens=1000
+                response_format=self.SongResponse,
             )
             
-            full_response = response.choices[0].message.content
-            self.chat_area.append("Assistant: " + full_response)
+            gpt_response = completion.choices[0].message.parsed
+            self.chat_area.append("Assistant: " + str(gpt_response))
             
-            # Parse the response
-            try:
-                gpt_response = eval(full_response)
-                self.update_production(str(gpt_response))
-                self.generate_song(gpt_response)
-            except Exception as e:
-                self.chat_area.append(f"Error: Invalid response from assistant. {str(e)}")
+            self.update_production(str(gpt_response))
+            self.generate_song(gpt_response.dict())
             
         except Exception as e:
             self.chat_area.append(f"Error sending message: {str(e)}")
