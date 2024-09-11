@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 import sys
 sys.path.append('.')  # Ajoute le dossier courant au chemin de recherche
-from aider import Aider
+from aider.aider import Aider
 
 class ConceptTab(QWidget):
     concept_updated = pyqtSignal(str)
