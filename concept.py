@@ -43,8 +43,8 @@ class ConceptTab(QWidget):
 
     def load_api_key(self):
         load_dotenv()
-        aider.api_key = os.getenv('AIDER_API_KEY')
-        if not aider.api_key:
+        api_key = os.getenv('AIDER_API_KEY')
+        if not api_key:
             self.chat_area.append("Erreur : Clé API Aider non trouvée dans le fichier .env. Veuillez ajouter AIDER_API_KEY à votre fichier .env.")
 
     def load_system_prompt(self):
@@ -61,15 +61,11 @@ class ConceptTab(QWidget):
         self.input_field.clear()
 
         try:
-            response = aider.Completion.create(
-                model="gpt-4",  # Assurez-vous que ce modèle est disponible pour votre compte
-                messages=[
-                    {"role": "system", "content": self.system_prompt},
-                    {"role": "user", "content": user_message}
-                ]
-            )
-            self.chat_area.append("Assistant : " + response.choices[0].message.content)
-            self.update_concept(response.choices[0].message.content)
+            # Ici, vous devrez implémenter une nouvelle logique pour envoyer le message et recevoir une réponse
+            # Par exemple, vous pourriez utiliser une autre bibliothèque ou API
+            response = "Réponse simulée de l'assistant"
+            self.chat_area.append("Assistant : " + response)
+            self.update_concept(response)
         except Exception as e:
             self.chat_area.append(f"Erreur : {str(e)}")
 
