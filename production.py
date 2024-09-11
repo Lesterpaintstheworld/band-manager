@@ -138,7 +138,7 @@ class ProductionTab(QWidget):
 
         try:
             stream = self.client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-4",
                 messages=[
                     {"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": f"Generate a JSON response for the following request: {user_message}"}
@@ -180,15 +180,15 @@ class ProductionTab(QWidget):
             self.result_area.clear()
             self.result_area.append("Génération de la chanson en cours...")
 
-            def update_progress(progress):
-                self.result_area.append(f"Progression : {progress}%")
-                QApplication.processEvents()  # Permet de mettre à jour l'interface utilisateur
-
-            complete_song_sequence = b""
-            for chunk in self.udio_wrapper.create_complete_song_stream(**gpt_response):
-                complete_song_sequence += chunk
-                progress = len(complete_song_sequence) / 1024  # Exemple de calcul de progression
-                update_progress(min(int(progress), 100))
+            complete_song_sequence = self.udio_wrapper.create_complete_song(
+                short_prompt=gpt_response['short_prompt'],
+                extend_prompts=gpt_response['extend_prompts'],
+                outro_prompt=gpt_response['outro_prompt'],
+                num_extensions=gpt_response['num_extensions'],
+                custom_lyrics_short=gpt_response['custom_lyrics_short'],
+                custom_lyrics_extend=gpt_response['custom_lyrics_extend'],
+                custom_lyrics_outro=gpt_response['custom_lyrics_outro']
+            )
 
             # Sauvegarder le fichier audio dans le dossier songs/
             import os
