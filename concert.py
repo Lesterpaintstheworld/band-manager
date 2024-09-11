@@ -3,6 +3,7 @@ from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QFont
 from openai import OpenAI
 import os
+import sys
 import json
 import random
 import math
