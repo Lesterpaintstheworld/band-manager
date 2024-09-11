@@ -115,6 +115,7 @@ class MainInterface(QWidget):
         self.song_management_tab.song_selected.connect(self.load_song)
         self.song_management_tab.song_deleted.connect(self.on_song_deleted)
         self.song_management_tab.song_saved.connect(self.on_song_saved)
+        self.song_management_tab.song_renamed.connect(self.on_song_renamed)
 
         layout.addWidget(self.tabs)
 
@@ -133,23 +134,26 @@ class MainInterface(QWidget):
     def load_song(self, song_title):
         song_folder = os.path.join('songs', song_title)
         if os.path.exists(song_folder):
-            # Load concept
-            with open(os.path.join(song_folder, 'concept.md'), 'r', encoding='utf-8') as f:
-                self.concept_tab.result_area.setPlainText(f.read())
+            try:
+                # Load concept
+                with open(os.path.join(song_folder, 'concept.md'), 'r', encoding='utf-8') as f:
+                    self.concept_tab.result_area.setPlainText(f.read())
 
-            # Load lyrics
-            with open(os.path.join(song_folder, 'lyrics.md'), 'r', encoding='utf-8') as f:
-                self.lyrics_tab.result_area.setPlainText(f.read())
+                # Load lyrics
+                with open(os.path.join(song_folder, 'lyrics.md'), 'r', encoding='utf-8') as f:
+                    self.lyrics_tab.result_area.setPlainText(f.read())
 
-            # Load composition
-            with open(os.path.join(song_folder, 'composition.md'), 'r', encoding='utf-8') as f:
-                self.composition_tab.result_area.setPlainText(f.read())
+                # Load composition
+                with open(os.path.join(song_folder, 'composition.md'), 'r', encoding='utf-8') as f:
+                    self.composition_tab.result_area.setPlainText(f.read())
 
-            # Load visual design
-            with open(os.path.join(song_folder, 'visual_design.md'), 'r', encoding='utf-8') as f:
-                self.visual_design_tab.result_area.setPlainText(f.read())
+                # Load visual design
+                with open(os.path.join(song_folder, 'visual_design.md'), 'r', encoding='utf-8') as f:
+                    self.visual_design_tab.result_area.setPlainText(f.read())
 
-            QMessageBox.information(self, "Load Successful", f"Song '{song_title}' has been loaded.")
+                QMessageBox.information(self, "Load Successful", f"Song '{song_title}' has been loaded.")
+            except Exception as e:
+                QMessageBox.warning(self, "Load Failed", f"An error occurred while loading the song: {str(e)}")
         else:
             QMessageBox.warning(self, "Load Failed", f"Song folder for '{song_title}' not found.")
 
@@ -174,4 +178,7 @@ class MainInterface(QWidget):
 
     def on_song_saved(self, song_title):
         QMessageBox.information(self, "Save Successful", f"Song '{song_title}' has been saved.")
+
+    def on_song_renamed(self, old_title, new_title):
+        QMessageBox.information(self, "Rename Successful", f"Song '{old_title}' has been renamed to '{new_title}'.")
 
