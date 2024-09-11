@@ -2,10 +2,8 @@ import PyInstaller.__main__
 import os
 import sys
 
-# Obtenir le chemin absolu du répertoire courant
 current_dir = os.path.abspath(os.path.dirname(__file__))
 
-# Définir les options pour PyInstaller
 options = [
     'main.py',
     '--name=SyntheticBandManager',
@@ -18,15 +16,18 @@ options = [
     '--add-binary', f'{current_dir}/style.css;.',
     '--add-data', f'{current_dir}/spinner.gif;.',
     '--icon', f'{current_dir}/icon.ico',
-    '--hidden-import=PyQt5',
+    '--hidden-import=PyQt5.QtCore',
+    '--hidden-import=PyQt5.QtGui',
+    '--hidden-import=PyQt5.QtWidgets',
     '--hidden-import=openai',
     '--hidden-import=dotenv',
     '--exclude-module=transformers',
     '--exclude-module=torch',
     '--exclude-module=tensorflow',
+    '--noupx',
+    '--strip',
 ]
 
-# Ajouter des options spécifiques à Windows si nécessaire
 if sys.platform.startswith('win'):
     options.extend([
         '--add-binary', f'{sys.prefix}\\Lib\\site-packages\\PyQt5\\Qt5\\bin\\Qt5Core.dll;PyQt5/Qt5/bin',
@@ -34,5 +35,4 @@ if sys.platform.startswith('win'):
         '--add-binary', f'{sys.prefix}\\Lib\\site-packages\\PyQt5\\Qt5\\bin\\Qt5Widgets.dll;PyQt5/Qt5/bin',
     ])
 
-# Exécuter PyInstaller
 PyInstaller.__main__.run(options)
