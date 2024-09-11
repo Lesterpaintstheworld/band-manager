@@ -84,9 +84,6 @@ class MainInterface(QWidget):
         self.lyrics_tab = LyricsTab()
         self.composition_tab = CompositionTab()
         self.production_tab = ProductionTab()
-        generate_song_button = QPushButton("Générer une chanson")
-        generate_song_button.clicked.connect(self.generate_song)
-        self.production_tab.layout().addWidget(generate_song_button)
         self.visual_design_tab = VisualDesignTab()
         self.concert_tab = ConcertTab()
         self.critique_tab = CritiqueTab()
@@ -179,24 +176,4 @@ class MainInterface(QWidget):
     def on_song_renamed(self, old_title, new_title):
         QMessageBox.information(self, "Rename Successful", f"Song '{old_title}' has been renamed to '{new_title}'.")
 
-    def generate_song(self):
-        try:
-            load_dotenv()
-            auth_token = os.getenv('UDIO_AUTH_TOKEN')
-            if not auth_token:
-                raise ValueError("UDIO_AUTH_TOKEN not found in .env file")
-
-            udio_wrapper = UdioWrapper(auth_token)
-            complete_song_sequence = udio_wrapper.create_complete_song(
-                short_prompt="On a full moon night",
-                extend_prompts=["the soft sound of the saxophone fills the air", "creating an atmosphere of mystery and romance"],
-                outro_prompt="Thus ends this melody, leaving an echo of emotions in the heart",
-                num_extensions=2,
-                custom_lyrics_short="Short song lyrics here",
-                custom_lyrics_extend=["Lyrics for first extension", "Lyrics for second extension"],
-                custom_lyrics_outro="Outro lyrics here"
-            )
-            self.production_tab.result_area.setPlainText(f"Complete song sequence generated and downloaded: {complete_song_sequence}")
-        except Exception as e:
-            QMessageBox.critical(self, "Erreur", f"Une erreur s'est produite lors de la génération de la chanson : {str(e)}")
 

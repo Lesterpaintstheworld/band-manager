@@ -37,9 +37,6 @@ class ProductionTab(QWidget):
         self.result_area.setReadOnly(True)
         layout.addWidget(self.result_area)
 
-        self.generate_song_button = QPushButton("Générer une chanson")
-        self.generate_song_button.clicked.connect(self.generate_song)
-        layout.addWidget(self.generate_song_button)
 
     def load_api_key(self):
         load_dotenv()
@@ -122,6 +119,7 @@ class ProductionTab(QWidget):
                     QApplication.processEvents()
             
             self.update_production(full_response)
+            self.generate_song(full_response)
         except Exception as e:
             self.chat_area.append(f"Error sending message: {str(e)}")
 
@@ -131,21 +129,21 @@ class ProductionTab(QWidget):
         self.result_area.setPlainText(updated_content)
         self.production_updated.emit(updated_content)
 
-    def generate_song(self):
+    def generate_song(self, gpt_response):
         if not self.udio_wrapper:
             QMessageBox.critical(self, "Erreur", "Le token d'authentification Udio n'est pas configuré correctement.")
             return
 
         try:
-            # Utiliser le contenu actuel des zones de texte pour générer la chanson
+            # Utiliser le contenu actuel des zones de texte et la réponse GPT pour générer la chanson
             concept = self.parent().concept_tab.result_area.toPlainText()
             lyrics = self.parent().lyrics_tab.result_area.toPlainText()
             composition = self.parent().composition_tab.result_area.toPlainText()
 
-            # Créer les prompts à partir du contenu
-            short_prompt = concept[:100]  # Utiliser les 100 premiers caractères du concept comme prompt court
-            extend_prompts = [lyrics[:100], composition[:100]]  # Utiliser le début des paroles et de la composition comme prompts d'extension
-            outro_prompt = "Conclusion de la chanson basée sur le concept et la composition"
+            # Créer les prompts à partir du contenu et de la réponse GPT
+            short_prompt = gpt_response[:100]  # Utiliser les 100 premiers caractères de la réponse GPT comme prompt court
+            extend_prompts = [concept[:100], composition[:100]]  # Utiliser le début du concept et de la composition comme prompts d'extension
+            outro_prompt = gpt_response[-100:]  # Utiliser les 100 derniers caractères de la réponse GPT comme prompt d'outro
 
             # Diviser les paroles en sections pour les différentes parties de la chanson
             lyrics_lines = lyrics.split('\n')
