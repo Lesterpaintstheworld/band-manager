@@ -137,10 +137,12 @@ Present the results in a clear, formatted manner."""
 
     def update_fan_display(self):
         if self.fans != self.target_fans:
+            # Add random fluctuation
+            fluctuation = random.randint(-5, 5)
             if self.fans < self.target_fans:
-                self.fans += 1
+                self.fans = min(self.target_fans, self.fans + 1 + fluctuation)
             else:
-                self.fans -= 1
+                self.fans = max(self.target_fans, self.fans - 1 + fluctuation)
             
             self.fans_label.setText(f"{self.fans:,}")  # Format with commas for readability
             
