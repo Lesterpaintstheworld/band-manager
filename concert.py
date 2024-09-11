@@ -111,7 +111,7 @@ Provide a rating out of 10 and a brief explanation for each aspect. Then, give a
 
         try:
             self.result_area.clear()
-            self.result_area.append("Evaluating concert...")
+            self.result_area.append("Concert is taking place...")
             
             completion = self.client.chat.completions.create(
                 model="gpt-4o-mini",
@@ -124,20 +124,8 @@ Provide a rating out of 10 and a brief explanation for each aspect. Then, give a
             
             result = json.loads(completion.choices[0].message.content)
             
-            self.result_area.append(f"Concept Rating: {result['concept_rating']}/10")
-            self.result_area.append(f"Explanation: {result['concept_explanation']}\n")
-            
-            self.result_area.append(f"Lyrics Rating: {result['lyrics_rating']}/10")
-            self.result_area.append(f"Explanation: {result['lyrics_explanation']}\n")
-            
-            self.result_area.append(f"Composition Rating: {result['composition_rating']}/10")
-            self.result_area.append(f"Explanation: {result['composition_explanation']}\n")
-            
-            self.result_area.append(f"Visual Design Rating: {result['visual_design_rating']}/10")
-            self.result_area.append(f"Explanation: {result['visual_design_explanation']}\n")
-            
-            self.result_area.append(f"Overall Rating: {result['overall_rating']}/10")
-            self.result_area.append(f"Explanation: {result['overall_explanation']}")
+            # Store the result for later use, but don't display it yet
+            self.concert_result = result
 
             self.update_fans(result['overall_rating'])
 
@@ -168,8 +156,24 @@ Provide a rating out of 10 and a brief explanation for each aspect. Then, give a
         self.update_acceleration = 0.95  # Factor to accelerate updates
         self.timer.start(self.update_speed)
 
+        # Clear previous content and display concert results
+        self.result_area.clear()
+        self.result_area.append(f"Concept Rating: {self.concert_result['concept_rating']}/10")
+        self.result_area.append(f"Explanation: {self.concert_result['concept_explanation']}\n")
+        
+        self.result_area.append(f"Lyrics Rating: {self.concert_result['lyrics_rating']}/10")
+        self.result_area.append(f"Explanation: {self.concert_result['lyrics_explanation']}\n")
+        
+        self.result_area.append(f"Composition Rating: {self.concert_result['composition_rating']}/10")
+        self.result_area.append(f"Explanation: {self.concert_result['composition_explanation']}\n")
+        
+        self.result_area.append(f"Visual Design Rating: {self.concert_result['visual_design_rating']}/10")
+        self.result_area.append(f"Explanation: {self.concert_result['visual_design_explanation']}\n")
+        
+        self.result_area.append(f"Overall Rating: {self.concert_result['overall_rating']}/10")
+        self.result_area.append(f"Explanation: {self.concert_result['overall_explanation']}")
+
         # Update the result area with fan change information
-        current_text = self.result_area.toPlainText()
         self.result_area.append(f"\n\nFan count change: {change:+d}\nNew fan count: {self.target_fans}")
 
     def update_fan_display(self):
