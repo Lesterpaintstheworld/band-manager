@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QLabel, QPushButton
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QFont
 from openai import OpenAI
 import os
 import json
@@ -10,6 +11,9 @@ class ConcertTab(QWidget):
         self.fans = 1000  # Initial number of fans
         self.initUI()
         self.load_api_key()
+        self.update_speed = 100  # Initial update speed in milliseconds
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_fan_display)
 
     def initUI(self):
         layout = QVBoxLayout()
@@ -19,8 +23,11 @@ class ConcertTab(QWidget):
         self.result_area.setReadOnly(True)
         layout.addWidget(self.result_area)
 
-        self.fans_label = QLabel(f"Current number of fans: {self.fans}")
+        self.fans_label = QLabel(str(self.fans))
         self.fans_label.setAlignment(Qt.AlignCenter)
+        font = QFont()
+        font.setPointSize(48)  # Make the font size very large
+        self.fans_label.setFont(font)
         layout.addWidget(self.fans_label)
 
         self.start_concert_button = QPushButton("Start Concert")
@@ -101,16 +108,31 @@ Present the results in a clear, formatted manner."""
         else:
             change = int(self.fans * 0.2)
 
-        self.fans += change
-        self.fans = max(0, self.fans)  # Ensure fan count doesn't go negative
-        self.fans_label.setText(f"Current number of fans: {self.fans}")
+        self.target_fans = max(0, self.fans + change)  # Ensure fan count doesn't go negative
+        self.fan_change = change
+        self.update_speed = 100  # Reset update speed
+        self.timer.start(self.update_speed)
 
         # Update the result area with fan change information
         current_text = self.result_area.toPlainText()
-        self.result_area.setText(f"{current_text}\n\nFan count change: {change:+d}\nNew fan count: {self.fans}")
+        self.result_area.setText(f"{current_text}\n\nFan count change: {change:+d}\nNew fan count: {self.target_fans}")
 
-        # Save the updated fan count
-        self.save_fan_count()
+    def update_fan_display(self):
+        if self.fans != self.target_fans:
+            step = max(1, abs(self.fan_change) // 100)  # Adjust step size based on total change
+            if self.fans < self.target_fans:
+                self.fans = min(self.fans + step, self.target_fans)
+            else:
+                self.fans = max(self.fans - step, self.target_fans)
+            
+            self.fans_label.setText(str(self.fans))
+            
+            # Gradually increase update speed
+            self.update_speed = max(10, self.update_speed - 1)
+            self.timer.setInterval(self.update_speed)
+        else:
+            self.timer.stop()
+            self.save_fan_count()
 
     def save_fan_count(self):
         data = {'fans': self.fans}
