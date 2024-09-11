@@ -4,10 +4,12 @@ import os
 from PyQt5.QtWidgets import QApplication
 from welcome_screen import WelcomeScreen
 from main_interface import MainInterface
+from style import set_dark_theme
 
 class SyntheticBandManager:
     def __init__(self):
         self.app = QApplication(sys.argv)
+        set_dark_theme(self.app)
         self.welcome_screen = None
         self.main_interface = None
 

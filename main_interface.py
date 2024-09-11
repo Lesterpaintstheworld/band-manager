@@ -20,6 +20,10 @@ class MainInterface(QWidget):
         self.setLayout(layout)
 
         tabs = QTabWidget()
+        tabs.setTabPosition(QTabWidget.North)
+        tabs.setMovable(True)
+        tabs.setDocumentMode(True)
+
         tabs.addTab(ConceptTab(), "Concept")
         tabs.addTab(LyricsTab(), "Lyrics")
         tabs.addTab(CompositionTab(), "Composition")
