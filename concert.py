@@ -226,9 +226,6 @@ Composition:
 Give detailed feedback on the performance, audience reaction, and overall concert experience."""
 
         try:
-            self.chat_area.clear()
-            self.chat_area.append("Getting concert feedback...")
-            
             completion = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
@@ -238,8 +235,7 @@ Give detailed feedback on the performance, audience reaction, and overall concer
             )
             
             feedback = completion.choices[0].message.content
-            self.chat_area.append("Concert Feedback:")
-            self.chat_area.append(feedback)
+            return feedback
 
         except Exception as e:
-            self.chat_area.append(f"Error getting concert feedback: {str(e)}")
+            return f"Error getting concert feedback: {str(e)}"
