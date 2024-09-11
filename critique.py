@@ -57,7 +57,7 @@ class CritiqueTab(QWidget):
             self.chat_area.append(f"API key found: {masked_key}")
             try:
                 self.client = OpenAI(api_key=self.api_key)
-                self.client.models.list()
+                # Removed the models.list() call as it's not necessary and might cause issues
                 self.chat_area.append("OpenAI client initialized successfully.")
             except Exception as e:
                 self.chat_area.append(f"Error initializing OpenAI client: {str(e)}")
@@ -77,9 +77,17 @@ class CritiqueTab(QWidget):
         self.chat_area.append(f"You: {user_message}")
         self.input_field.clear()
 
-        if not self.api_key or self.client is None:
-            self.chat_area.append("Error: OpenAI client not initialized. Please check your API key.")
+        if not self.api_key:
+            self.chat_area.append("Error: OpenAI API key not found. Please check your .env file.")
             return
+
+        if self.client is None:
+            try:
+                self.client = OpenAI(api_key=self.api_key)
+                self.chat_area.append("OpenAI client reinitialized successfully.")
+            except Exception as e:
+                self.chat_area.append(f"Error reinitializing OpenAI client: {str(e)}")
+                return
 
         try:
             self.chat_area.append("Assistant: Generating critique...")
