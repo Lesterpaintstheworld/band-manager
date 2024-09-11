@@ -113,14 +113,13 @@ class ProductionTab(QWidget):
             full_response = response.choices[0].message.content
             self.chat_area.append("Assistant: " + full_response)
             
-            # Parse the JSON response
-            import json
+            # Parse the response
             try:
-                json_response = json.loads(full_response)
-                self.update_production(json.dumps(json_response, indent=2))
-                self.generate_song(json_response)
-            except json.JSONDecodeError:
-                self.chat_area.append("Error: Invalid JSON response from assistant.")
+                gpt_response = eval(full_response)
+                self.update_production(str(gpt_response))
+                self.generate_song(gpt_response)
+            except Exception as e:
+                self.chat_area.append(f"Error: Invalid response from assistant. {str(e)}")
             
         except Exception as e:
             self.chat_area.append(f"Error sending message: {str(e)}")
@@ -131,37 +130,13 @@ class ProductionTab(QWidget):
         self.result_area.setPlainText(updated_content)
         self.production_updated.emit(updated_content)
 
-    def generate_song(self, json_response):
+    def generate_song(self, gpt_response):
         if not self.udio_wrapper:
             QMessageBox.critical(self, "Erreur", "Le token d'authentification Udio n'est pas configuré correctement.")
             return
 
         try:
-            # Utiliser le contenu du JSON pour générer la chanson
-            concept = json_response['concept']
-            lyrics = json_response['lyrics']
-            composition = json_response['composition']
-
-            # Créer les prompts à partir du contenu JSON
-            short_prompt = concept
-            extend_prompts = [composition, json_response['production_advice']['arrangement'][:100]]
-            outro_prompt = json_response['production_advice']['mastering'][:100]
-
-            # Diviser les paroles en sections pour les différentes parties de la chanson
-            lyrics_lines = lyrics.split('\n')
-            custom_lyrics_short = '\n'.join(lyrics_lines[:5])  # 5 premières lignes pour la partie courte
-            custom_lyrics_extend = ['\n'.join(lyrics_lines[5:15]), '\n'.join(lyrics_lines[15:25])]  # 10 lignes pour chaque extension
-            custom_lyrics_outro = '\n'.join(lyrics_lines[25:])  # Le reste pour l'outro
-
-            complete_song_sequence = self.udio_wrapper.create_complete_song(
-                short_prompt=short_prompt,
-                extend_prompts=extend_prompts,
-                outro_prompt=outro_prompt,
-                num_extensions=2,
-                custom_lyrics_short=custom_lyrics_short,
-                custom_lyrics_extend=custom_lyrics_extend,
-                custom_lyrics_outro=custom_lyrics_outro
-            )
+            complete_song_sequence = self.udio_wrapper.create_complete_song(**gpt_response)
             self.result_area.setPlainText(f"Séquence de chanson complète générée et téléchargée : {complete_song_sequence}")
             QMessageBox.information(self, "Succès", "La chanson a été générée avec succès.")
         except Exception as e:
