@@ -115,10 +115,11 @@ class LyricsTab(QWidget):
                 return
 
         try:
-            # Update the system prompt with the latest concept content
+            # Update the system prompt with the latest content from all relevant files
             lyrics_prompt = self.read_file(resource_path('prompts/lyrics.md'))
             concept_content = self.read_file(resource_path('concept.md'))
-            updated_system_prompt = f"{lyrics_prompt}\n\nContext from concept.md:\n{concept_content}"
+            composition_content = self.read_file(resource_path('composition.md'))
+            updated_system_prompt = f"{lyrics_prompt}\n\nContext from concept.md:\n{concept_content}\n\nContext from composition.md:\n{composition_content}"
 
             self.stream_buffer = ""
             self.chat_area.append("Assistant: ")
