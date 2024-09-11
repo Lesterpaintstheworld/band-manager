@@ -171,8 +171,19 @@ class ProductionTab(QWidget):
             return
 
         try:
-            complete_song_sequence = self.udio_wrapper.create_complete_song(**gpt_response)
-            
+            self.result_area.clear()
+            self.result_area.append("Génération de la chanson en cours...")
+
+            def update_progress(progress):
+                self.result_area.append(f"Progression : {progress}%")
+                QApplication.processEvents()  # Permet de mettre à jour l'interface utilisateur
+
+            complete_song_sequence = b""
+            for chunk in self.udio_wrapper.create_complete_song_stream(**gpt_response):
+                complete_song_sequence += chunk
+                progress = len(complete_song_sequence) / 1024  # Exemple de calcul de progression
+                update_progress(min(int(progress), 100))
+
             # Sauvegarder le fichier audio dans le dossier songs/
             import os
             song_filename = f"song_{int(time.time())}.mp3"
@@ -181,6 +192,7 @@ class ProductionTab(QWidget):
             with open(song_path, "wb") as f:
                 f.write(complete_song_sequence)
             
+            self.result_area.clear()
             self.result_area.setPlainText(f"Chanson générée et sauvegardée : {song_path}")
             
             # Jouer la chanson dans le lecteur audio
