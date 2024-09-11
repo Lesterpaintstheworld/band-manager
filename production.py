@@ -7,7 +7,7 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 from main import resource_path
-from udio_wrapper.wrapper import UdioWrapper
+from udio_wrapper import UdioWrapper
 from pydantic import BaseModel
 from typing import List
 
