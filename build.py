@@ -2,6 +2,7 @@ import PyInstaller.__main__
 import os
 import sys
 import site
+import PyQt5
 
 # Ajouter le répertoire courant au chemin de recherche
 current_dir = os.path.abspath(os.path.dirname(__file__))
@@ -9,6 +10,9 @@ sys.path.insert(0, current_dir)
 
 # Obtenir le chemin des packages site-packages
 site_packages = site.getsitepackages()[0]
+
+# Obtenir le chemin d'installation de PyQt5
+pyqt5_path = os.path.dirname(PyQt5.__file__)
 
 options = [
     'main.py',
@@ -37,10 +41,10 @@ options = [
 
 if sys.platform.startswith('win'):
     options.extend([
-        '--add-binary', f'{site_packages}\\PyQt5\\Qt5\\bin\\Qt5Core.dll;PyQt5/Qt5/bin',
-        '--add-binary', f'{site_packages}\\PyQt5\\Qt5\\bin\\Qt5Gui.dll;PyQt5/Qt5/bin',
-        '--add-binary', f'{site_packages}\\PyQt5\\Qt5\\bin\\Qt5Widgets.dll;PyQt5/Qt5/bin',
-        '--add-binary', f'{site_packages}\\PyQt5\\Qt5\\plugins\\platforms\\qwindows.dll;PyQt5/Qt5/plugins/platforms',
+        '--add-binary', f'{pyqt5_path}\\Qt5\\bin\\Qt5Core.dll;PyQt5/Qt5/bin',
+        '--add-binary', f'{pyqt5_path}\\Qt5\\bin\\Qt5Gui.dll;PyQt5/Qt5/bin',
+        '--add-binary', f'{pyqt5_path}\\Qt5\\bin\\Qt5Widgets.dll;PyQt5/Qt5/bin',
+        '--add-binary', f'{pyqt5_path}\\Qt5\\plugins\\platforms\\qwindows.dll;PyQt5/Qt5/plugins/platforms',
     ])
 
 PyInstaller.__main__.run(options)
