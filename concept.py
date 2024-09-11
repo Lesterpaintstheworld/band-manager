@@ -52,7 +52,7 @@ class ConceptTab(QWidget):
 
         try:
             response = self.client.chat.completions.create(
-                model="gpt-4",  # Assurez-vous que ce modèle est disponible pour votre compte
+                model="gpt-4o-mini",  # Assurez-vous que ce modèle est disponible pour votre compte
                 messages=[
                     {"role": "system", "content": "Vous êtes un assistant créatif pour aider à développer des concepts de chansons."},
                     {"role": "user", "content": user_message}
