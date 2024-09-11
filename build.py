@@ -20,6 +20,9 @@ options = [
     '--hidden-import=PyQt5',
     '--hidden-import=openai',
     '--hidden-import=dotenv',
+    '--exclude-module=transformers',
+    '--exclude-module=torch',
+    '--exclude-module=tensorflow',
 ]
 
 # Ajouter des options spécifiques à Windows si nécessaire
