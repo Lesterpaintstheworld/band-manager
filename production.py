@@ -1,9 +1,10 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QPushButton, QHBoxLayout, QLineEdit, QApplication
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QPushButton, QHBoxLayout, QLineEdit, QApplication, QMessageBox
 from PyQt5.QtCore import pyqtSignal
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
 from main import resource_path
+from udio_wrapper import UdioWrapper
 
 class ProductionTab(QWidget):
     production_updated = pyqtSignal(str)
@@ -13,6 +14,7 @@ class ProductionTab(QWidget):
         self.initUI()
         self.load_api_key()
         self.load_system_prompt()
+        self.load_udio_token()
 
     def initUI(self):
         layout = QVBoxLayout()
@@ -35,6 +37,10 @@ class ProductionTab(QWidget):
         self.result_area.setReadOnly(True)
         layout.addWidget(self.result_area)
 
+        self.generate_song_button = QPushButton("Générer une chanson")
+        self.generate_song_button.clicked.connect(self.generate_song)
+        layout.addWidget(self.generate_song_button)
+
     def load_api_key(self):
         load_dotenv()
         self.api_key = os.getenv('OPENAI_API_KEY')
@@ -49,6 +55,20 @@ class ProductionTab(QWidget):
                 print(f"Error initializing OpenAI client: {str(e)}")
                 print("Please check your API key in the .env file")
                 self.client = None
+
+    def load_udio_token(self):
+        load_dotenv()
+        self.udio_token = os.getenv('UDIO_AUTH_TOKEN')
+        if not self.udio_token:
+            print("Error: Udio auth token not found in .env file. Please add UDIO_AUTH_TOKEN to your .env file.")
+            self.udio_wrapper = None
+        else:
+            try:
+                self.udio_wrapper = UdioWrapper(self.udio_token)
+            except Exception as e:
+                print(f"Error initializing Udio wrapper: {str(e)}")
+                print("Please check your Udio auth token in the .env file")
+                self.udio_wrapper = None
 
     def load_system_prompt(self):
         try:
@@ -110,3 +130,24 @@ class ProductionTab(QWidget):
         updated_content = current_content + "\n\n" + new_content
         self.result_area.setPlainText(updated_content)
         self.production_updated.emit(updated_content)
+
+    def generate_song(self):
+        if not self.udio_wrapper:
+            QMessageBox.critical(self, "Erreur", "Le token d'authentification Udio n'est pas configuré correctement.")
+            return
+
+        try:
+            # You might want to get these values from user input or other parts of your application
+            complete_song_sequence = self.udio_wrapper.create_complete_song(
+                short_prompt="On a full moon night",
+                extend_prompts=["the soft sound of the saxophone fills the air", "creating an atmosphere of mystery and romance"],
+                outro_prompt="Thus ends this melody, leaving an echo of emotions in the heart",
+                num_extensions=2,
+                custom_lyrics_short="Short song lyrics here",
+                custom_lyrics_extend=["Lyrics for first extension", "Lyrics for second extension"],
+                custom_lyrics_outro="Outro lyrics here"
+            )
+            self.result_area.setPlainText(f"Complete song sequence generated and downloaded: {complete_song_sequence}")
+            QMessageBox.information(self, "Succès", "La chanson a été générée avec succès.")
+        except Exception as e:
+            QMessageBox.critical(self, "Erreur", f"Une erreur s'est produite lors de la génération de la chanson : {str(e)}")
