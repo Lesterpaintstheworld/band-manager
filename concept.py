@@ -1,6 +1,5 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QLabel, QApplication
 from PyQt5.QtCore import Qt, pyqtSignal, QTimer
-import aider
 from dotenv import load_dotenv
 import os
 
