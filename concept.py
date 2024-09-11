@@ -50,8 +50,13 @@ class ConceptTab(QWidget):
         self.api_key = os.getenv('OPENAI_API_KEY')
         if not self.api_key:
             self.chat_area.append("Erreur : Clé API OpenAI non trouvée dans le fichier .env. Veuillez ajouter OPENAI_API_KEY à votre fichier .env.")
+            self.client = None
         else:
-            self.client = OpenAI(api_key=self.api_key)
+            try:
+                self.client = OpenAI(api_key=self.api_key)
+            except Exception as e:
+                self.chat_area.append(f"Erreur lors de l'initialisation du client OpenAI : {str(e)}")
+                self.client = None
 
     def load_system_prompt(self):
         try:
@@ -66,6 +71,10 @@ class ConceptTab(QWidget):
         self.chat_area.append(f"Vous : {user_message}")
         self.input_field.clear()
 
+        if self.client is None:
+            self.chat_area.append("Erreur : Le client OpenAI n'est pas initialisé. Veuillez vérifier votre clé API.")
+            return
+
         try:
             response = self.client.chat.completions.create(
                 model="gpt-3.5-turbo",
@@ -78,7 +87,8 @@ class ConceptTab(QWidget):
             self.chat_area.append("Assistant : " + assistant_message)
             self.update_concept(assistant_message)
         except Exception as e:
-            self.chat_area.append(f"Erreur : {str(e)}")
+            self.chat_area.append(f"Erreur lors de l'envoi du message : {str(e)}")
+            self.chat_area.append("Veuillez vérifier votre connexion internet et la validité de votre clé API.")
 
     def update_concept(self, new_content):
         current_concept = self.result_area.toPlainText()
