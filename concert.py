@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLabel, QPushButton
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLabel, QPushButton, QApplication
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QFont
 from openai import OpenAI
@@ -96,17 +96,23 @@ Audience Size: {audience_size}
             self.chat_area.clear()
             self.chat_area.append("Generating concert story...")
             
-            completion = self.client.chat.completions.create(
+            stream = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": "You are a creative writer narrating concert experiences."},
                     {"role": "user", "content": prompt}
-                ]
+                ],
+                stream=True
             )
             
-            concert_story = completion.choices[0].message.content
             self.chat_area.clear()
-            self.chat_area.append(concert_story)
+            concert_story = ""
+            for chunk in stream:
+                if chunk.choices[0].delta.content is not None:
+                    content = chunk.choices[0].delta.content
+                    concert_story += content
+                    self.chat_area.insertPlainText(content)
+                    QApplication.processEvents()
 
             self.update_fans(audience_size)
 
