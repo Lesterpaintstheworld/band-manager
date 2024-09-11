@@ -2,6 +2,9 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineE
 from PyQt5.QtCore import Qt, pyqtSignal, QTimer
 from dotenv import load_dotenv
 import os
+import sys
+sys.path.append('.')  # Ajoute le dossier courant au chemin de recherche
+from aider import Aider
 
 class ConceptTab(QWidget):
     concept_updated = pyqtSignal(str)
@@ -43,9 +46,11 @@ class ConceptTab(QWidget):
 
     def load_api_key(self):
         load_dotenv()
-        api_key = os.getenv('AIDER_API_KEY')
-        if not api_key:
+        self.api_key = os.getenv('AIDER_API_KEY')
+        if not self.api_key:
             self.chat_area.append("Erreur : Clé API Aider non trouvée dans le fichier .env. Veuillez ajouter AIDER_API_KEY à votre fichier .env.")
+        else:
+            self.aider = Aider(api_key=self.api_key)
 
     def load_system_prompt(self):
         try:
@@ -61,9 +66,7 @@ class ConceptTab(QWidget):
         self.input_field.clear()
 
         try:
-            # Ici, vous devrez implémenter une nouvelle logique pour envoyer le message et recevoir une réponse
-            # Par exemple, vous pourriez utiliser une autre bibliothèque ou API
-            response = "Réponse simulée de l'assistant"
+            response = self.aider.send_message(user_message)
             self.chat_area.append("Assistant : " + response)
             self.update_concept(response)
         except Exception as e:
