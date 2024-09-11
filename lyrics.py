@@ -1,5 +1,6 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QApplication
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QApplication, QMenuBar, QAction, QFileDialog
 from PyQt5.QtCore import Qt, pyqtSignal, QTimer, QObject, pyqtSlot
+import json
 from dotenv import load_dotenv
 import os
 import sys
