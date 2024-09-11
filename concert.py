@@ -19,6 +19,7 @@ class ConcertTab(QWidget):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_fan_display)
         self.load_system_prompt()
+        self.load_other_prompts()
 
     def load_fan_count(self):
         try:
@@ -184,3 +185,16 @@ Audience Size: {audience_size}
             print(error_message)
             QMessageBox.critical(self, "Erreur de chargement", error_message)
             sys.exit(1)
+
+    def load_other_prompts(self):
+        prompt_files = ['concept.md', 'lyrics.md', 'composition.md', 'visual_design.md', 'critique.md']
+        for file in prompt_files:
+            attr_name = file.split('.')[0] + '_prompt'
+            full_path = self.get_resource_path(os.path.join('prompts', file))
+            try:
+                with open(full_path, 'r', encoding='utf-8') as f:
+                    setattr(self, attr_name, f.read())
+            except FileNotFoundError:
+                error_message = f"Erreur : Le fichier {full_path} n'a pas été trouvé."
+                print(error_message)
+                setattr(self, attr_name, "")
