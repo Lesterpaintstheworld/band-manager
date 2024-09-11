@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QLabel, QApplication
 from PyQt5.QtCore import Qt, pyqtSignal, QTimer
-from openai import OpenAI
+import openai
 from dotenv import load_dotenv
 import os
 
@@ -48,8 +48,8 @@ class ConceptTab(QWidget):
 
     def load_api_key(self):
         load_dotenv()
-        self.client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-        if not self.client.api_key:
+        openai.api_key = os.getenv('OPENAI_API_KEY')
+        if not openai.api_key:
             self.chat_area.append("Erreur : Clé API OpenAI non trouvée dans le fichier .env. Veuillez ajouter OPENAI_API_KEY à votre fichier .env.")
 
     def send_message(self):
@@ -58,7 +58,7 @@ class ConceptTab(QWidget):
         self.input_field.clear()
 
         try:
-            self.current_stream = self.client.chat.completions.create(
+            self.current_stream = openai.ChatCompletion.create(
                 model="gpt-4",  # Assurez-vous que ce modèle est disponible pour votre compte
                 messages=[
                     {"role": "system", "content": "Vous êtes un assistant créatif pour aider à développer des concepts de chansons."},
@@ -75,10 +75,12 @@ class ConceptTab(QWidget):
         if self.current_stream:
             try:
                 for chunk in self.current_stream:
-                    if chunk.choices[0].delta.content is not None:
-                        self.stream_buffer += chunk.choices[0].delta.content
-                        self.chat_area.append(chunk.choices[0].delta.content)
-                        QApplication.processEvents()  # Permet à l'interface de se mettre à jour
+                    if 'choices' in chunk and len(chunk['choices']) > 0:
+                        if 'delta' in chunk['choices'][0] and 'content' in chunk['choices'][0]['delta']:
+                            content = chunk['choices'][0]['delta']['content']
+                            self.stream_buffer += content
+                            self.chat_area.append(content)
+                            QApplication.processEvents()  # Permet à l'interface de se mettre à jour
 
                 # Fin du stream
                 self.current_stream = None
