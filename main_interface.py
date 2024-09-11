@@ -55,20 +55,10 @@ class MainInterface(QWidget):
         save_action.triggered.connect(self.save_song)
         song_menu.addAction(save_action)
 
-        layout = QVBoxLayout()
-        main_layout.addLayout(layout)
-
-    def reset_chats(self):
-        self.concept_tab.chat_area.clear()
-        self.lyrics_tab.chat_area.clear()
-        self.composition_tab.chat_area.clear()
-        self.production_tab.chat_area.clear()
-        self.visual_design_tab.chat_area.clear()
-
         # Ajouter le titre du jeu
         title_label = QLabel("Synthetic Band Manager")
         title_label.setObjectName("game-title")
-        layout.addWidget(title_label, alignment=Qt.AlignCenter)
+        main_layout.addWidget(title_label, alignment=Qt.AlignCenter)
 
         # Créer un layout horizontal pour le titre et le bouton de fermeture
         top_layout = QHBoxLayout()
@@ -84,12 +74,12 @@ class MainInterface(QWidget):
         close_button.clicked.connect(self.close)
         top_layout.addWidget(close_button, alignment=Qt.AlignRight)
         
-        layout.addLayout(top_layout)
+        main_layout.addLayout(top_layout)
 
         # Ajouter la barre de menu
         menubar = QMenuBar()
         menubar.setObjectName("game-menu")
-        layout.addWidget(menubar)
+        main_layout.addWidget(menubar)
 
         # Créer le menu du groupe
         band_menu = menubar.addMenu(self.get_band_name())
@@ -124,7 +114,14 @@ class MainInterface(QWidget):
         self.song_management_tab.song_saved.connect(self.on_song_saved)
         self.song_management_tab.song_renamed.connect(self.on_song_renamed)
 
-        layout.addWidget(self.tabs)
+        main_layout.addWidget(self.tabs)
+
+    def reset_chats(self):
+        self.concept_tab.chat_area.clear()
+        self.lyrics_tab.chat_area.clear()
+        self.composition_tab.chat_area.clear()
+        self.production_tab.chat_area.clear()
+        self.visual_design_tab.chat_area.clear()
 
     def get_band_name(self):
         import json
