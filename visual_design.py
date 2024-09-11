@@ -1,10 +1,11 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QLabel, QApplication
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QLabel, QApplication, QScrollArea
 from PyQt5.QtCore import Qt, pyqtSignal, QThread, pyqtSignal as Signal
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 from dotenv import load_dotenv
 import os
 import sys
+import uuid
 sys.path.append('.')
 from openai import OpenAI
 import io
@@ -82,9 +83,17 @@ class VisualDesignTab(QWidget):
         self.result_area.setReadOnly(True)
         visual_design_layout.addWidget(self.result_area)
 
-        self.image_label = QLabel()
-        self.image_label.setAlignment(Qt.AlignCenter)
-        visual_design_layout.addWidget(self.image_label)
+        # Créer un QScrollArea pour les images
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+
+        self.image_container = QWidget()
+        self.image_layout = QVBoxLayout(self.image_container)
+        scroll_area.setWidget(self.image_container)
+
+        visual_design_layout.addWidget(scroll_area)
 
         layout.addLayout(visual_design_layout)
 
@@ -191,6 +200,28 @@ class VisualDesignTab(QWidget):
             data = reply.readAll()
             pixmap = QPixmap()
             pixmap.loadFromData(data)
-            self.image_label.setPixmap(pixmap.scaled(512, 512, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            
+            # Créer un nouveau QLabel pour l'image
+            image_label = QLabel()
+            image_label.setPixmap(pixmap.scaled(512, 512, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            image_label.setAlignment(Qt.AlignCenter)
+            
+            # Ajouter le nouveau QLabel au layout des images
+            self.image_layout.addWidget(image_label)
+            
+            # Sauvegarder l'image
+            self.save_image(data)
         else:
             self.chat_area.append(f"Error downloading image: {reply.errorString()}")
+
+    def save_image(self, image_data):
+        if not os.path.exists('images'):
+            os.makedirs('images')
+        
+        image_name = f"visual_design_{uuid.uuid4()}.png"
+        image_path = os.path.join('images', image_name)
+        
+        with open(image_path, 'wb') as f:
+            f.write(image_data)
+        
+        self.chat_area.append(f"Image saved: {image_path}")
