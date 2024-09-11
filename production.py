@@ -100,26 +100,28 @@ class ProductionTab(QWidget):
             return
 
         try:
-            stream = self.client.chat.completions.create(
-                model="gpt-4o-mini",
+            response = self.client.chat.completions.create(
+                model="gpt-4",
                 messages=[
                     {"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": user_message}
                 ],
-                stream=True
+                temperature=0.7,
+                max_tokens=1000
             )
             
-            self.chat_area.append("Assistant: ")
-            full_response = ""
-            for chunk in stream:
-                if chunk.choices[0].delta.content is not None:
-                    content = chunk.choices[0].delta.content
-                    full_response += content
-                    self.chat_area.insertPlainText(content)
-                    QApplication.processEvents()
+            full_response = response.choices[0].message.content
+            self.chat_area.append("Assistant: " + full_response)
             
-            self.update_production(full_response)
-            self.generate_song(full_response)
+            # Parse the JSON response
+            import json
+            try:
+                json_response = json.loads(full_response)
+                self.update_production(json.dumps(json_response, indent=2))
+                self.generate_song(json_response)
+            except json.JSONDecodeError:
+                self.chat_area.append("Error: Invalid JSON response from assistant.")
+            
         except Exception as e:
             self.chat_area.append(f"Error sending message: {str(e)}")
 
@@ -129,21 +131,21 @@ class ProductionTab(QWidget):
         self.result_area.setPlainText(updated_content)
         self.production_updated.emit(updated_content)
 
-    def generate_song(self, gpt_response):
+    def generate_song(self, json_response):
         if not self.udio_wrapper:
             QMessageBox.critical(self, "Erreur", "Le token d'authentification Udio n'est pas configuré correctement.")
             return
 
         try:
-            # Utiliser le contenu actuel des zones de texte et la réponse GPT pour générer la chanson
-            concept = self.parent().concept_tab.result_area.toPlainText()
-            lyrics = self.parent().lyrics_tab.result_area.toPlainText()
-            composition = self.parent().composition_tab.result_area.toPlainText()
+            # Utiliser le contenu du JSON pour générer la chanson
+            concept = json_response['concept']
+            lyrics = json_response['lyrics']
+            composition = json_response['composition']
 
-            # Créer les prompts à partir du contenu et de la réponse GPT
-            short_prompt = gpt_response[:100]  # Utiliser les 100 premiers caractères de la réponse GPT comme prompt court
-            extend_prompts = [concept[:100], composition[:100]]  # Utiliser le début du concept et de la composition comme prompts d'extension
-            outro_prompt = gpt_response[-100:]  # Utiliser les 100 derniers caractères de la réponse GPT comme prompt d'outro
+            # Créer les prompts à partir du contenu JSON
+            short_prompt = concept
+            extend_prompts = [composition, json_response['production_advice']['arrangement'][:100]]
+            outro_prompt = json_response['production_advice']['mastering'][:100]
 
             # Diviser les paroles en sections pour les différentes parties de la chanson
             lyrics_lines = lyrics.split('\n')
