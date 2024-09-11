@@ -7,7 +7,7 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 from main import resource_path
-from udio_wrapper import CustomUdioWrapper
+from udio_wrapper.wrapper import UdioWrapper
 from pydantic import BaseModel
 from typing import List
 
@@ -88,7 +88,7 @@ class ProductionTab(QWidget):
             self.chat_area.append("Error: Udio authentication token not found in .env file. Please add UDIO_AUTH_TOKEN to your .env file.")
             self.udio_wrapper = None
         else:
-            self.udio_wrapper = CustomUdioWrapper(auth_token=self.udio_token)
+            self.udio_wrapper = UdioWrapper(auth_token=self.udio_token)
             self.chat_area.append("Udio wrapper initialized successfully.")
 
     def load_system_prompt(self):
@@ -177,7 +177,7 @@ class ProductionTab(QWidget):
             self.result_area.append("Generating song...")
             self.chat_area.append("Starting song generation...")
 
-            complete_song_sequence = self.udio_wrapper.create_complete_song(
+            complete_song_sequence = self.create_complete_song(
                 short_prompt=gpt_response['short_prompt'],
                 extend_prompts=gpt_response['extend_prompts'],
                 outro_prompt=gpt_response['outro_prompt'],
@@ -214,3 +214,30 @@ class ProductionTab(QWidget):
             self.chat_area.append(error_message)
             self.result_area.append(f"Error: {str(e)}")
             QMessageBox.critical(self, "Error", error_message)
+
+    def create_complete_song(self, short_prompt, extend_prompts, outro_prompt, num_extensions, custom_lyrics_short, custom_lyrics_extend, custom_lyrics_outro):
+        try:
+            song_sequence = self.udio_wrapper.create_song(
+                prompt=short_prompt,
+                custom_lyrics=custom_lyrics_short
+            )
+            
+            for i in range(num_extensions):
+                song_sequence = self.udio_wrapper.extend(
+                    prompt=extend_prompts[i],
+                    audio_conditioning_path=song_sequence,
+                    audio_conditioning_song_id=song_sequence.split('/')[-1].split('.')[0],
+                    custom_lyrics=custom_lyrics_extend[i]
+                )
+            
+            song_sequence = self.udio_wrapper.add_outro(
+                prompt=outro_prompt,
+                audio_conditioning_path=song_sequence,
+                audio_conditioning_song_id=song_sequence.split('/')[-1].split('.')[0],
+                custom_lyrics=custom_lyrics_outro
+            )
+            
+            return song_sequence
+        except Exception as e:
+            print(f"Error creating complete song with Udio: {e}")
+            return None
