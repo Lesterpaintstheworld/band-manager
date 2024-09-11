@@ -6,6 +6,7 @@ import os
 import sys
 sys.path.append('.')  # Ajoute le dossier courant au chemin de recherche
 from openai import OpenAI
+from main import resource_path
 
 class LyricsTab(QWidget):
     lyrics_updated = pyqtSignal(str)
