@@ -20,7 +20,7 @@ options = [
     '--onefile',
     '--windowed',
     '--add-data', f'{current_dir}/prompts;prompts',
-    '--add-data', f'{current_dir}/prompts/*.md;prompts',
+    '--add-data', f'{current_dir}/prompts/*.md;.',
     '--add-data', f'{current_dir}/*.md;.',
     '--add-data', f'{current_dir}/*.json;.',
     '--add-data', f'{current_dir}/style.css;.',
