@@ -1,5 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QLabel, QApplication
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt, pyqtSignal, QThread, pyqtSignal as Signal
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 from dotenv import load_dotenv
 import os
 import sys
