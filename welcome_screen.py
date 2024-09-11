@@ -47,5 +47,5 @@ class WelcomeScreen(QWidget):
         band_name = self.name_input.text()
         if band_name:
             with open('band.json', 'w') as f:
-                json.dump({"name": band_name}, f)
+                json.dump({"name": band_name, "fans": 0}, f)
             self.submitted.emit()
