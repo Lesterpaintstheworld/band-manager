@@ -91,6 +91,12 @@ class CompositionTab(QWidget):
             self.chat_area.append(f"Warning: File not found: {str(e)}. Using a default prompt.")
 
     def send_message(self):
+        # Update the system prompt with the latest content
+        self.load_system_prompt()
+        
+        user_message = self.input_field.text()
+
+    def send_message(self):
         user_message = self.input_field.text()
         self.chat_area.append(f"You: {user_message}")
         self.input_field.clear()
