@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QLabel, QApplication, QScrollArea
-from PyQt5.QtCore import Qt, pyqtSignal, QThread, pyqtSignal as Signal
+from PyQt5.QtCore import Qt, pyqtSignal, QThread, pyqtSignal as Signal, QUrl
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 from dotenv import load_dotenv
@@ -192,7 +192,7 @@ class VisualDesignTab(QWidget):
         self.download_image(image_url)
 
     def download_image(self, url):
-        request = QNetworkRequest(url)
+        request = QNetworkRequest(QUrl(url))
         self.network_manager.get(request)
 
     def on_image_downloaded(self, reply):
