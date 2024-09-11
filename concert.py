@@ -174,13 +174,13 @@ Audience Size: {audience_size}
         return os.path.join(base_path, relative_path)
 
     def load_system_prompt(self):
-        file_name = 'concert.md'
+        file_name = 'prompts/concert.md'
         full_path = self.get_resource_path(file_name)
         try:
             with open(full_path, 'r', encoding='utf-8') as f:
-                self.concert_prompt = f.read()
+                self.concert_system_prompt = f.read()
         except FileNotFoundError:
-            error_message = f"Erreur : Le fichier {full_path} n'a pas été trouvé. Veuillez vérifier que le fichier de prompt concert.md est présent."
+            error_message = f"Erreur : Le fichier {full_path} n'a pas été trouvé. Veuillez vérifier que le fichier de prompt prompts/concert.md est présent."
             print(error_message)
             QMessageBox.critical(self, "Erreur de chargement", error_message)
             sys.exit(1)
