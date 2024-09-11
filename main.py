@@ -32,7 +32,7 @@ class SyntheticBandManager:
         painter = QPainter(scaled_pixmap)
         painter.setPen(Qt.white)
         painter.setFont(QFont("Arial", 12))
-        painter.drawText(scaled_pixmap.rect().bottomRight() - QPoint(70, 10), "v0.1.0")
+        painter.drawText(scaled_pixmap.rect().bottomRight() - QPoint(100, 30), "v0.1.0")
         painter.end()
         
         self.splash = QSplashScreen(scaled_pixmap)
