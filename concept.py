@@ -1,7 +1,8 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QLabel
 from PyQt5.QtCore import Qt, pyqtSignal
 import openai
-import json
+from dotenv import load_dotenv
+import os
 
 class ConceptTab(QWidget):
     concept_updated = pyqtSignal(str)
@@ -39,14 +40,10 @@ class ConceptTab(QWidget):
         layout.addWidget(self.result_area)
 
     def load_api_key(self):
-        try:
-            with open('config.json', 'r') as f:
-                config = json.load(f)
-                openai.api_key = config['openai_api_key']
-        except FileNotFoundError:
-            self.chat_area.append("Erreur : Fichier config.json non trouvé. Veuillez créer ce fichier avec votre clé API OpenAI.")
-        except KeyError:
-            self.chat_area.append("Erreur : Clé 'openai_api_key' non trouvée dans config.json.")
+        load_dotenv()
+        openai.api_key = os.getenv('OPENAI_API_KEY')
+        if not openai.api_key:
+            self.chat_area.append("Erreur : Clé API OpenAI non trouvée dans le fichier .env. Veuillez ajouter OPENAI_API_KEY à votre fichier .env.")
 
     def send_message(self):
         user_message = self.input_field.text()
