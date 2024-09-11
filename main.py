@@ -1,6 +1,7 @@
 import sys
 import json
 import os
+import logging
 from dotenv import load_dotenv
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
 from PyQt5.QtGui import QPixmap, QPainter, QFont
@@ -9,6 +10,9 @@ from PyQt5.QtWidgets import QApplication
 from welcome_screen import WelcomeScreen
 # Import MainInterface will be done inside the after_splash method
 from style import set_dark_theme
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -21,7 +25,12 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 # Load .env file
-load_dotenv(resource_path('.env'))
+env_path = resource_path('.env')
+if os.path.exists(env_path):
+    load_dotenv(env_path)
+    logging.info(f".env file loaded from {env_path}")
+else:
+    logging.warning(f".env file not found at {env_path}")
 
 class SyntheticBandManager:
     def __init__(self):
