@@ -77,13 +77,7 @@ class VisualDesignTab(QWidget):
         chat_layout.addLayout(input_layout)
         layout.addLayout(chat_layout)
 
-        # Visual design display area
-        visual_design_layout = QVBoxLayout()
-        self.result_area = QTextEdit()
-        self.result_area.setReadOnly(True)
-        visual_design_layout.addWidget(self.result_area)
-
-        # Créer un QScrollArea pour les images
+        # Image display area
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -93,9 +87,7 @@ class VisualDesignTab(QWidget):
         self.image_layout = QVBoxLayout(self.image_container)
         scroll_area.setWidget(self.image_container)
 
-        visual_design_layout.addWidget(scroll_area)
-
-        layout.addLayout(visual_design_layout)
+        layout.addWidget(scroll_area)
 
     def load_api_key(self):
         load_dotenv()
@@ -172,9 +164,13 @@ class VisualDesignTab(QWidget):
             self.chat_area.append("Please check your internet connection and the validity of your API key.")
 
     def update_visual_design(self, new_content):
-        current_visual_design = self.result_area.toPlainText()
+        try:
+            with open('visual_design.md', 'r', encoding='utf-8') as f:
+                current_visual_design = f.read()
+        except FileNotFoundError:
+            current_visual_design = ""
+        
         updated_visual_design = current_visual_design + "\n\n" + new_content
-        self.result_area.setPlainText(updated_visual_design)
         self.visual_design_updated.emit(updated_visual_design)
         
         # Save the visual design to visual_design.md
