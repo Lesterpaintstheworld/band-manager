@@ -5,7 +5,18 @@ import os
 import sys
 sys.path.append('.')  # Ajoute le dossier courant au chemin de recherche
 from openai import OpenAI
-from main import resource_path
+import os
+import sys
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 class CompositionTab(QWidget):
     composition_updated = pyqtSignal(str)
