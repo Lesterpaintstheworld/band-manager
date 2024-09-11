@@ -112,7 +112,7 @@ class ProductionTab(QWidget):
 
         try:
             completion = self.client.chat.completions.create(
-                model="gpt-4-1106-preview",
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": user_message}
