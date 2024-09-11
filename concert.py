@@ -23,7 +23,7 @@ class EvaluationResult(BaseModel):
 class ConcertTab(QWidget):
     def __init__(self):
         super().__init__()
-        self.fans = 1000  # Initial number of fans
+        self.fans = self.load_fan_count()  # Load initial number of fans
         self.initUI()
         self.load_api_key()
         self.update_speed = 1000  # Initial update speed in milliseconds
@@ -31,6 +31,14 @@ class ConcertTab(QWidget):
         self.timer.timeout.connect(self.update_fan_display)
         self.load_system_prompt()
         self.loop = asyncio.get_event_loop()
+
+    def load_fan_count(self):
+        try:
+            with open('band.json', 'r') as f:
+                data = json.load(f)
+                return data.get('fans', 0)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return 0
 
     def initUI(self):
         layout = QHBoxLayout()
@@ -199,7 +207,14 @@ Provide a rating out of 10 and a brief explanation for each aspect. Then, give a
             self.save_fan_count()
 
     def save_fan_count(self):
-        data = {'fans': self.fans}
+        try:
+            with open('band.json', 'r') as f:
+                data = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            data = {}
+        
+        data['fans'] = self.fans
+        
         with open('band.json', 'w') as f:
             json.dump(data, f)
 
