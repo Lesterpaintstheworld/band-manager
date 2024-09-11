@@ -56,8 +56,9 @@ class ProductionTab(QWidget):
             concept_content = self.read_file(resource_path('concept.md'))
             lyrics_content = self.read_file(resource_path('lyrics.md'))
             composition_content = self.read_file(resource_path('composition.md'))
+            visual_design_content = self.read_file(resource_path('visual_design.md'))
             
-            self.system_prompt = f"{production_prompt}\n\nContext from concept.md:\n{concept_content}\n\nContext from lyrics.md:\n{lyrics_content}\n\nContext from composition.md:\n{composition_content}"
+            self.system_prompt = f"{production_prompt}\n\nContext from concept.md:\n{concept_content}\n\nContext from lyrics.md:\n{lyrics_content}\n\nContext from composition.md:\n{composition_content}\n\nContext from visual_design.md:\n{visual_design_content}"
         except Exception as e:
             self.system_prompt = "You are a creative assistant to help with music production."
             self.chat_area.append(f"Warning: Error loading prompts: {str(e)}. Using a default prompt.")

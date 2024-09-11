@@ -85,7 +85,8 @@ class ConceptTab(QWidget):
 
     def load_system_prompt(self):
         try:
-            self.system_prompt = self.read_file(resource_path('prompts/concept.md'))
+            concept_prompt = self.read_file(resource_path('prompts/concept.md'))
+            self.system_prompt = concept_prompt
         except Exception as e:
             self.system_prompt = "You are a creative assistant to help develop song concepts."
             self.chat_area.append(f"Warning: Error loading prompt: {str(e)}. Using a default prompt.")

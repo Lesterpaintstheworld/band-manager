@@ -77,8 +77,9 @@ class LyricsTab(QWidget):
         try:
             lyrics_prompt = self.read_file(resource_path('prompts/lyrics.md'))
             concept_content = self.read_file(resource_path('concept.md'))
+            composition_content = self.read_file(resource_path('composition.md'))
             
-            self.system_prompt = f"{lyrics_prompt}\n\nContext from concept.md:\n{concept_content}"
+            self.system_prompt = f"{lyrics_prompt}\n\nContext from concept.md:\n{concept_content}\n\nContext from composition.md:\n{composition_content}"
         except Exception as e:
             self.system_prompt = "You are a creative assistant to help write song lyrics."
             self.chat_area.append(f"Warning: Error loading prompts: {str(e)}. Using a default prompt.")

@@ -88,8 +88,9 @@ class CompositionTab(QWidget):
             composition_prompt = self.read_file(resource_path('prompts/composition.md'))
             concept_content = self.read_file(resource_path('concept.md'))
             lyrics_content = self.read_file(resource_path('lyrics.md'))
+            production_content = self.read_file(resource_path('production.md'))
             
-            self.system_prompt = f"{composition_prompt}\n\nContext from concept.md:\n{concept_content}\n\nContext from lyrics.md:\n{lyrics_content}"
+            self.system_prompt = f"{composition_prompt}\n\nContext from concept.md:\n{concept_content}\n\nContext from lyrics.md:\n{lyrics_content}\n\nContext from production.md:\n{production_content}"
         except Exception as e:
             self.system_prompt = "You are a creative assistant to help compose music."
             self.chat_area.append(f"Warning: Error loading prompts: {str(e)}. Using a default prompt.")

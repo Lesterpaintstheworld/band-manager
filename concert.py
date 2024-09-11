@@ -72,22 +72,33 @@ class ConcertTab(QWidget):
     def start_concert(self):
         audience_size = math.ceil(self.fans * 1.2)
 
+        # Charger les contenus les plus récents
+        concept_content = self.read_file(resource_path('concept.md'))
+        lyrics_content = self.read_file(resource_path('lyrics.md'))
+        composition_content = self.read_file(resource_path('composition.md'))
+        production_content = self.read_file(resource_path('production.md'))
+        visual_design_content = self.read_file(resource_path('visual_design.md'))
+        critique_content = self.read_file(resource_path('critique.md'))
+
         prompt = f"""Create a short, engaging story about the band's concert performance of their new song. Use the following information:
 
 Concept:
-{self.concept_prompt}
+{concept_content}
 
 Lyrics:
-{self.lyrics_prompt}
+{lyrics_content}
 
 Composition:
-{self.composition_prompt}
+{composition_content}
+
+Production:
+{production_content}
 
 Visual Design:
-{self.visual_design_prompt}
+{visual_design_content}
 
 Critique:
-{self.critique_prompt}
+{critique_content}
 
 Audience Size: {audience_size}
 
