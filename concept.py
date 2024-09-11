@@ -1,21 +1,78 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QTextEdit, QLabel
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QLabel
+from PyQt5.QtCore import Qt, pyqtSignal
+import openai
+import json
 
 class ConceptTab(QWidget):
+    concept_updated = pyqtSignal(str)
+
     def __init__(self):
         super().__init__()
         self.initUI()
+        self.load_api_key()
 
     def initUI(self):
         layout = QHBoxLayout()
         self.setLayout(layout)
 
+        # Chat area
+        chat_layout = QVBoxLayout()
         self.chat_area = QTextEdit()
         self.chat_area.setReadOnly(True)
-        layout.addWidget(self.chat_area, 1)
+        chat_layout.addWidget(self.chat_area)
 
-        self.result_area = QLabel("Concept result will be displayed here")
-        self.result_area.setAlignment(Qt.AlignCenter)
-        layout.addWidget(self.result_area, 1)
+        input_layout = QHBoxLayout()
+        self.input_field = QLineEdit()
+        self.input_field.returnPressed.connect(self.send_message)
+        input_layout.addWidget(self.input_field)
 
-        # TODO: Implement chat functionality with GPT-4-mini
+        self.send_button = QPushButton("Envoyer")
+        self.send_button.clicked.connect(self.send_message)
+        input_layout.addWidget(self.send_button)
+
+        chat_layout.addLayout(input_layout)
+        layout.addLayout(chat_layout)
+
+        # Concept display area
+        self.result_area = QTextEdit()
+        self.result_area.setReadOnly(True)
+        layout.addWidget(self.result_area)
+
+    def load_api_key(self):
+        try:
+            with open('config.json', 'r') as f:
+                config = json.load(f)
+                openai.api_key = config['openai_api_key']
+        except FileNotFoundError:
+            self.chat_area.append("Erreur : Fichier config.json non trouvé. Veuillez créer ce fichier avec votre clé API OpenAI.")
+        except KeyError:
+            self.chat_area.append("Erreur : Clé 'openai_api_key' non trouvée dans config.json.")
+
+    def send_message(self):
+        user_message = self.input_field.text()
+        self.chat_area.append(f"Vous : {user_message}")
+        self.input_field.clear()
+
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": "Vous êtes un assistant créatif pour aider à développer des concepts de chansons."},
+                    {"role": "user", "content": user_message}
+                ]
+            )
+            ai_message = response.choices[0].message['content']
+            self.chat_area.append(f"Assistant : {ai_message}")
+            
+            # Mettre à jour le concept
+            current_concept = self.result_area.toPlainText()
+            updated_concept = current_concept + "\n\n" + ai_message
+            self.result_area.setPlainText(updated_concept)
+            self.concept_updated.emit(updated_concept)
+            
+            # Sauvegarder le concept dans concept.md
+            with open('concept.md', 'w', encoding='utf-8') as f:
+                f.write(updated_concept)
+
+        except Exception as e:
+            self.chat_area.append(f"Erreur : {str(e)}")
