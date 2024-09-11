@@ -156,12 +156,19 @@ class VisualDesignTab(QWidget):
                 return
 
         try:
+            # Refresh the concept content
+            with open('concept.md', 'r', encoding='utf-8') as f:
+                concept_content = f.read()
+            
+            # Update the system prompt with the latest concept content
+            updated_system_prompt = f"{self.system_prompt}\n\nUpdated context from concept.md:\n{concept_content}"
+
             self.stream_buffer = ""
             self.chat_area.append("Assistant: ")
             stream = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": self.system_prompt},
+                    {"role": "system", "content": updated_system_prompt},
                     {"role": "user", "content": user_message}
                 ],
                 stream=True
