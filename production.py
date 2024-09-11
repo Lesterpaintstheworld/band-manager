@@ -88,8 +88,15 @@ class ProductionTab(QWidget):
             self.chat_area.append("Error: Udio authentication token not found in .env file. Please add UDIO_AUTH_TOKEN to your .env file.")
             self.udio_wrapper = None
         else:
-            self.udio_wrapper = UdioWrapper(auth_token=self.udio_token)
-            self.chat_area.append("Udio wrapper initialized successfully.")
+            try:
+                self.udio_wrapper = UdioWrapper(auth_token=self.udio_token)
+                # Test the connection
+                self.udio_wrapper.create_song("Test", "Test")
+                self.chat_area.append("Udio wrapper initialized successfully.")
+            except Exception as e:
+                self.chat_area.append(f"Error initializing Udio wrapper: {str(e)}")
+                self.chat_area.append("Please check your Udio authentication token in the .env file.")
+                self.udio_wrapper = None
 
     def load_system_prompt(self):
         try:
@@ -169,7 +176,9 @@ class ProductionTab(QWidget):
 
     def generate_song(self, gpt_response):
         if not self.udio_wrapper:
-            self.chat_area.append("Error: The Udio authentication token is not configured correctly.")
+            error_message = "Error: The Udio authentication token is not configured correctly or the connection to Udio failed."
+            self.chat_area.append(error_message)
+            QMessageBox.critical(self, "Error", error_message)
             return
 
         try:
