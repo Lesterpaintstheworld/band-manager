@@ -54,8 +54,12 @@ class ConceptTab(QWidget):
         else:
             try:
                 self.client = OpenAI(api_key=self.api_key)
+                # Test the client to ensure it's working
+                self.client.models.list()
+                self.chat_area.append("Client OpenAI initialisé avec succès.")
             except Exception as e:
                 self.chat_area.append(f"Erreur lors de l'initialisation du client OpenAI : {str(e)}")
+                self.chat_area.append(f"Clé API utilisée : {self.api_key[:5]}...{self.api_key[-5:]}")
                 self.client = None
 
     def load_system_prompt(self):
