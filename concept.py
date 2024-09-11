@@ -33,7 +33,7 @@ class ConceptTab(QWidget):
         self.input_field.returnPressed.connect(self.send_message)
         input_layout.addWidget(self.input_field)
 
-        self.send_button = QPushButton("Envoyer")
+        self.send_button = QPushButton("Send")
         self.send_button.clicked.connect(self.send_message)
         input_layout.addWidget(self.send_button)
 
@@ -49,20 +49,20 @@ class ConceptTab(QWidget):
         load_dotenv()
         self.api_key = os.getenv('OPENAI_API_KEY')
         if not self.api_key:
-            self.chat_area.append("Erreur : Clé API OpenAI non trouvée dans le fichier .env. Veuillez ajouter OPENAI_API_KEY à votre fichier .env.")
+            self.chat_area.append("Error: OpenAI API key not found in .env file. Please add OPENAI_API_KEY to your .env file.")
             self.client = None
         else:
             # Afficher les premiers et derniers caractères de la clé API
             masked_key = f"{self.api_key[:5]}...{self.api_key[-5:]}"
-            self.chat_area.append(f"Clé API trouvée : {masked_key}")
+            self.chat_area.append(f"API key found: {masked_key}")
             try:
                 self.client = OpenAI(api_key=self.api_key)
                 # Test the client to ensure it's working
                 self.client.models.list()
-                self.chat_area.append("Client OpenAI initialisé avec succès.")
+                self.chat_area.append("OpenAI client initialized successfully.")
             except Exception as e:
-                self.chat_area.append(f"Erreur lors de l'initialisation du client OpenAI : {str(e)}")
-                self.chat_area.append("Veuillez vérifier votre clé API dans le fichier .env")
+                self.chat_area.append(f"Error initializing OpenAI client: {str(e)}")
+                self.chat_area.append("Please check your API key in the .env file")
                 self.client = None
 
     def load_system_prompt(self):
@@ -70,29 +70,29 @@ class ConceptTab(QWidget):
             with open('prompts/concept.md', 'r', encoding='utf-8') as f:
                 self.system_prompt = f.read()
         except FileNotFoundError:
-            self.system_prompt = "Vous êtes un assistant créatif pour aider à développer des concepts de chansons."
-            self.chat_area.append("Attention : Le fichier prompts/concept.md n'a pas été trouvé. Utilisation d'un prompt par défaut.")
+            self.system_prompt = "You are a creative assistant to help develop song concepts."
+            self.chat_area.append("Warning: The file prompts/concept.md was not found. Using a default prompt.")
 
     def send_message(self):
         user_message = self.input_field.text()
-        self.chat_area.append(f"Vous : {user_message}")
+        self.chat_area.append(f"You: {user_message}")
         self.input_field.clear()
 
         if not self.api_key:
-            self.chat_area.append("Erreur : Clé API OpenAI non trouvée. Veuillez vérifier votre fichier .env.")
+            self.chat_area.append("Error: OpenAI API key not found. Please check your .env file.")
             return
 
         if self.client is None:
             try:
                 self.client = OpenAI(api_key=self.api_key)
-                self.chat_area.append("Client OpenAI réinitialisé avec succès.")
+                self.chat_area.append("OpenAI client reinitialized successfully.")
             except Exception as e:
-                self.chat_area.append(f"Erreur lors de la réinitialisation du client OpenAI : {str(e)}")
+                self.chat_area.append(f"Error reinitializing OpenAI client: {str(e)}")
                 return
 
         try:
             self.stream_buffer = ""
-            self.chat_area.append("Assistant : ")
+            self.chat_area.append("Assistant: ")
             stream = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
@@ -108,8 +108,8 @@ class ConceptTab(QWidget):
                     QApplication.processEvents()
             self.update_concept(self.stream_buffer)
         except Exception as e:
-            self.chat_area.append(f"Erreur lors de l'envoi du message : {str(e)}")
-            self.chat_area.append("Veuillez vérifier votre connexion internet et la validité de votre clé API.")
+            self.chat_area.append(f"Error sending message: {str(e)}")
+            self.chat_area.append("Please check your internet connection and the validity of your API key.")
 
     def update_concept(self, new_content):
         current_concept = self.result_area.toPlainText()
