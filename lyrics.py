@@ -17,6 +17,15 @@ class LyricsTab(QWidget):
         self.stream_buffer = ""
         self.load_system_prompt()
         self.client = None
+        self.load_initial_lyrics()
+
+    def load_initial_lyrics(self):
+        try:
+            with open('lyrics.md', 'r', encoding='utf-8') as f:
+                initial_lyrics = f.read()
+            self.result_area.setPlainText(initial_lyrics)
+        except FileNotFoundError:
+            self.chat_area.append("Warning: lyrics.md file not found. Starting with empty lyrics.")
 
     def initUI(self):
         layout = QHBoxLayout()

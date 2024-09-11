@@ -17,6 +17,15 @@ class ConceptTab(QWidget):
         self.stream_buffer = ""
         self.load_system_prompt()
         self.client = None
+        self.load_initial_concept()
+
+    def load_initial_concept(self):
+        try:
+            with open('concept.md', 'r', encoding='utf-8') as f:
+                initial_concept = f.read()
+            self.result_area.setPlainText(initial_concept)
+        except FileNotFoundError:
+            self.chat_area.append("Warning: concept.md file not found. Starting with an empty concept.")
 
     def initUI(self):
         layout = QHBoxLayout()

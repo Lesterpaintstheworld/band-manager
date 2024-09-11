@@ -17,6 +17,15 @@ class CompositionTab(QWidget):
         self.stream_buffer = ""
         self.load_system_prompt()
         self.client = None
+        self.load_initial_composition()
+
+    def load_initial_composition(self):
+        try:
+            with open('composition.md', 'r', encoding='utf-8') as f:
+                initial_composition = f.read()
+            self.result_area.setPlainText(initial_composition)
+        except FileNotFoundError:
+            self.chat_area.append("Warning: composition.md file not found. Starting with an empty composition.")
 
     def initUI(self):
         layout = QHBoxLayout()
