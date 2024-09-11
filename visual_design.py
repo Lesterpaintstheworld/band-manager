@@ -77,6 +77,11 @@ class VisualDesignTab(QWidget):
         chat_layout.addLayout(input_layout)
         layout.addLayout(chat_layout)
 
+        # Visual design display area
+        self.result_area = QTextEdit()
+        self.result_area.setReadOnly(True)
+        layout.addWidget(self.result_area)
+
         # Image display area
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
