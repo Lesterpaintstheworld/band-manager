@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QLabel
 from PyQt5.QtCore import Qt, pyqtSignal
-import openai
+from openai import OpenAI
 from dotenv import load_dotenv
 import os
 
@@ -41,8 +41,8 @@ class ConceptTab(QWidget):
 
     def load_api_key(self):
         load_dotenv()
-        openai.api_key = os.getenv('OPENAI_API_KEY')
-        if not openai.api_key:
+        self.client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        if not self.client.api_key:
             self.chat_area.append("Erreur : Clé API OpenAI non trouvée dans le fichier .env. Veuillez ajouter OPENAI_API_KEY à votre fichier .env.")
 
     def send_message(self):
@@ -51,14 +51,14 @@ class ConceptTab(QWidget):
         self.input_field.clear()
 
         try:
-            response = openai.ChatCompletion.create(
-                model="gpt-4o-mini",  # Le 'o' signifie 'omni', indiquant une version plus polyvalente du modèle
+            response = self.client.chat.completions.create(
+                model="gpt-4",  # Assurez-vous que ce modèle est disponible pour votre compte
                 messages=[
                     {"role": "system", "content": "Vous êtes un assistant créatif pour aider à développer des concepts de chansons."},
                     {"role": "user", "content": user_message}
                 ]
             )
-            ai_message = response.choices[0].message['content']
+            ai_message = response.choices[0].message.content
             self.chat_area.append(f"Assistant : {ai_message}")
             
             # Mettre à jour le concept
