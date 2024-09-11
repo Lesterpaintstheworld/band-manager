@@ -154,7 +154,8 @@ class MainInterface(QWidget):
                 with open(os.path.join(song_folder, 'visual_design.md'), 'r', encoding='utf-8') as f:
                     self.visual_design_tab.result_area.setPlainText(f.read())
 
-                QMessageBox.information(self, "Load Successful", f"Song '{song_title}' has been loaded.")
+                # Switch to the Concept tab
+                self.tabs.setCurrentWidget(self.concept_tab)
             except Exception as e:
                 QMessageBox.warning(self, "Load Failed", f"An error occurred while loading the song: {str(e)}")
         else:
