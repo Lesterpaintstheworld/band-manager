@@ -55,7 +55,7 @@ class ConceptTab(QWidget):
 
         try:
             response = openai.ChatCompletion.create(
-                model="gpt-4",
+                model="gpt-4o-mini",  # Le 'o' signifie 'omni', indiquant une version plus polyvalente du modèle
                 messages=[
                     {"role": "system", "content": "Vous êtes un assistant créatif pour aider à développer des concepts de chansons."},
                     {"role": "user", "content": user_message}
