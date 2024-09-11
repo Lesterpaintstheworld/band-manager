@@ -191,7 +191,6 @@ class ProductionTab(QWidget):
             )
 
             # Sauvegarder le fichier audio dans le dossier songs/
-            import os
             song_filename = f"song_{int(time.time())}.mp3"
             song_path = os.path.join("songs", song_filename)
             os.makedirs("songs", exist_ok=True)
@@ -199,7 +198,7 @@ class ProductionTab(QWidget):
                 f.write(complete_song_sequence)
             
             self.result_area.clear()
-            self.result_area.setPlainText(f"Chanson générée et sauvegardée : {song_path}")
+            self.result_area.append(f"Chanson générée et sauvegardée : {song_path}")
             
             # Jouer la chanson dans le lecteur audio
             self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_path)))
@@ -208,6 +207,7 @@ class ProductionTab(QWidget):
             QMessageBox.information(self, "Succès", "La chanson a été générée avec succès.")
             
             # Emit the production_updated signal with the new content
-            self.production_updated.emit(complete_song_sequence)
+            self.production_updated.emit(song_path)
         except Exception as e:
             QMessageBox.critical(self, "Erreur", f"Une erreur s'est produite lors de la génération de la chanson : {str(e)}")
+            self.result_area.append(f"Erreur : {str(e)}")
