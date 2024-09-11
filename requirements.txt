@@ -117,7 +117,7 @@ langchain-huggingface==0.0.3
 langchain-openai==0.1.15
 langchain-text-splitters==0.2.2
 langsmith==0.1.99
-litellm==1.26.3
+litellm==1.44.7
 markdown-it-py==3.0.0
 MarkupSafe==2.1.5
 marshmallow==3.21.3
@@ -141,7 +141,7 @@ numpy==1.26.4
 oauthlib==3.2.2
 onnxruntime==1.19.0
 open-interpreter==0.3.9
-openai==1.44.1
+openai==1.42.0
 opencv-python==4.10.0.84
 opentelemetry-api==1.26.0
 opentelemetry-exporter-otlp-proto-common==1.26.0
@@ -162,7 +162,7 @@ parso==0.8.4
 pathspec==0.12.1
 pefile==2023.2.7
 pexpect==4.9.0
-pillow==10.2.0
+pillow==10.4.0
 pipx==1.6.0
 platformdirs==4.2.2
 playwright==1.46.0
@@ -223,7 +223,7 @@ readchar==4.2.0
 referencing==0.35.1
 regex==2024.7.24
 reportlab==4.0.4
-requests==2.32.3
+requests==2.31.0
 requests-oauthlib==2.0.0
 rich==13.8.0
 rpds-py==0.20.0
@@ -267,6 +267,7 @@ typer==0.12.5
 typing-inspect==0.9.0
 typing_extensions==4.12.2
 tzdata==2024.1
+udio-wrapper==0.0.3
 uritemplate==4.1.1
 urllib3==2.2.2
 userpath==1.9.2
@@ -285,4 +286,3 @@ xmod==1.8.1
 yarl==1.9.4
 yaspin==3.0.2
 zipp==3.20.1
-udio_wrapper
