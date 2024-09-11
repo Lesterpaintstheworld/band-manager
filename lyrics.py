@@ -74,16 +74,20 @@ class LyricsTab(QWidget):
 
     def load_system_prompt(self):
         try:
-            with open('prompts/lyrics.md', 'r', encoding='utf-8') as f:
-                lyrics_prompt = f.read()
-            
-            with open('concept.md', 'r', encoding='utf-8') as f:
-                concept_content = f.read()
+            lyrics_prompt = self.read_file(resource_path('prompts/lyrics.md'))
+            concept_content = self.read_file(resource_path('concept.md'))
             
             self.system_prompt = f"{lyrics_prompt}\n\nContext from concept.md:\n{concept_content}"
-        except FileNotFoundError as e:
+        except Exception as e:
             self.system_prompt = "You are a creative assistant to help write song lyrics."
-            self.chat_area.append(f"Warning: File not found: {str(e)}. Using a default prompt.")
+            self.chat_area.append(f"Warning: Error loading prompts: {str(e)}. Using a default prompt.")
+
+    def read_file(self, filepath):
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                return f.read()
+        except FileNotFoundError:
+            return f"File {filepath} not found."
 
     def send_message(self):
         # Update the system prompt with the latest content

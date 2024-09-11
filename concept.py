@@ -73,11 +73,17 @@ class ConceptTab(QWidget):
 
     def load_system_prompt(self):
         try:
-            with open('prompts/concept.md', 'r', encoding='utf-8') as f:
-                self.system_prompt = f.read()
-        except FileNotFoundError:
+            self.system_prompt = self.read_file(resource_path('prompts/concept.md'))
+        except Exception as e:
             self.system_prompt = "You are a creative assistant to help develop song concepts."
-            self.chat_area.append("Warning: The file prompts/concept.md was not found. Using a default prompt.")
+            self.chat_area.append(f"Warning: Error loading prompt: {str(e)}. Using a default prompt.")
+
+    def read_file(self, filepath):
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                return f.read()
+        except FileNotFoundError:
+            return f"File {filepath} not found."
 
     def send_message(self):
         user_message = self.input_field.text()

@@ -73,19 +73,21 @@ class CompositionTab(QWidget):
 
     def load_system_prompt(self):
         try:
-            with open('prompts/composition.md', 'r', encoding='utf-8') as f:
-                composition_prompt = f.read()
-            
-            with open('concept.md', 'r', encoding='utf-8') as f:
-                concept_content = f.read()
-            
-            with open('lyrics.md', 'r', encoding='utf-8') as f:
-                lyrics_content = f.read()
+            composition_prompt = self.read_file(resource_path('prompts/composition.md'))
+            concept_content = self.read_file(resource_path('concept.md'))
+            lyrics_content = self.read_file(resource_path('lyrics.md'))
             
             self.system_prompt = f"{composition_prompt}\n\nContext from concept.md:\n{concept_content}\n\nContext from lyrics.md:\n{lyrics_content}"
-        except FileNotFoundError as e:
+        except Exception as e:
             self.system_prompt = "You are a creative assistant to help compose music."
-            self.chat_area.append(f"Warning: File not found: {str(e)}. Using a default prompt.")
+            self.chat_area.append(f"Warning: Error loading prompts: {str(e)}. Using a default prompt.")
+
+    def read_file(self, filepath):
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                return f.read()
+        except FileNotFoundError:
+            return f"File {filepath} not found."
 
     def send_message(self):
         # Update the system prompt with the latest content
