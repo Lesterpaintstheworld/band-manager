@@ -1,68 +1,118 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QLabel, QPushButton
 from PyQt5.QtCore import Qt
-import random
+from openai import OpenAI
+import os
+import json
 
 class ConcertTab(QWidget):
     def __init__(self):
         super().__init__()
-        self.fans = 1000  # Nombre initial de fans
+        self.fans = 1000  # Initial number of fans
         self.initUI()
+        self.load_api_key()
 
     def initUI(self):
         layout = QVBoxLayout()
         self.setLayout(layout)
 
-        self.chat_area = QTextEdit()
-        self.chat_area.setReadOnly(True)
-        layout.addWidget(self.chat_area)
-
-        self.result_area = QLabel(f"Nombre de fans actuel : {self.fans}")
-        self.result_area.setAlignment(Qt.AlignCenter)
+        self.result_area = QTextEdit()
+        self.result_area.setReadOnly(True)
         layout.addWidget(self.result_area)
 
-        self.evaluate_button = QPushButton("Évaluer le concert")
-        self.evaluate_button.clicked.connect(self.evaluate_concert)
-        layout.addWidget(self.evaluate_button)
+        self.fans_label = QLabel(f"Current number of fans: {self.fans}")
+        self.fans_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(self.fans_label)
+
+        self.start_concert_button = QPushButton("Start Concert")
+        self.start_concert_button.clicked.connect(self.evaluate_concert)
+        layout.addWidget(self.start_concert_button)
+
+    def load_api_key(self):
+        with open('.env', 'r') as f:
+            for line in f:
+                if line.startswith('OPENAI_API_KEY='):
+                    api_key = line.split('=')[1].strip()
+                    self.client = OpenAI(api_key=api_key)
+                    break
+            else:
+                self.result_area.append("Error: OpenAI API key not found in .env file.")
 
     def evaluate_concert(self):
-        concept_score = self.evaluate_phase("concept")
-        lyrics_score = self.evaluate_phase("paroles")
-        music_score = self.evaluate_phase("prompts musicaux")
-        image_score = self.evaluate_phase("prompt d'image")
+        # Read content from all relevant files
+        concept = self.read_file('concept.md')
+        lyrics = self.read_file('lyrics.md')
+        composition = self.read_file('composition.md')
+        visual_design = self.read_file('visual_design.md')
 
-        total_score = (concept_score + lyrics_score + music_score + image_score) / 4
+        # Prepare the prompt for GPT
+        prompt = f"""Evaluate the following aspects of a song and give a rating out of 10 for each:
 
-        fans_change = self.calculate_fans_change(total_score)
-        self.update_fans(fans_change)
+Concept:
+{concept}
 
-        self.display_results(concept_score, lyrics_score, music_score, image_score, total_score, fans_change)
+Lyrics:
+{lyrics}
 
-    def evaluate_phase(self, phase):
-        # Simulation d'évaluation (à remplacer par une véritable logique d'évaluation)
-        return random.uniform(0, 10)
+Composition:
+{composition}
 
-    def calculate_fans_change(self, score):
-        # Calcul du changement de fans basé sur le score
-        if score < 5:
-            return int(-self.fans * 0.1)  # Perte de 10% des fans
-        elif 5 <= score < 7:
-            return int(self.fans * 0.05)  # Gain de 5% des fans
+Visual Design:
+{visual_design}
+
+For each aspect, provide a brief explanation for the rating. Then, give an overall rating out of 10 for the entire song.
+Finally, based on the overall rating, calculate the change in fan count. Use these rules:
+- If the overall rating is less than 5, decrease fans by 10%
+- If the overall rating is between 5 and 7, increase fans by 5%
+- If the overall rating is above 7, increase fans by 20%
+
+Present the results in a clear, formatted manner."""
+
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": "You are a music critic and fan engagement analyst."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            
+            result = response.choices[0].message.content
+            self.result_area.setText(result)
+
+            # Extract overall rating and update fan count
+            overall_rating = float(result.split("Overall Rating:")[-1].split("/10")[0].strip())
+            self.update_fans(overall_rating)
+
+        except Exception as e:
+            self.result_area.append(f"Error during evaluation: {str(e)}")
+
+    def read_file(self, filename):
+        try:
+            with open(filename, 'r', encoding='utf-8') as f:
+                return f.read()
+        except FileNotFoundError:
+            return f"File {filename} not found."
+
+    def update_fans(self, overall_rating):
+        if overall_rating < 5:
+            change = int(-self.fans * 0.1)
+        elif 5 <= overall_rating < 7:
+            change = int(self.fans * 0.05)
         else:
-            return int(self.fans * 0.2)  # Gain de 20% des fans
+            change = int(self.fans * 0.2)
 
-    def update_fans(self, change):
         self.fans += change
-        self.fans = max(0, self.fans)  # Assurez-vous que le nombre de fans ne soit pas négatif
+        self.fans = max(0, self.fans)  # Ensure fan count doesn't go negative
+        self.fans_label.setText(f"Current number of fans: {self.fans}")
 
-    def display_results(self, concept_score, lyrics_score, music_score, image_score, total_score, fans_change):
-        result = f"Résultats du concert :\n"
-        result += f"Concept : {concept_score:.2f}/10\n"
-        result += f"Paroles : {lyrics_score:.2f}/10\n"
-        result += f"Musique : {music_score:.2f}/10\n"
-        result += f"Image : {image_score:.2f}/10\n"
-        result += f"Score total : {total_score:.2f}/10\n"
-        result += f"Changement de fans : {fans_change:+d}\n"
-        result += f"Nombre de fans actuel : {self.fans}"
+        # Update the result area with fan change information
+        current_text = self.result_area.toPlainText()
+        self.result_area.setText(f"{current_text}\n\nFan count change: {change:+d}\nNew fan count: {self.fans}")
 
-        self.chat_area.setText(result)
-        self.result_area.setText(f"Nombre de fans actuel : {self.fans}")
+        # Save the updated fan count
+        self.save_fan_count()
+
+    def save_fan_count(self):
+        data = {'fans': self.fans}
+        with open('band.json', 'w') as f:
+            json.dump(data, f)
