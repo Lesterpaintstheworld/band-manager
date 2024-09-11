@@ -13,6 +13,7 @@ class ConceptTab(QWidget):
         self.load_api_key()
         self.current_stream = None
         self.stream_buffer = ""
+        self.load_system_prompt()
 
     def initUI(self):
         layout = QHBoxLayout()
@@ -52,6 +53,14 @@ class ConceptTab(QWidget):
         if not openai.api_key:
             self.chat_area.append("Erreur : Clé API OpenAI non trouvée dans le fichier .env. Veuillez ajouter OPENAI_API_KEY à votre fichier .env.")
 
+    def load_system_prompt(self):
+        try:
+            with open('prompts/concept.md', 'r', encoding='utf-8') as f:
+                self.system_prompt = f.read()
+        except FileNotFoundError:
+            self.system_prompt = "Vous êtes un assistant créatif pour aider à développer des concepts de chansons."
+            self.chat_area.append("Attention : Le fichier prompts/concept.md n'a pas été trouvé. Utilisation d'un prompt par défaut.")
+
     def send_message(self):
         user_message = self.input_field.text()
         self.chat_area.append(f"Vous : {user_message}")
@@ -61,7 +70,7 @@ class ConceptTab(QWidget):
             self.current_stream = openai.ChatCompletion.create(
                 model="gpt-4",  # Assurez-vous que ce modèle est disponible pour votre compte
                 messages=[
-                    {"role": "system", "content": "Vous êtes un assistant créatif pour aider à développer des concepts de chansons."},
+                    {"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": user_message}
                 ],
                 stream=True
