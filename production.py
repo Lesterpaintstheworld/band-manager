@@ -137,17 +137,23 @@ class ProductionTab(QWidget):
             return
 
         try:
-            completion = self.client.chat.completions.create(
+            stream = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": user_message}
                 ],
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
+                stream=True
             )
             
-            gpt_response = completion.choices[0].message.content
-            self.chat_area.append("Assistant: " + gpt_response)
+            gpt_response = ""
+            self.chat_area.append("Assistant: ")
+            for chunk in stream:
+                if chunk.choices[0].delta.content is not None:
+                    gpt_response += chunk.choices[0].delta.content
+                    self.chat_area.append(chunk.choices[0].delta.content)
+                    QApplication.processEvents()  # Update the UI
             
             # Parse the JSON response
             import json
