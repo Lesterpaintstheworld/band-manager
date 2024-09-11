@@ -38,23 +38,6 @@ class MainInterface(QWidget):
         menubar = QMenuBar()
         main_layout.addWidget(menubar)
 
-        # Add Song menu
-        song_menu = menubar.addMenu('Song')
-        
-        # Add New action
-        new_action = QAction('New', self)
-        new_action.triggered.connect(self.new_song)
-        song_menu.addAction(new_action)
-
-        # Add Load action
-        load_action = QAction('Load', self)
-        load_action.triggered.connect(self.load_song)
-        song_menu.addAction(load_action)
-
-        # Add Save action
-        save_action = QAction('Save', self)
-        save_action.triggered.connect(self.save_song)
-        song_menu.addAction(save_action)
 
         # Créer un layout horizontal pour le titre et le bouton de fermeture
         top_layout = QHBoxLayout()
