@@ -4,6 +4,7 @@ from PyQt5.QtGui import QFont
 from openai import OpenAI
 import os
 import json
+import random
 
 class ConcertTab(QWidget):
     def __init__(self):
