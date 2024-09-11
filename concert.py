@@ -7,6 +7,7 @@ import sys
 import json
 import random
 import math
+from main import resource_path
 
 class ConcertTab(QWidget):
     def __init__(self):
@@ -23,7 +24,7 @@ class ConcertTab(QWidget):
 
     def load_fan_count(self):
         try:
-            with open('band.json', 'r') as f:
+            with open(resource_path('band.json'), 'r') as f:
                 data = json.load(f)
                 return max(1, data.get('fans', 1))
         except (FileNotFoundError, json.JSONDecodeError):
@@ -57,7 +58,7 @@ class ConcertTab(QWidget):
 
     def load_api_key(self):
         try:
-            with open('.env', 'r') as f:
+            with open(resource_path('.env'), 'r') as f:
                 for line in f:
                     if line.startswith('OPENAI_API_KEY='):
                         api_key = line.split('=')[1].strip()
@@ -154,29 +155,19 @@ Audience Size: {audience_size}
 
     def save_fan_count(self):
         try:
-            with open('band.json', 'r') as f:
+            with open(resource_path('band.json'), 'r') as f:
                 data = json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
             data = {}
         
         data['fans'] = self.fans
         
-        with open('band.json', 'w') as f:
+        with open(resource_path('band.json'), 'w') as f:
             json.dump(data, f)
-
-    def get_resource_path(self, relative_path):
-        """ Get absolute path to resource, works for dev and for PyInstaller """
-        try:
-            # PyInstaller creates a temp folder and stores path in _MEIPASS
-            base_path = sys._MEIPASS
-        except Exception:
-            base_path = os.path.abspath(".")
-
-        return os.path.join(base_path, relative_path)
 
     def load_system_prompt(self):
         file_name = 'prompts/concert.md'
-        full_path = self.get_resource_path(file_name)
+        full_path = resource_path(file_name)
         try:
             with open(full_path, 'r', encoding='utf-8') as f:
                 self.concert_system_prompt = f.read()
@@ -190,7 +181,7 @@ Audience Size: {audience_size}
         prompt_files = ['concept.md', 'lyrics.md', 'composition.md', 'visual_design.md', 'critique.md']
         for file in prompt_files:
             attr_name = file.split('.')[0] + '_prompt'
-            full_path = self.get_resource_path(os.path.join('prompts', file))
+            full_path = resource_path(os.path.join('prompts', file))
             try:
                 with open(full_path, 'r', encoding='utf-8') as f:
                     setattr(self, attr_name, f.read())
