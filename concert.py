@@ -7,6 +7,7 @@ import os
 import json
 import random
 import asyncio
+import math
 
 class EvaluationResult(BaseModel):
     concept_rating: int
@@ -156,13 +157,14 @@ Provide a rating out of 10 and a brief explanation for each aspect. Then, give a
 
     def update_fans(self, overall_rating):
         if overall_rating < 5:
-            change = int(-self.fans * 0.1)
+            change = max(-self.fans * 0.1, -1)  # Ensure we lose at least 1 fan for bad ratings
         elif 5 <= overall_rating < 7:
-            change = int(self.fans * 0.05)
+            change = math.ceil(self.fans * 0.05)
         else:
-            change = int(self.fans * 0.2)
+            change = math.ceil(self.fans * 0.2)
 
-        self.target_fans = max(0, self.fans + change)  # Ensure fan count doesn't go negative
+        change = int(change)  # Convert to integer
+        self.target_fans = max(1, self.fans + change)  # Ensure fan count doesn't go below 1
         self.fan_change = change
         self.update_speed = 1000  # Start with a slow update speed
         self.update_acceleration = 0.95  # Factor to accelerate updates
