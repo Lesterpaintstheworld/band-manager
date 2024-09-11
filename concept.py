@@ -35,6 +35,7 @@ class ConceptTab(QWidget):
         chat_layout = QVBoxLayout()
         self.chat_area = QTextEdit()
         self.chat_area.setReadOnly(True)
+        self.chat_area.textChanged.connect(lambda: self.chat_area.ensureCursorVisible())
         chat_layout.addWidget(self.chat_area)
 
         input_layout = QHBoxLayout()
@@ -52,6 +53,7 @@ class ConceptTab(QWidget):
         # Concept display area
         self.result_area = QTextEdit()
         self.result_area.setReadOnly(True)
+        self.result_area.textChanged.connect(lambda: self.result_area.ensureCursorVisible())
         layout.addWidget(self.result_area)
 
     def load_api_key(self):
