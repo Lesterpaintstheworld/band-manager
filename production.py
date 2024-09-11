@@ -70,6 +70,9 @@ class ProductionTab(QWidget):
             return f"File {filepath} not found."
 
     def send_message(self):
+        # Update the system prompt with the latest content
+        self.load_system_prompt()
+        
         user_message = self.input_field.text()
         self.chat_area.append(f"You: {user_message}")
         self.input_field.clear()
