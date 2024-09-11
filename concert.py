@@ -36,9 +36,9 @@ class ConcertTab(QWidget):
         try:
             with open('band.json', 'r') as f:
                 data = json.load(f)
-                return data.get('fans', 0)
+                return max(1, data.get('fans', 1))
         except (FileNotFoundError, json.JSONDecodeError):
-            return 0
+            return 1
 
     def initUI(self):
         layout = QHBoxLayout()
@@ -193,7 +193,7 @@ Provide a rating out of 10 and a brief explanation for each aspect. Then, give a
             # Add random fluctuation
             fluctuation = random.randint(-5, 5)
             if self.fans < self.target_fans:
-                self.fans = min(self.target_fans, self.fans + 1 + fluctuation)
+                self.fans = min(self.target_fans, max(1, self.fans + 1 + fluctuation))
             else:
                 self.fans = max(self.target_fans, self.fans - 1 + fluctuation)
             
