@@ -5,6 +5,7 @@ from lyrics import LyricsTab
 from composition import CompositionTab
 from production import ProductionTab
 from visual_design import VisualDesignTab
+from concert import ConcertTab
 
 class MainInterface(QWidget):
     def __init__(self):
@@ -24,5 +25,6 @@ class MainInterface(QWidget):
         tabs.addTab(CompositionTab(), "Composition")
         tabs.addTab(ProductionTab(), "Production")
         tabs.addTab(VisualDesignTab(), "Visual Design")
+        tabs.addTab(ConcertTab(), "Concert")
 
         layout.addWidget(tabs)
