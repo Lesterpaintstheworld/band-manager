@@ -68,30 +68,24 @@ class ConcertTab(QWidget):
         self.client = None
 
     def start_concert(self):
-        concept = self.read_file('concept.md')
-        lyrics = self.read_file('lyrics.md')
-        composition = self.read_file('composition.md')
-        visual_design = self.read_file('visual_design.md')
-        critique = self.read_file('critique.md')
-
         audience_size = math.ceil(self.fans * 1.2)
 
         prompt = f"""Create a short, engaging story about the band's concert performance of their new song. Use the following information:
 
 Concept:
-{concept}
+{self.concept_prompt}
 
 Lyrics:
-{lyrics}
+{self.lyrics_prompt}
 
 Composition:
-{composition}
+{self.composition_prompt}
 
 Visual Design:
-{visual_design}
+{self.visual_design_prompt}
 
 Critique:
-{critique}
+{self.critique_prompt}
 
 Audience Size: {audience_size}
 
@@ -180,3 +174,20 @@ Audience Size: {audience_size}
         except FileNotFoundError:
             self.concert_system_prompt = "Create an engaging story about the concert experience."
             print(f"Warning: {prompt_file} not found. Using default prompt.")
+        
+        # Load other prompt files
+        self.concept_prompt = self.load_prompt_file('prompts/concept.md', "Describe the concept of the song.")
+        self.lyrics_prompt = self.load_prompt_file('prompts/lyrics.md', "Provide the lyrics of the song.")
+        self.composition_prompt = self.load_prompt_file('prompts/composition.md', "Describe the composition of the song.")
+        self.visual_design_prompt = self.load_prompt_file('prompts/visual_design.md', "Describe the visual design for the song or performance.")
+        self.critique_prompt = self.load_prompt_file('prompts/critique.md', "Provide a critique of the song.")
+
+    def load_prompt_file(self, filename, default_prompt):
+        try:
+            if getattr(sys, 'frozen', False):
+                filename = os.path.join(sys._MEIPASS, filename)
+            with open(filename, 'r', encoding='utf-8') as f:
+                return f.read()
+        except FileNotFoundError:
+            print(f"Warning: {filename} not found. Using default prompt.")
+            return default_prompt
