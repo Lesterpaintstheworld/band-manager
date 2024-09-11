@@ -111,20 +111,24 @@ class ProductionTab(QWidget):
             return
 
         try:
-            completion = self.client.chat.completions.parse(
-                model="gpt-4o-2024-08-06",
+            completion = self.client.chat.completions.create(
+                model="gpt-4-1106-preview",
                 messages=[
                     {"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": user_message}
                 ],
-                response_format=self.SongResponse,
+                response_format={"type": "json_object"}
             )
             
-            gpt_response = completion.choices[0].message.parsed
-            self.chat_area.append("Assistant: " + str(gpt_response))
+            gpt_response = completion.choices[0].message.content
+            self.chat_area.append("Assistant: " + gpt_response)
             
-            self.update_production(str(gpt_response))
-            self.generate_song(gpt_response.dict())
+            # Parse the JSON response
+            import json
+            parsed_response = json.loads(gpt_response)
+            
+            self.update_production(gpt_response)
+            self.generate_song(parsed_response)
             
         except Exception as e:
             self.chat_area.append(f"Error sending message: {str(e)}")
@@ -144,5 +148,8 @@ class ProductionTab(QWidget):
             complete_song_sequence = self.udio_wrapper.create_complete_song(**gpt_response)
             self.result_area.setPlainText(f"Séquence de chanson complète générée et téléchargée : {complete_song_sequence}")
             QMessageBox.information(self, "Succès", "La chanson a été générée avec succès.")
+            
+            # Emit the production_updated signal with the new content
+            self.production_updated.emit(complete_song_sequence)
         except Exception as e:
             QMessageBox.critical(self, "Erreur", f"Une erreur s'est produite lors de la génération de la chanson : {str(e)}")
