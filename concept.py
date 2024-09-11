@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 import sys
 sys.path.append('.')  # Ajoute le dossier courant au chemin de recherche
-from aider import chat
+import aider
 
 class ConceptTab(QWidget):
     concept_updated = pyqtSignal(str)
@@ -50,7 +50,7 @@ class ConceptTab(QWidget):
         if not self.api_key:
             self.chat_area.append("Erreur : Clé API Aider non trouvée dans le fichier .env. Veuillez ajouter AIDER_API_KEY à votre fichier .env.")
         else:
-            self.aider = chat.ChatSession(api_key=self.api_key)
+            self.aider = aider.Aider(api_key=self.api_key)
 
     def load_system_prompt(self):
         try:
