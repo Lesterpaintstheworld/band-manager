@@ -90,9 +90,7 @@ class ProductionTab(QWidget):
         else:
             try:
                 self.udio_wrapper = UdioWrapper(self.udio_token)
-                # Test the Udio wrapper
-                self.udio_wrapper.test_connection()
-                self.chat_area.append("Udio connection established successfully.")
+                self.chat_area.append("Udio wrapper initialized successfully.")
             except Exception as e:
                 self.chat_area.append(f"Error initializing Udio wrapper: {str(e)}")
                 self.chat_area.append("Please check your Udio authentication token in the .env file")
