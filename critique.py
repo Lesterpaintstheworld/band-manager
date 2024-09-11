@@ -71,6 +71,17 @@ class CritiqueTab(QWidget):
         except FileNotFoundError:
             self.system_prompt = "You are a music critic providing feedback on songs."
             self.chat_area.append("Warning: prompts/critique.md not found. Using default prompt.")
+        
+        # Load the current fan count
+        try:
+            with open('band.json', 'r') as f:
+                data = json.load(f)
+                fan_count = data.get('fans', 1)
+        except (FileNotFoundError, json.JSONDecodeError):
+            fan_count = 1
+        
+        # Append fan count to the system prompt
+        self.system_prompt += f"\n\nCurrent fan count: {fan_count}"
 
     def send_message(self):
         user_message = self.input_field.text()
