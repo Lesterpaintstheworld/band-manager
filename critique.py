@@ -93,19 +93,7 @@ class CritiqueTab(QWidget):
         
         # Append fan count and JSON instructions to the system prompt
         self.system_prompt += f"\n\nCurrent fan count: {self.fan_count}\n\n"
-        self.system_prompt += "Please provide your critique in JSON format with the following structure:\n"
-        self.system_prompt += "{\n"
-        self.system_prompt += '  "concept_rating": <number>,\n'
-        self.system_prompt += '  "concept_explanation": "<text>",\n'
-        self.system_prompt += '  "lyrics_rating": <number>,\n'
-        self.system_prompt += '  "lyrics_explanation": "<text>",\n'
-        self.system_prompt += '  "composition_rating": <number>,\n'
-        self.system_prompt += '  "composition_explanation": "<text>",\n'
-        self.system_prompt += '  "visual_design_rating": <number>,\n'
-        self.system_prompt += '  "visual_design_explanation": "<text>",\n'
-        self.system_prompt += '  "overall_rating": <number>,\n'
-        self.system_prompt += '  "overall_explanation": "<text>"\n'
-        self.system_prompt += "}\n"
+        self.system_prompt += "Please provide your critique in a natural, conversational format. Include ratings out of 10 for each aspect (concept, lyrics, composition, visual design) and an overall rating. Explain your ratings and provide constructive feedback for each aspect. Conclude with an overall assessment of the song."
 
     def set_critic_name(self):
         if self.fan_count <= 10:
@@ -148,40 +136,23 @@ class CritiqueTab(QWidget):
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": self.system_prompt},
-                    {"role": "user", "content": f"Generate a JSON critique for the following: {user_message}"}
+                    {"role": "user", "content": f"Generate a critique for the following: {user_message}"}
                 ],
                 stream=True
             )
             
-            json_response = ""
+            critique_response = ""
             for chunk in stream:
                 if chunk.choices[0].delta.content is not None:
                     content = chunk.choices[0].delta.content
-                    json_response += content
+                    critique_response += content
                     self.chat_area.insertPlainText(content)
                     QApplication.processEvents()
             
-            critique_json = json.loads(json_response)
-            self.update_critique(critique_json)
-        except json.JSONDecodeError:
-            self.chat_area.append("Error: Invalid JSON response from the API.")
+            self.update_critique(critique_response)
         except Exception as e:
             self.chat_area.append(f"Error generating critique: {str(e)}")
 
-    def update_critique(self, critique_json):
-        formatted_critique = self.format_critique(critique_json)
-        self.result_area.setPlainText(formatted_critique)
-        self.critique_updated.emit(formatted_critique)
-
-    def format_critique(self, critique):
-        formatted = "Critique:\n\n"
-        for aspect in ['concept', 'lyrics', 'composition', 'visual_design']:
-            formatted += f"{aspect.capitalize()}:\n"
-            formatted += f"Rating: {critique[f'{aspect}_rating']}/10\n"
-            formatted += f"Explanation: {critique[f'{aspect}_explanation']}\n\n"
-        
-        formatted += "Overall:\n"
-        formatted += f"Rating: {critique['overall_rating']}/10\n"
-        formatted += f"Explanation: {critique['overall_explanation']}\n"
-        
-        return formatted
+    def update_critique(self, critique_text):
+        self.result_area.setPlainText(critique_text)
+        self.critique_updated.emit(critique_text)
