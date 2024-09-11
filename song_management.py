@@ -69,8 +69,19 @@ class SongManagementTab(QWidget):
                 songs = self.get_songs()
                 songs.append({'title': title, 'lyrics': '', 'composition': '', 'visual_design': '', 'concept': ''})
                 self.save_songs(songs)
+                
+                # Create the song folder
+                song_folder = os.path.join('songs', title)
+                os.makedirs(song_folder, exist_ok=True)
+                
+                # Create empty files for each component
+                for component in ['concept', 'lyrics', 'composition', 'visual_design']:
+                    with open(os.path.join(song_folder, f'{component}.md'), 'w', encoding='utf-8') as f:
+                        f.write('')
+                
                 self.load_songs()
                 self.song_selected.emit(title)
+                QMessageBox.information(self, "Success", f"New song '{title}' created successfully.")
             except Exception as e:
                 QMessageBox.warning(self, "Error", f"Failed to create new song: {str(e)}")
 
