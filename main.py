@@ -1,7 +1,9 @@
 import sys
 import json
 import os
-from PyQt5.QtWidgets import QApplication, QMessageBox
+from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import Qt, QTimer
 from welcome_screen import WelcomeScreen
 from main_interface import MainInterface
 from style import set_dark_theme
@@ -12,8 +14,10 @@ class SyntheticBandManager:
         set_dark_theme(self.app)
         self.welcome_screen = None
         self.main_interface = None
+        self.splash = QSplashScreen(QPixmap("splash.png"))
 
     def run(self):
+        self.splash.show()
         if self.band_name_exists():
             self.show_main_interface()
         else:
