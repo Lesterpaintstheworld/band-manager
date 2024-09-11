@@ -8,13 +8,23 @@ from welcome_screen import WelcomeScreen
 from main_interface import MainInterface
 from style import set_dark_theme
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 class SyntheticBandManager:
     def __init__(self):
         self.app = QApplication(sys.argv)
         set_dark_theme(self.app)
         self.welcome_screen = None
         self.main_interface = None
-        self.splash = QSplashScreen(QPixmap("splash.png"))
+        self.splash = QSplashScreen(QPixmap(resource_path("splash.png")))
 
     def run(self):
         self.splash.show()
