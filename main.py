@@ -2,8 +2,8 @@ import sys
 import json
 import os
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QPixmap, QPainter, QFont
+from PyQt5.QtCore import Qt, QTimer, QPoint
 from PyQt5.QtWidgets import QApplication
 from welcome_screen import WelcomeScreen
 # Import MainInterface will be done inside the after_splash method
@@ -26,7 +26,16 @@ class SyntheticBandManager:
         self.welcome_screen = None
         self.main_interface = None
         splash_pixmap = QPixmap(resource_path("splash.png"))
-        self.splash = QSplashScreen(splash_pixmap.scaled(QApplication.primaryScreen().size(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation))
+        scaled_pixmap = splash_pixmap.scaled(QApplication.primaryScreen().size(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+        
+        # Add version number to the splash screen
+        painter = QPainter(scaled_pixmap)
+        painter.setPen(Qt.white)
+        painter.setFont(QFont("Arial", 12))
+        painter.drawText(scaled_pixmap.rect().bottomRight() - QPoint(70, 10), "v0.1.0")
+        painter.end()
+        
+        self.splash = QSplashScreen(scaled_pixmap)
 
     def run(self):
         self.splash.show()
