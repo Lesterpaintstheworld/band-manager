@@ -35,7 +35,6 @@ options = [
     '--exclude-module=torch',
     '--exclude-module=tensorflow',
     '--noupx',
-    '--strip',
     '--log-level=DEBUG',
 ]
 
