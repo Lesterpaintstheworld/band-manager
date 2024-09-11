@@ -114,12 +114,17 @@ class LyricsTab(QWidget):
                 return
 
         try:
+            # Update the system prompt with the latest concept content
+            lyrics_prompt = self.read_file(resource_path('prompts/lyrics.md'))
+            concept_content = self.read_file(resource_path('concept.md'))
+            updated_system_prompt = f"{lyrics_prompt}\n\nContext from concept.md:\n{concept_content}"
+
             self.stream_buffer = ""
             self.chat_area.append("Assistant: ")
             stream = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": self.system_prompt},
+                    {"role": "system", "content": updated_system_prompt},
                     {"role": "user", "content": user_message}
                 ],
                 stream=True
