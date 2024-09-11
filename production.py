@@ -7,7 +7,7 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 from main import resource_path
-from udio_wrapper import UdioWrapper
+from UdioWrapper import UdioWrapper
 from pydantic import BaseModel
 from typing import List
 
@@ -89,7 +89,7 @@ class ProductionTab(QWidget):
             self.udio_wrapper = None
         else:
             try:
-                self.udio_wrapper = UdioWrapper(auth_token=self.udio_token)
+                self.udio_wrapper = UdioWrapper(self.udio_token)
                 # Test the connection
                 self.udio_wrapper.create_song("Test", "Test")
                 self.chat_area.append("Udio wrapper initialized successfully.")
