@@ -30,6 +30,7 @@ class ConcertTab(QWidget):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_fan_display)
         self.load_system_prompt()
+        self.loop = asyncio.get_event_loop()
 
     def initUI(self):
         layout = QHBoxLayout()
