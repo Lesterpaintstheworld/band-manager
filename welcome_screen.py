@@ -1,9 +1,11 @@
 import json
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 
 class WelcomeScreen(QWidget):
+    submitted = pyqtSignal()
+
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -39,4 +41,4 @@ class WelcomeScreen(QWidget):
         if band_name:
             with open('band.json', 'w') as f:
                 json.dump({"name": band_name}, f)
-            self.close()
+            self.submitted.emit()
