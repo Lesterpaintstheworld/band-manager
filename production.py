@@ -11,8 +11,6 @@ from main import resource_path
 import requests
 from pydantic import BaseModel
 from typing import List
-from udio_wrapper.udio_song_generator import UdioSongGenerator
-
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -25,7 +23,6 @@ class ProductionTab(QWidget):
         self.initUI()
         self.load_api_key()
         self.load_system_prompt()
-        self.load_udiopro_api()
 
     def initUI(self):
         main_layout = QHBoxLayout()
@@ -85,21 +82,6 @@ class ProductionTab(QWidget):
                 print(f"Error initializing OpenAI client: {str(e)}")
                 print("Please check your API key in the .env file")
                 self.client = None
-
-    def load_udiopro_api(self):
-        load_dotenv()
-        udiopro_api_key = os.getenv('UDIOPRO_API_KEY')
-        if not udiopro_api_key:
-            print("Error: UdioPro API key not found in .env file. Please add UDIOPRO_API_KEY to your .env file.")
-            self.udiopro_api = None
-        else:
-            try:
-                self.udiopro_api = UdioSongGenerator(udiopro_api_key)
-                self.chat_area.append("UdioPro API initialized successfully.")
-            except Exception as e:
-                print(f"Error initializing UdioPro API: {str(e)}")
-                print("Please check your API key in the .env file")
-                self.udiopro_api = None
 
     def load_system_prompt(self):
         try:
@@ -166,7 +148,7 @@ class ProductionTab(QWidget):
             parsed_response = json.loads(gpt_response)
             
             self.update_production(gpt_response)
-            self.generate_song(parsed_response)
+            self.display_song_info(parsed_response)
             
         except Exception as e:
             self.chat_area.append(f"Error sending message: {str(e)}")
@@ -177,77 +159,21 @@ class ProductionTab(QWidget):
         self.result_area.setPlainText(updated_content)
         self.production_updated.emit(updated_content)
 
-    def generate_song(self, gpt_response):
-        try:
-            self.result_area.clear()
-            self.result_area.append("Generating song...")
-            self.chat_area.append("Starting song generation...")
-            logger.info(f"Starting song generation with prompt: {gpt_response['short_prompt']}")
-
-            start_time = time.time()
-            
-            # Generate the song using UdioPro API
-            work_id = self.udiopro_api.generate_song(
-                title=gpt_response['short_prompt'],
-                prompt=gpt_response['short_prompt'],
-                model="chirp-v3.5"
-            )
-            
-            # Get audio URLs
-            audio_urls = self.udiopro_api.get_audio_urls(work_id)
-            
-            end_time = time.time()
-            generation_time = end_time - start_time
-            logger.info(f"Song generation completed in {generation_time:.2f} seconds")
-
-            if not audio_urls:
-                logger.error("No audio URLs received from UdioPro API.")
-                raise Exception("No audio URLs received from UdioPro API.")
-
-            # Download and save the audio files
-            song_paths = []
-            for i, url in enumerate(audio_urls):
-                song_filename = f"song_{int(time.time())}_{i}.mp3"
-                song_path = os.path.join("songs", song_filename)
-                os.makedirs("songs", exist_ok=True)
-                
-                response = requests.get(url)
-                response.raise_for_status()
-                
-                with open(song_path, 'wb') as f:
-                    f.write(response.content)
-                logger.info(f"Song part {i+1} saved successfully at: {song_path}")
-                song_paths.append(song_path)
-
-            self.result_area.clear()
-            self.result_area.append(f"Song generated and saved: {', '.join(song_paths)}")
-            self.chat_area.append(f"Song generated and saved: {', '.join(song_paths)}")
-            
-            # Play the first song in the audio player
-            logger.info("Attempting to play the generated song")
-            self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_paths[0])))
-            self.player.error.connect(self.handle_player_error)
-            self.player.play()
-            
-            # Wait for the player to be ready
-            while self.player.state() == QMediaPlayer.LoadingMedia:
-                QApplication.processEvents()
-            
-            if self.player.error() == QMediaPlayer.NoError:
-                logger.info("Song playback started successfully")
-                QMessageBox.information(self, "Success", "The song has been generated successfully and is now playing.")
-            else:
-                logger.warning(f"Playback issue detected. Player error: {self.player.error()}")
-                QMessageBox.warning(self, "Playback Issue", "The song was generated successfully, but there might be an issue with playback. You can find the audio file at: " + song_paths[0])
-            
-            # Emit the production_updated signal with the new content
-            self.production_updated.emit(song_paths[0])
-        except Exception as e:
-            error_message = f"An error occurred while generating the song: {str(e)}"
-            self.chat_area.append(error_message)
-            self.result_area.append(f"Error: {str(e)}")
-            logger.error(f"Song generation error: {str(e)}", exc_info=True)
-            QMessageBox.critical(self, "Error", error_message)
+    def display_song_info(self, song_info):
+        self.result_area.clear()
+        self.result_area.append("Song Information:")
+        self.result_area.append(f"Short Prompt: {song_info['short_prompt']}")
+        self.result_area.append(f"Number of Extensions: {song_info['num_extensions']}")
+        self.result_area.append(f"Outro Prompt: {song_info['outro_prompt']}")
+        self.result_area.append("\nExtend Prompts:")
+        for i, prompt in enumerate(song_info['extend_prompts'], 1):
+            self.result_area.append(f"{i}. {prompt}")
+        self.result_area.append("\nCustom Lyrics:")
+        self.result_area.append(f"Short: {song_info['custom_lyrics_short']}")
+        self.result_area.append("Extended:")
+        for i, lyric in enumerate(song_info['custom_lyrics_extend'], 1):
+            self.result_area.append(f"{i}. {lyric}")
+        self.result_area.append(f"Outro: {song_info['custom_lyrics_outro']}")
 
     def handle_player_error(self, error):
         error_msg = f"Media player error: {error}"
@@ -266,19 +192,6 @@ class ProductionTab(QWidget):
         
         self.chat_area.append(error_msg)
         logger.error(error_msg)
-        
-        # Check if the file exists and is readable
-        song_path = self.player.media().canonicalUrl().toLocalFile()
-        if not os.path.exists(song_path):
-            self.chat_area.append(f"Error: The audio file does not exist at {song_path}")
-            logger.error(f"Audio file not found: {song_path}")
-        elif not os.access(song_path, os.R_OK):
-            self.chat_area.append(f"Error: The audio file is not readable at {song_path}")
-            logger.error(f"Audio file not readable: {song_path}")
-        else:
-            file_size = os.path.getsize(song_path)
-            self.chat_area.append(f"Audio file exists and is readable. File size: {file_size} bytes")
-            logger.info(f"Audio file info: {song_path}, Size: {file_size} bytes")
 
         # Try to get more information about the media
         media_status = self.player.mediaStatus()
@@ -295,6 +208,6 @@ class ProductionTab(QWidget):
         if user_prompt:
             self.chat_area.append(f"You: {user_prompt}")
             self.input_field.clear()
-            self.generate_song({"short_prompt": user_prompt})
+            self.send_message()
         else:
-            QMessageBox.warning(self, "Empty Prompt", "Please enter a prompt for song generation.")
+            QMessageBox.warning(self, "Empty Prompt", "Please enter a prompt for song information.")
