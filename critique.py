@@ -153,6 +153,7 @@ class CritiqueTab(QWidget):
 
             self.chat_area.append("Assistant: Generating critique...")
             # Read content from relevant files
+            management_content = self.read_file('management.md')
             concept_content = self.read_file('concept.md')
             lyrics_content = self.read_file('lyrics.md')
             composition_content = self.read_file('composition.md')
@@ -163,6 +164,7 @@ class CritiqueTab(QWidget):
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": self.system_prompt},
+                    {"role": "system", "content": f"Management:\n{management_content}"},
                     {"role": "system", "content": f"Concept:\n{concept_content}"},
                     {"role": "system", "content": f"Lyrics:\n{lyrics_content}"},
                     {"role": "system", "content": f"Composition:\n{composition_content}"},
