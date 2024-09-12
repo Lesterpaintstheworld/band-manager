@@ -229,7 +229,22 @@ class ProductionTab(QWidget):
             self.result_area.append(f"Error: {str(e)}")
             QMessageBox.critical(self, "Error", error_message)
 
-    def create_complete_song(self, short_prompt, extend_prompts, outro_prompt, num_extensions, custom_lyrics_short, custom_lyrics_extend, custom_lyrics_outro):
+    def create_complete_song(self, short_prompt: str, extend_prompts: List[str], outro_prompt: str, num_extensions: int, custom_lyrics_short: str, custom_lyrics_extend: List[str], custom_lyrics_outro: str) -> bytes:
+        """
+        Create a complete song using the Udio API.
+
+        Args:
+            short_prompt (str): The initial prompt for generating the song.
+            extend_prompts (List[str]): List of prompts for extending the song.
+            outro_prompt (str): Prompt for adding an outro to the song.
+            num_extensions (int): Number of times to extend the song.
+            custom_lyrics_short (str): Custom lyrics for the initial song generation.
+            custom_lyrics_extend (List[str]): List of custom lyrics for each extension.
+            custom_lyrics_outro (str): Custom lyrics for the outro.
+
+        Returns:
+            bytes: The complete song data as bytes.
+        """
         try:
             song_sequence = self.udio_song_generator.generate_song(
                 song_title=short_prompt,
