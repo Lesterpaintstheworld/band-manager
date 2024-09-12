@@ -2,6 +2,7 @@ import sys
 import json
 import os
 import logging
+import traceback
 from dotenv import load_dotenv
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
 from PyQt5.QtGui import QPixmap, QPainter, QFont
@@ -12,7 +13,14 @@ from welcome_screen import WelcomeScreen
 from style import set_dark_theme
 
 # Configure logging
-log_file = os.path.join(os.path.dirname(sys.executable), 'band_manager.log')
+if getattr(sys, 'frozen', False):
+    # We are running in a bundle
+    bundle_dir = sys._MEIPASS
+else:
+    # We are running in a normal Python environment
+    bundle_dir = os.path.dirname(os.path.abspath(__file__))
+
+log_file = os.path.join(bundle_dir, 'band_manager.log')
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -29,6 +37,16 @@ logging.info(f"Python version: {sys.version}")
 logging.info(f"PyQt5 version: {Qt.PYQT_VERSION_STR}")
 logging.info(f"Qt version: {Qt.QT_VERSION_STR}")
 logging.info(f"Operating system: {sys.platform}")
+logging.info(f"Bundle directory: {bundle_dir}")
+
+# Set up global exception handler
+def global_exception_handler(exctype, value, tb):
+    logging.error("Uncaught exception", exc_info=(exctype, value, tb))
+    traceback_str = ''.join(traceback.format_tb(tb))
+    logging.error(f"Traceback:\n{traceback_str}")
+    QMessageBox.critical(None, "Error", f"An unexpected error occurred:\n{str(value)}\n\nPlease check the log file for more details.")
+
+sys.excepthook = global_exception_handler
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -47,6 +65,13 @@ if os.path.exists(env_path):
     logging.info(f".env file loaded from {env_path}")
 else:
     logging.warning(f".env file not found at {env_path}")
+    # Fallback to environment variables
+    logging.info("Attempting to use environment variables")
+    for key in ['OPENAI_API_KEY', 'UDIOPRO_API_KEY']:
+        if os.environ.get(key):
+            logging.info(f"{key} found in environment variables")
+        else:
+            logging.warning(f"{key} not found in environment variables")
 
 class BandManager:
     def __init__(self):
