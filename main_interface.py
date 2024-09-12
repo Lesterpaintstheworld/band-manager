@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QMenuBar, QAction,
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import QPushButton
+from management import ManagementTab
 from concept import ConceptTab
 from lyrics import LyricsTab
 from composition import CompositionTab
@@ -79,6 +80,7 @@ class MainInterface(QWidget):
         self.tabs.setDocumentMode(True)
 
         self.song_management_tab = SongManagementTab()
+        self.management_tab = ManagementTab()
         self.concept_tab = ConceptTab()
         self.lyrics_tab = LyricsTab()
         self.composition_tab = CompositionTab()
@@ -89,6 +91,7 @@ class MainInterface(QWidget):
         self.critique_tab = CritiqueTab()
 
         self.tabs.addTab(self.song_management_tab, "Song Management")
+        self.tabs.addTab(self.management_tab, "Management")
         self.tabs.addTab(self.concept_tab, "Concept")
         self.tabs.addTab(self.lyrics_tab, "Lyrics")
         self.tabs.addTab(self.composition_tab, "Composition")
