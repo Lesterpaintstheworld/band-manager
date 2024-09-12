@@ -261,7 +261,7 @@ class ProductionTab(QWidget):
             "token": os.getenv('UDIOPRO_API_KEY')
         }
 
-        max_attempts = 10
+        max_attempts = 30  # Increased max attempts
         attempt = 0
 
         while attempt < max_attempts:
@@ -270,12 +270,21 @@ class ProductionTab(QWidget):
                 response.raise_for_status()
                 result = response.json()
 
-                if result['code'] == 200 and result['data']['callbackType'] == 'complete':
-                    self.display_udiopro_result(result['data'])
-                    break
+                if result['code'] == 200:
+                    if result['data']['callbackType'] == 'complete':
+                        self.display_udiopro_result(result['data'])
+                        self.download_and_play_audio(result['data'])
+                        break
+                    elif result['data']['callbackType'] == 'progress':
+                        progress = result['data'].get('progress', 0)
+                        self.result_area.append(f"Debug: UdioPro generation in progress. Progress: {progress}%")
+                        time.sleep(10)  # Wait for 10 seconds before next attempt
+                    else:
+                        self.result_area.append(f"Debug: Unexpected callback type: {result['data']['callbackType']}")
+                        break
                 else:
-                    self.result_area.append(f"Debug: UdioPro generation in progress. Status: {result['data']['callbackType']}")
-                    time.sleep(10)  # Wait for 10 seconds before next attempt
+                    self.result_area.append(f"Debug: Unexpected response code: {result['code']}")
+                    break
 
             except requests.RequestException as e:
                 self.result_area.append(f"Error fetching UdioPro result: {str(e)}")
@@ -287,6 +296,26 @@ class ProductionTab(QWidget):
         if attempt == max_attempts:
             self.result_area.append("Error: Maximum attempts reached while fetching UdioPro result")
             logging.error("Maximum attempts reached while fetching UdioPro result")
+
+    def download_and_play_audio(self, result_data):
+        try:
+            audio_url = result_data['data'][0]['audio_url']
+            response = requests.get(audio_url)
+            response.raise_for_status()
+
+            # Save the audio file temporarily
+            with open('temp_audio.mp3', 'wb') as f:
+                f.write(response.content)
+
+            # Play the audio
+            self.player.setMedia(QMediaContent(QUrl.fromLocalFile('temp_audio.mp3')))
+            self.player.play()
+
+            self.result_area.append("Audio downloaded and playing.")
+            logging.info("Audio downloaded and playing.")
+        except Exception as e:
+            self.result_area.append(f"Error downloading or playing audio: {str(e)}")
+            logging.error(f"Error downloading or playing audio: {str(e)}")
 
     def display_udiopro_result(self, result):
         self.result_area.append("\nUdioPro Generation Result:")
