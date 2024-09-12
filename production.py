@@ -87,7 +87,8 @@ class ProductionTab(QWidget):
         self.udio_token1 = os.getenv('UDIO_AUTH_TOKEN_1')
         self.udio_token2 = os.getenv('UDIO_AUTH_TOKEN_2')
         if not self.udio_token1 or not self.udio_token2:
-            self.chat_area.append("Error: Udio authentication tokens not found in .env file. Please add UDIO_AUTH_TOKEN_1 and UDIO_AUTH_TOKEN_2 to your .env file.")
+            self.chat_area.append(f"Error: Udio authentication tokens not found in .env file. UDIO_AUTH_TOKEN_1: {self.udio_token1}, UDIO_AUTH_TOKEN_2: {self.udio_token2}")
+            self.chat_area.append("Please add UDIO_AUTH_TOKEN_1 and UDIO_AUTH_TOKEN_2 to your .env file.")
             self.udio_authenticator = None
             self.udio_song_generator = None
         else:
