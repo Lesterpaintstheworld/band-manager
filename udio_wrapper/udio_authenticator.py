@@ -9,7 +9,7 @@ class UdioAuthenticator:
         headers = {
             "Accept": "application/json, text/plain, */*" if get_request else "application/json",
             "Content-Type": "application/json",
-            "Cookie": f"; sb-ssr-production-auth-token.0={self.auth_token1}; sb-ssr-production-auth-token.1={self.auth_token2}",
+            "Cookie": f"sb-ssr-production-auth-token.0={self.auth_token1}; sb-ssr-production-auth-token.1={self.auth_token2}",
             "Origin": "https://www.udio.com"
         }
         return headers
