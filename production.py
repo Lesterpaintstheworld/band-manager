@@ -94,15 +94,15 @@ class ProductionTab(QWidget):
 
         # Audio controls
         controls_layout = QHBoxLayout()
-        self.play_button = QPushButton(QIcon("play_icon.png"), "")
-        self.pause_button = QPushButton(QIcon("pause_icon.png"), "")
+        self.play_pause_button = QPushButton(QIcon("play_icon.png"), "")
+        self.play_pause_button.setObjectName("play-pause-button")
         self.stop_button = QPushButton(QIcon("stop_icon.png"), "")
+        self.stop_button.setObjectName("stop-button")
         self.volume_slider = QSlider(Qt.Horizontal)
         self.volume_slider.setRange(0, 100)
         self.volume_slider.setValue(50)
 
-        controls_layout.addWidget(self.play_button)
-        controls_layout.addWidget(self.pause_button)
+        controls_layout.addWidget(self.play_pause_button)
         controls_layout.addWidget(self.stop_button)
         controls_layout.addWidget(self.volume_slider)
 
@@ -111,10 +111,12 @@ class ProductionTab(QWidget):
         right_layout.addWidget(player_frame)
 
         # Connect audio control signals
-        self.play_button.clicked.connect(self.player.play)
-        self.pause_button.clicked.connect(self.player.pause)
+        self.play_pause_button.clicked.connect(self.toggle_play_pause)
         self.stop_button.clicked.connect(self.player.stop)
         self.volume_slider.valueChanged.connect(self.set_volume)
+
+        # Connect player state changed signal
+        self.player.stateChanged.connect(self.update_play_pause_button)
 
         # Connect player signals for waveform update
         self.player.positionChanged.connect(self.waveform_widget.update_position)
