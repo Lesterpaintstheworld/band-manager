@@ -11,8 +11,6 @@ from main import resource_path
 import requests
 from pydantic import BaseModel
 from typing import List
-import random
-from udio_wrapper.udio_song_generator import SunoSongGenerator
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -94,20 +92,8 @@ class ProductionTab(QWidget):
         self.suno_api = None
 
     def load_suno_api(self):
-        load_dotenv()
-        self.udioapipro_key = os.getenv('UDIOAPIPRO_KEY')
-        if not self.udioapipro_key:
-            self.chat_area.append("Error: UdioApiPro Key not found in .env file.")
-            self.chat_area.append("Please add UDIOAPIPRO_KEY to your .env file.")
-            self.suno_api = None
-        else:
-            try:
-                self.suno_api = SunoSongGenerator(self.udioapipro_key)
-                self.chat_area.append("UdioApiPro connection initialized successfully.")
-            except Exception as e:
-                self.chat_area.append(f"Error initializing UdioApiPro: {str(e)}")
-                self.chat_area.append("Please check your UdioApiPro Key in the .env file.")
-                self.suno_api = None
+        self.chat_area.append("Suno API initialization is currently disabled.")
+        self.suno_api = None
 
     def load_system_prompt(self):
         try:
