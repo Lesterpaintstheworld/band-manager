@@ -7,7 +7,8 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 from main import resource_path
-from UdioWrapper import UdioWrapper
+from udio_wrapper.udio_authenticator import UdioAuthenticator
+from udio_wrapper.udio_song_generator import UdioSongGenerator
 from pydantic import BaseModel
 from typing import List
 
@@ -87,17 +88,20 @@ class ProductionTab(QWidget):
         self.udio_token2 = os.getenv('UDIO_AUTH_TOKEN_2')
         if not self.udio_token1 or not self.udio_token2:
             self.chat_area.append("Error: Udio authentication tokens not found in .env file. Please add UDIO_AUTH_TOKEN_1 and UDIO_AUTH_TOKEN_2 to your .env file.")
-            self.udio_wrapper = None
+            self.udio_authenticator = None
+            self.udio_song_generator = None
         else:
             try:
-                self.udio_wrapper = UdioWrapper(self.udio_token1, self.udio_token2)
+                self.udio_authenticator = UdioAuthenticator(self.udio_token1, self.udio_token2)
+                self.udio_song_generator = UdioSongGenerator(self.udio_authenticator)
                 # Test the connection
-                self.udio_wrapper.create_song("Test", "Test")
-                self.chat_area.append("Udio wrapper initialized successfully.")
+                self.udio_authenticator.test_connection()
+                self.chat_area.append("Udio connection initialized successfully.")
             except Exception as e:
-                self.chat_area.append(f"Error initializing Udio wrapper: {str(e)}")
+                self.chat_area.append(f"Error initializing Udio connection: {str(e)}")
                 self.chat_area.append("Please check your Udio authentication tokens in the .env file.")
-                self.udio_wrapper = None
+                self.udio_authenticator = None
+                self.udio_song_generator = None
 
     def load_system_prompt(self):
         try:
@@ -176,8 +180,8 @@ class ProductionTab(QWidget):
         self.production_updated.emit(updated_content)
 
     def generate_song(self, gpt_response):
-        if not self.udio_wrapper:
-            error_message = "Error: The Udio authentication token is not configured correctly or the connection to Udio failed."
+        if not self.udio_song_generator:
+            error_message = "Error: The Udio connection is not configured correctly or the connection to Udio failed."
             self.chat_area.append(error_message)
             QMessageBox.critical(self, "Error", error_message)
             return
@@ -200,7 +204,7 @@ class ProductionTab(QWidget):
             if complete_song_sequence is None:
                 raise Exception("The generated song sequence is empty.")
 
-            # Sauvegarder le fichier audio dans le dossier songs/
+            # Save the audio file in the songs/ folder
             song_filename = f"song_{int(time.time())}.mp3"
             song_path = os.path.join("songs", song_filename)
             os.makedirs("songs", exist_ok=True)
@@ -211,7 +215,7 @@ class ProductionTab(QWidget):
             self.result_area.append(f"Song generated and saved: {song_path}")
             self.chat_area.append(f"Song generated and saved: {song_path}")
             
-            # Jouer la chanson dans le lecteur audio
+            # Play the song in the audio player
             self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_path)))
             self.player.play()
             
@@ -227,20 +231,20 @@ class ProductionTab(QWidget):
 
     def create_complete_song(self, short_prompt, extend_prompts, outro_prompt, num_extensions, custom_lyrics_short, custom_lyrics_extend, custom_lyrics_outro):
         try:
-            song_sequence = self.udio_wrapper.create_song(
-                prompt=short_prompt,
-                custom_lyrics=custom_lyrics_short
+            song_sequence = self.udio_song_generator.generate_song(
+                song_title=short_prompt,
+                song_description=custom_lyrics_short
             )
             
             for i in range(num_extensions):
-                song_sequence = self.udio_wrapper.extend(
+                song_sequence = self.udio_song_generator.extend_song(
                     prompt=extend_prompts[i],
                     audio_conditioning_path=song_sequence,
                     audio_conditioning_song_id=song_sequence.split('/')[-1].split('.')[0],
                     custom_lyrics=custom_lyrics_extend[i]
                 )
             
-            song_sequence = self.udio_wrapper.add_outro(
+            song_sequence = self.udio_song_generator.add_outro(
                 prompt=outro_prompt,
                 audio_conditioning_path=song_sequence,
                 audio_conditioning_song_id=song_sequence.split('/')[-1].split('.')[0],
