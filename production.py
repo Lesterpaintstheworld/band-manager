@@ -165,7 +165,8 @@ class ProductionTab(QWidget):
 
     def display_song_info(self, song_info):
         self.result_area.clear()
-        self.result_area.append("Song Information:")
+        self.result_area.append("Song Information (Conceptual Only):")
+        self.result_area.append("Note: This is a conceptual representation. No audio is generated.")
         self.result_area.append(f"Short Prompt: {song_info['short_prompt']}")
         self.result_area.append(f"Number of Extensions: {song_info['num_extensions']}")
         self.result_area.append(f"Outro Prompt: {song_info['outro_prompt']}")
@@ -178,6 +179,7 @@ class ProductionTab(QWidget):
         for i, lyric in enumerate(song_info['custom_lyrics_extend'], 1):
             self.result_area.append(f"{i}. {lyric}")
         self.result_area.append(f"Outro: {song_info['custom_lyrics_outro']}")
+        self.result_area.append("\nReminder: This is a conceptual representation only. No actual audio is generated or played.")
 
     def handle_player_error(self, error):
         error_msg = f"Media player error: {error}"
