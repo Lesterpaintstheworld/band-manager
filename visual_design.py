@@ -64,6 +64,7 @@ class VisualDesignTab(QWidget):
         self.chat_area = QTextEdit()
         self.chat_area.setReadOnly(True)
         self.chat_area.textChanged.connect(lambda: self.chat_area.ensureCursorVisible())
+        self.chat_area.append("Hey there! I'm Pixel, your visual design virtuoso. Welcome to the Visual Design Tab! Here you can work on the visual aspects of your project. Start by describing your ideas for visuals or ask for suggestions in the input field below.")
         chat_layout.addWidget(self.chat_area)
 
         input_layout = QHBoxLayout()
