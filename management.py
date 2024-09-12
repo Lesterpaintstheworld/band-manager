@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QLineEdit, QPushButton
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QLineEdit, QPushButton, QApplication
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 import os
@@ -60,15 +60,18 @@ class ManagementTab(QWidget):
         self.input_field.clear()
 
         try:
-            response = self.client.chat.completions.create(
+            self.chat_area.append("Assistant : ")
+            for chunk in self.client.chat.completions.create(
                 model="gpt-4",
                 messages=[
                     {"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": user_message}
-                ]
-            )
-            ai_message = response.choices[0].message.content
-            self.chat_area.append(f"Assistant : {ai_message}")
+                ],
+                stream=True
+            ):
+                if chunk.choices[0].delta.content is not None:
+                    self.chat_area.insertPlainText(chunk.choices[0].delta.content)
+                    QApplication.processEvents()
         except Exception as e:
             self.chat_area.append(f"Erreur : {str(e)}")
 
