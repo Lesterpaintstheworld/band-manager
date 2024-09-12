@@ -6,78 +6,12 @@ import traceback
 import argparse
 from dotenv import load_dotenv
 
-print(f"Répertoire de travail actuel : {os.getcwd()}")
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logging.info("Démarrage du programme")
-
-# Ajout du chemin du répertoire courant au sys.path
-current_dir = os.path.dirname(os.path.abspath(__file__))
-if current_dir not in sys.path:
-    sys.path.append(current_dir)
-
-# Ajout du répertoire des bibliothèques Python au sys.path
-if getattr(sys, 'frozen', False):
-    # Si l'application est "gelée" (compilée avec PyInstaller)
-    base_dir = sys._MEIPASS
-else:
-    # Si l'application est exécutée normalement
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-
-python_lib = os.path.join(base_dir, 'lib')
-if python_lib not in sys.path:
-    sys.path.append(python_lib)
-
-logging.info(f"Python version: {sys.version}")
-logging.info(f"sys.path: {sys.path}")
-
-logging.info("Tentative d'importation de NumPy")
-try:
-    import numpy as np
-    logging.info(f"NumPy importé avec succès. Version: {np.__version__}")
-except ImportError as e:
-    logging.error(f"Erreur lors de l'importation de NumPy: {e}")
-    logging.error(f"sys.path: {sys.path}")
-    logging.error("Contenu du répertoire courant:")
-    for item in os.listdir(current_dir):
-        logging.error(f"- {item}")
-    logging.error(f"Contenu du répertoire de base ({base_dir}):")
-    for item in os.listdir(base_dir):
-        logging.error(f"- {item}")
-    if os.path.exists(python_lib):
-        logging.error(f"Contenu du répertoire Python lib ({python_lib}):")
-        for item in os.listdir(python_lib):
-            logging.error(f"- {item}")
-    else:
-        logging.error(f"Le répertoire {python_lib} n'existe pas.")
-    
-    # Add more detailed logging
-    logging.error("Detailed NumPy import error information:")
-    logging.error(f"NumPy path: {np.__file__ if 'numpy' in sys.modules else 'Not found'}")
-    logging.error(f"Python version: {sys.version}")
-    logging.error(f"Platform: {sys.platform}")
-    logging.error(f"Executable: {sys.executable}")
-    
-    # Try to import NumPy components individually
-    try:
-        import numpy.core._multiarray_umath
-        logging.info("numpy.core._multiarray_umath imported successfully")
-    except ImportError as e:
-        logging.error(f"Error importing numpy.core._multiarray_umath: {e}")
-    
-    try:
-        import numpy.core._multiarray_tests
-        logging.info("numpy.core._multiarray_tests imported successfully")
-    except ImportError as e:
-        logging.error(f"Error importing numpy.core._multiarray_tests: {e}")
-    
-    sys.exit(1)
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
 from PyQt5.QtGui import QPixmap, QPainter, QFont
-from PyQt5.QtCore import Qt, QTimer, QPoint, PYQT_VERSION_STR, QT_VERSION_STR
-import PyQt5.QtCore
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import Qt, QTimer, QPoint
 from welcome_screen import WelcomeScreen
-# Import MainInterface will be done inside the after_splash method
 from style import set_dark_theme
 
 # Parse command-line arguments
@@ -86,14 +20,7 @@ parser.add_argument('--verbose', action='store_true', help='Enable verbose loggi
 args = parser.parse_args()
 
 # Configure logging
-if getattr(sys, 'frozen', False):
-    # We are running in a bundle
-    bundle_dir = sys._MEIPASS
-else:
-    # We are running in a normal Python environment
-    bundle_dir = os.path.dirname(os.path.abspath(__file__))
-
-log_file = os.path.join(bundle_dir, 'band_manager.log')
+log_file = 'band_manager.log'
 logging.basicConfig(
     level=logging.DEBUG if args.verbose else logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -108,7 +35,6 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 console.setFormatter(formatter)
 logging.getLogger('').addHandler(console)
 
-# Add immediate logging to check if the program starts
 logging.info("Program started")
 print("Program started. Check the log file at:", log_file)
 if args.verbose:
@@ -116,46 +42,7 @@ if args.verbose:
 
 # Log system information
 logging.info(f"Python version: {sys.version}")
-logging.info(f"PyQt5 version: {PyQt5.QtCore.PYQT_VERSION_STR}")
-logging.info(f"Qt version: {PyQt5.QtCore.QT_VERSION_STR}")
 logging.info(f"Operating system: {sys.platform}")
-logging.info(f"Bundle directory: {bundle_dir}")
-
-# Add more detailed logging
-logging.info("Importing required modules...")
-logging.info("Modules imported successfully")
-
-# Log environment variables
-logging.info("Environment variables:")
-for key, value in os.environ.items():
-    logging.info(f"{key}: {value}")
-
-# Check if running as executable
-if getattr(sys, 'frozen', False):
-    logging.info("Running as executable")
-else:
-    logging.info("Running as script")
-
-# Log current working directory
-logging.info(f"Current working directory: {os.getcwd()}")
-
-# Log contents of the bundle directory
-logging.info(f"Contents of bundle directory ({bundle_dir}):")
-for item in os.listdir(bundle_dir):
-    logging.info(f"- {item}")
-
-# Set up global exception handler
-def global_exception_handler(exctype, value, tb):
-    logging.error("Uncaught exception", exc_info=(exctype, value, tb))
-    traceback_str = ''.join(traceback.format_tb(tb))
-    logging.error(f"Traceback:\n{traceback_str}")
-    error_msg = f"An unexpected error occurred:\n{str(value)}\n\nPlease check the log file for more details."
-    logging.error(error_msg)
-    print(error_msg)  # Print to console as well
-    # Commentez la ligne suivante pour éviter que l'application ne se ferme immédiatement
-    # QMessageBox.critical(None, "Error", error_msg)
-
-sys.excepthook = global_exception_handler
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -164,7 +51,6 @@ def resource_path(relative_path):
         base_path = sys._MEIPASS
     except Exception:
         base_path = os.path.abspath(".")
-
     return os.path.join(base_path, relative_path)
 
 # Load .env file
@@ -174,7 +60,6 @@ if os.path.exists(env_path):
     logging.info(f".env file loaded from {env_path}")
 else:
     logging.warning(f".env file not found at {env_path}")
-    # Fallback to environment variables
     logging.info("Attempting to use environment variables")
     for key in ['OPENAI_API_KEY', 'UDIOPRO_API_KEY']:
         if os.environ.get(key):
