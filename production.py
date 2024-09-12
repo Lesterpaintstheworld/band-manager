@@ -1,7 +1,9 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QPushButton, QHBoxLayout, QLineEdit, QApplication, QMessageBox, QSplitter, QSlider
-from PyQt5.QtCore import pyqtSignal, Qt, QUrl
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QPushButton, QHBoxLayout, QLineEdit, QApplication, QMessageBox, QSplitter, QSlider, QFrame
+from PyQt5.QtCore import pyqtSignal, Qt, QUrl, QTimer
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent, QMediaPlaylist, QAudio
 from PyQt5.QtMultimediaWidgets import QVideoWidget
+from PyQt5.QtGui import QPainter, QColor, QPen
+from waveform_widget import WaveformWidget
 import time
 import logging
 from openai import OpenAI
@@ -39,7 +41,7 @@ class ProductionTab(QWidget):
         main_layout = QHBoxLayout()
         self.setLayout(main_layout)
 
-        # Partie gauche
+        # Left part
         left_widget = QWidget()
         left_layout = QVBoxLayout()
         left_widget.setLayout(left_layout)
@@ -61,15 +63,25 @@ class ProductionTab(QWidget):
         self.result_area.setReadOnly(True)
         left_layout.addWidget(self.result_area)
 
-        # Partie droite
+        # Right part
         right_widget = QWidget()
         right_layout = QVBoxLayout()
         right_widget.setLayout(right_layout)
 
+        # Player frame
+        player_frame = QFrame()
+        player_frame.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
+        player_layout = QVBoxLayout()
+        player_frame.setLayout(player_layout)
+
         self.player = QMediaPlayer()
         self.video_widget = QVideoWidget()
         self.player.setVideoOutput(self.video_widget)
-        right_layout.addWidget(self.video_widget)
+        player_layout.addWidget(self.video_widget)
+
+        # Waveform widget
+        self.waveform_widget = WaveformWidget()
+        player_layout.addWidget(self.waveform_widget)
 
         # Audio controls
         controls_layout = QHBoxLayout()
@@ -85,7 +97,12 @@ class ProductionTab(QWidget):
         controls_layout.addWidget(self.stop_button)
         controls_layout.addWidget(self.volume_slider)
 
-        right_layout.addLayout(controls_layout)
+        player_layout.addLayout(controls_layout)
+
+        # Center the player frame vertically
+        right_layout.addStretch()
+        right_layout.addWidget(player_frame)
+        right_layout.addStretch()
 
         # Connect audio control signals
         self.play_button.clicked.connect(self.player.play)
@@ -93,7 +110,11 @@ class ProductionTab(QWidget):
         self.stop_button.clicked.connect(self.player.stop)
         self.volume_slider.valueChanged.connect(self.set_volume)
 
-        # Splitter pour diviser l'écran
+        # Connect player signals for waveform update
+        self.player.positionChanged.connect(self.waveform_widget.update_position)
+        self.player.durationChanged.connect(self.waveform_widget.set_duration)
+
+        # Splitter to divide the screen
         splitter = QSplitter(Qt.Horizontal)
         splitter.addWidget(left_widget)
         splitter.addWidget(right_widget)
