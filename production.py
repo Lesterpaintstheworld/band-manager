@@ -425,7 +425,7 @@ class ProductionTab(QWidget):
 
     def play_selected_song(self, item):
         song_path = os.path.join("generated_songs", item.text())
-        self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_path)))
+        self.player.setMedia(QMediaContent(QUrl.fromLocalFile(QDir.toNativeSeparators(song_path))))
         self.player.play()
 
 class UdioProWorker(QThread):
