@@ -98,58 +98,6 @@ class ConceptTab(QWidget):
         except FileNotFoundError:
             return f"File {filepath} not found."
 
-    def send_message(self):
-        user_message = self.input_field.text()
-        self.chat_area.append(f"You: {user_message}")
-        self.input_field.clear()
-
-        if not self.api_key:
-            self.chat_area.append("Error: OpenAI API key not found. Please check your .env file.")
-            return
-
-        if self.client is None:
-            try:
-                self.client = OpenAI(api_key=self.api_key)
-                self.chat_area.append("OpenAI client reinitialized successfully.")
-            except Exception as e:
-                self.chat_area.append(f"Error reinitializing OpenAI client: {str(e)}")
-                return
-
-        try:
-            # Charger les informations du groupe
-            group_info = self.load_group_info()
-            
-            self.stream_buffer = ""
-            self.chat_area.append("Assistant: ")
-            stream = self.client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {"role": "system", "content": self.system_prompt},
-                    {"role": "system", "content": f"Group Information: {group_info}"},
-                    {"role": "user", "content": user_message}
-                ],
-                stream=True
-            )
-            for chunk in stream:
-                if chunk.choices[0].delta.content is not None:
-                    self.stream_buffer += chunk.choices[0].delta.content
-                    self.chat_area.insertPlainText(chunk.choices[0].delta.content)
-                    QApplication.processEvents()
-            self.update_concept(self.stream_buffer)
-        except Exception as e:
-            self.chat_area.append(f"Error sending message: {str(e)}")
-            self.chat_area.append("Please check your internet connection and the validity of your API key.")
-
-    def update_concept(self, new_content):
-        current_concept = self.result_area.toPlainText()
-        updated_concept = current_concept + "\n\n" + new_content
-        self.result_area.setPlainText(updated_concept)
-        self.concept_updated.emit(updated_concept)
-        
-        # Sauvegarder le concept dans concept.md
-        with open('concept.md', 'w', encoding='utf-8') as f:
-            f.write(updated_concept)
-
     def load_context_info(self):
         context = ""
         files_to_read = ['band_info.txt', 'concept.md', 'management.md']
@@ -185,7 +133,7 @@ class ConceptTab(QWidget):
             self.stream_buffer = ""
             self.chat_area.append("Assistant: ")
             stream = self.client.chat.completions.create(
-                model="gpt-4o",
+                model="gpt-4",
                 messages=[
                     {"role": "system", "content": self.system_prompt},
                     {"role": "system", "content": f"Context Information:\n{context_info}"},
@@ -202,3 +150,13 @@ class ConceptTab(QWidget):
         except Exception as e:
             self.chat_area.append(f"Error sending message: {str(e)}")
             self.chat_area.append("Please check your internet connection and the validity of your API key.")
+
+    def update_concept(self, new_content):
+        current_concept = self.result_area.toPlainText()
+        updated_concept = current_concept + "\n\n" + new_content
+        self.result_area.setPlainText(updated_concept)
+        self.concept_updated.emit(updated_concept)
+        
+        # Sauvegarder le concept dans concept.md
+        with open('concept.md', 'w', encoding='utf-8') as f:
+            f.write(updated_concept)
