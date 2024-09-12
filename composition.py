@@ -48,7 +48,7 @@ class CompositionTab(QWidget):
         self.chat_area = QTextEdit()
         self.chat_area.setReadOnly(True)
         self.chat_area.textChanged.connect(lambda: self.chat_area.ensureCursorVisible())
-        self.chat_area.append("Welcome to the Composition Tab! Here you can work on the musical composition of your song. Start by describing your ideas for the melody, harmony, or overall structure in the input field below.")
+        self.chat_area.append("Greetings! I'm Rhythm, your composition companion. Welcome to the Composition Tab! Here you can work on the musical composition of your song. Start by describing your ideas for the melody, harmony, or overall structure in the input field below.")
         chat_layout.addWidget(self.chat_area)
 
         input_layout = QHBoxLayout()

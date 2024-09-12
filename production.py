@@ -50,7 +50,7 @@ class ProductionTab(QWidget):
         self.chat_area = QTextEdit()
         self.chat_area.setReadOnly(True)
         self.chat_area.setStyleSheet("font-size: 14pt;")
-        self.chat_area.append("Welcome to the Production Tab! Here you can work on the production aspects of your song. Start by describing your ideas for the sound, effects, or overall production style in the input field below.")
+        self.chat_area.append("Hey there! I'm Nova, your production pro. Welcome to the Production Tab! Here you can work on the production aspects of your song. Start by describing your ideas for the sound, effects, or overall production style in the input field below.")
         left_layout.addWidget(self.chat_area)
 
         input_layout = QHBoxLayout()

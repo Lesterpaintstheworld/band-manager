@@ -38,7 +38,7 @@ class LyricsTab(QWidget):
         self.chat_area = QTextEdit()
         self.chat_area.setReadOnly(True)
         self.chat_area.textChanged.connect(lambda: self.chat_area.ensureCursorVisible())
-        self.chat_area.append("Welcome to the Lyrics Tab! Here you can create and edit your song lyrics. Start by entering your ideas for lyrics or ask for suggestions in the input field below.")
+        self.chat_area.append("Hello! I'm Vox, your lyrical guide. Welcome to the Lyrics Tab! Here you can create and edit your song lyrics. Start by entering your ideas for lyrics or ask for suggestions in the input field below.")
         chat_layout.addWidget(self.chat_area)
 
         input_layout = QHBoxLayout()

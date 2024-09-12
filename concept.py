@@ -48,7 +48,7 @@ class ConceptTab(QWidget):
         self.chat_area = QTextEdit()
         self.chat_area.setReadOnly(True)
         self.chat_area.textChanged.connect(lambda: self.chat_area.ensureCursorVisible())
-        self.chat_area.append("Welcome to the Concept Tab! Here you can develop and refine your song concept. Start by typing your initial ideas or questions about the song concept in the input field below.")
+        self.chat_area.append("Hi there! I'm Lyra, your concept creator. Welcome to the Concept Tab! Here you can develop and refine your song concept. Start by typing your initial ideas or questions about the song concept in the input field below.")
         chat_layout.addWidget(self.chat_area)
 
         input_layout = QHBoxLayout()
