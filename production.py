@@ -196,11 +196,31 @@ class ProductionTab(QWidget):
             return
 
         try:
+            # Read content from relevant files
+            concept_content = self.read_file(resource_path('concept.md'))
+            lyrics_content = self.read_file(resource_path('lyrics.md'))
+            composition_content = self.read_file(resource_path('composition.md'))
+            visual_design_content = self.read_file(resource_path('visual_design.md'))
+
             stream = self.client.chat.completions.create(
                 model="gpt-4-1106-preview",
                 messages=[
                     {"role": "system", "content": self.system_prompt},
-                    {"role": "user", "content": f"Generate a JSON response for the following request: {user_message}"}
+                    {"role": "user", "content": f"""
+                    Concept:
+                    {concept_content}
+                    
+                    Lyrics: 
+                    {lyrics_content}
+                    
+                    Composition:
+                    {composition_content}
+                    
+                    Visual Design:
+                    {visual_design_content}
+                    
+                    Generate a JSON response for the following request: {user_message}
+                    """}
                 ],
                 response_format={"type": "json_object"},
                 stream=True
