@@ -198,6 +198,10 @@ class ProductionTab(QWidget):
             generation_time = end_time - start_time
             logger.info(f"Song generation completed in {generation_time:.2f} seconds")
 
+            # Log the Udio API response
+            logger.info(f"Udio API response: {song_data}")
+            self.chat_area.append(f"Udio API response: {song_data[:100]}...")  # Display first 100 characters in chat area
+
             if not song_data:
                 logger.error("The generated song data is empty.")
                 raise Exception("The generated song data is empty.")
