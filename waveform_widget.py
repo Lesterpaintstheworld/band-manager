@@ -1,7 +1,8 @@
 from PyQt5.QtWidgets import QWidget
-from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QPainter, QColor, QPen, QPainterPath
-import random
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPainter, QColor, QPen
+from pydub import AudioSegment
+import numpy as np
 
 class WaveformWidget(QWidget):
     def __init__(self, parent=None):
@@ -11,20 +12,11 @@ class WaveformWidget(QWidget):
         self.duration = 0
         self.setMinimumHeight(100)
 
-        # Generate initial random waveform data
-        self.generate_random_waveform()
-
-        # Timer to update waveform
-        self.update_timer = QTimer(self)
-        self.update_timer.timeout.connect(self.update_waveform)
-        self.update_timer.start(50)  # Update every 50ms
-
-    def generate_random_waveform(self):
-        self.waveform_data = [random.randint(10, 90) for _ in range(100)]
-
-    def update_waveform(self):
-        # Shift waveform data and add new random value
-        self.waveform_data = self.waveform_data[1:] + [random.randint(10, 90)]
+    def load_audio(self, file_path):
+        audio = AudioSegment.from_file(file_path)
+        samples = audio.get_array_of_samples()
+        self.waveform_data = np.array(samples).reshape((-1, audio.channels))
+        self.duration = len(audio)
         self.update()
 
     def set_duration(self, duration):
@@ -41,31 +33,28 @@ class WaveformWidget(QWidget):
         # Draw background
         painter.fillRect(self.rect(), QColor(30, 30, 30))
 
-        if not self.waveform_data:
+        if len(self.waveform_data) == 0:
             return
 
-        # Calculate width of each bar
-        width = self.width() / len(self.waveform_data)
-        mid_height = self.height() / 2
+        # Calculate scaling factors
+        width = self.width()
+        height = self.height()
+        samples_per_pixel = max(1, len(self.waveform_data) // width)
+        amplitude_scale = height / (2 * np.abs(self.waveform_data).max())
 
         # Draw waveform
-        painter.setPen(QPen(QColor(0, 255, 0), 2))
-        path = QPainterPath()
-        path.moveTo(0, mid_height)
-        for i, value in enumerate(self.waveform_data):
-            x = i * width
-            y = mid_height - value
-            path.lineTo(x, y)
-        for i in range(len(self.waveform_data) - 1, -1, -1):
-            x = i * width
-            y = mid_height + self.waveform_data[i]
-            path.lineTo(x, y)
-        path.closeSubpath()
-        painter.fillPath(path, QColor(0, 255, 0, 100))
-        painter.drawPath(path)
+        painter.setPen(QPen(QColor(0, 255, 0), 1))
+        for x in range(width):
+            start = x * samples_per_pixel
+            end = start + samples_per_pixel
+            chunk = self.waveform_data[start:end]
+            if len(chunk) > 0:
+                min_val = np.min(chunk) * amplitude_scale
+                max_val = np.max(chunk) * amplitude_scale
+                painter.drawLine(x, height//2 - min_val, x, height//2 - max_val)
 
         # Draw playback position
         if self.duration > 0:
-            position_x = int((self.current_position / self.duration) * self.width())
+            position_x = int((self.current_position / self.duration) * width)
             painter.setPen(QPen(QColor(255, 0, 0), 2))
-            painter.drawLine(position_x, 0, position_x, self.height())
+            painter.drawLine(position_x, 0, position_x, height)

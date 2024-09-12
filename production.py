@@ -91,6 +91,7 @@ class ProductionTab(QWidget):
         # Waveform widget
         self.waveform_widget = WaveformWidget()
         player_layout.addWidget(self.waveform_widget)
+        self.player.mediaChanged.connect(self.load_waveform)
 
         # Audio controls
         controls_layout = QHBoxLayout()
@@ -351,11 +352,20 @@ class ProductionTab(QWidget):
             self.result_area.append(f"Audio saved and added to playlist: {filename}")
             logging.info(f"Audio saved and added to playlist: {filename}")
             
+            # Load the waveform
+            self.waveform_widget.load_audio(filename)
+            
             # Open the folder containing the saved file
             os.startfile(os.path.dirname(filename))
         except Exception as e:
             self.result_area.append(f"Error downloading audio: {str(e)}")
             logging.error(f"Error downloading audio: {str(e)}")
+
+    def load_waveform(self, media):
+        if media.isNull():
+            return
+        file_path = media.canonicalUrl().toLocalFile()
+        self.waveform_widget.load_audio(file_path)
 
     def display_udiopro_result(self, result):
         self.result_area.append("\nUdioPro Generation Result:")
