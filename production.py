@@ -12,7 +12,6 @@ import requests
 from pydantic import BaseModel
 from typing import List
 import random
-from udio_wrapper.udio_song_generator import SunoSongGenerator
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -89,25 +88,9 @@ class ProductionTab(QWidget):
                 self.client = None
 
     def load_suno_api(self):
-        load_dotenv()
-        self.suno_cookie = os.getenv('SUNO_COOKIE')
-        if not self.suno_cookie:
-            self.chat_area.append("Error: Suno API Cookie not found in .env file.")
-            self.chat_area.append("Please add SUNO_COOKIE to your .env file.")
-            self.suno_api = None
-        else:
-            try:
-                self.suno_generator = SunoSongGenerator(self.suno_cookie)
-                response = requests.get("https://api.suno.ai/api/get_limit", headers={'Cookie': self.suno_cookie})
-                if response.status_code == 200:
-                    self.chat_area.append("Suno API connection initialized successfully.")
-                    self.suno_api = True
-                else:
-                    raise Exception(f"Failed to connect to Suno API. Status code: {response.status_code}")
-            except Exception as e:
-                self.chat_area.append(f"Error initializing Suno API connection: {str(e)}")
-                self.chat_area.append("Please check your network connection and Suno API Cookie in the .env file.")
-                self.suno_api = None
+        # Temporarily disabled Suno API initialization
+        self.chat_area.append("Suno API initialization is currently disabled.")
+        self.suno_api = None
 
     def load_suno_api(self):
         load_dotenv()
@@ -329,48 +312,8 @@ class ProductionTab(QWidget):
         logger.info(f"Supported audio formats: {', '.join(supported_formats)}")
 
     def generate_song(self, gpt_response):
-        try:
-            self.result_area.clear()
-            self.result_area.append("Generating song...")
-            self.chat_area.append("Starting song generation...")
-            logger.info(f"Starting song generation with prompt: {gpt_response['short_prompt']}")
-
-            start_time = time.time()
-            
-            # Generate the song using Suno API
-            song_paths = self.suno_generator.create_complete_song(gpt_response['short_prompt'])
-            
-            end_time = time.time()
-            generation_time = end_time - start_time
-            logger.info(f"Song generation completed in {generation_time:.2f} seconds")
-
-            self.result_area.clear()
-            self.result_area.append(f"Songs generated and saved: {', '.join(song_paths)}")
-            self.chat_area.append(f"Songs generated and saved: {', '.join(song_paths)}")
-            
-            # Play the first song in the audio player
-            if song_paths:
-                logger.info("Attempting to play the generated song")
-                self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_paths[0])))
-                self.player.error.connect(self.handle_player_error)
-                self.player.play()
-                
-                if self.player.error() == QMediaPlayer.NoError:
-                    logger.info("Song playback started successfully")
-                    QMessageBox.information(self, "Success", "The songs have been generated successfully and the first one is now playing.")
-                else:
-                    logger.warning(f"Playback issue detected. Player error: {self.player.error()}")
-                    QMessageBox.warning(self, "Playback Issue", "The songs were generated successfully, but there might be an issue with playback. You can find the audio files at: " + ', '.join(song_paths))
-                
-                # Emit the production_updated signal with the new content
-                self.production_updated.emit(song_paths[0])
-            else:
-                logger.warning("No songs were generated")
-                QMessageBox.warning(self, "Generation Issue", "No songs were generated. Please try again.")
-
-        except Exception as e:
-            error_message = f"An error occurred while generating the song: {str(e)}"
-            self.chat_area.append(error_message)
-            self.result_area.append(f"Error: {str(e)}")
-            logger.error(f"Song generation error: {str(e)}", exc_info=True)
-            QMessageBox.critical(self, "Error", error_message)
+        self.result_area.clear()
+        self.result_area.append("Song generation is currently disabled.")
+        self.chat_area.append("Song generation is currently disabled.")
+        logger.info("Song generation attempt was made, but the feature is currently disabled.")
+        QMessageBox.information(self, "Info", "Song generation is currently disabled.")
