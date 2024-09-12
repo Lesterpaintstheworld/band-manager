@@ -133,7 +133,7 @@ class ConceptTab(QWidget):
             self.stream_buffer = ""
             self.chat_area.append("Assistant: ")
             stream = self.client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": self.system_prompt},
                     {"role": "system", "content": f"Context Information:\n{context_info}"},
