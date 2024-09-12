@@ -217,7 +217,7 @@ class ProductionTab(QWidget):
             "custom_mode": False,
             "make_instrumental": False,
             "model": "chirp-v3.5",
-            "disable_callback": False,
+            "disable_callback": True,  # Changed to True
             "token": os.getenv('UDIOPRO_API_KEY')
         }
 
