@@ -8,6 +8,17 @@ from dotenv import load_dotenv
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logging.info("Démarrage du programme")
+
+try:
+    import numpy as np
+except ImportError as e:
+    logging.error(f"Erreur lors de l'importation de NumPy: {e}")
+    logging.error(f"Chemin d'exécution actuel: {os.getcwd()}")
+    logging.error(f"sys.path: {sys.path}")
+    print("Erreur lors de l'importation de NumPy. Vérifiez que NumPy est installé et que vous n'êtes pas dans le répertoire source de NumPy.")
+    print(f"Chemin d'exécution actuel: {os.getcwd()}")
+    sys.exit(1)
+
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
 from PyQt5.QtGui import QPixmap, QPainter, QFont
 from PyQt5.QtCore import Qt, QTimer, QPoint
