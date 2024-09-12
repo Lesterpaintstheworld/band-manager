@@ -1,8 +1,8 @@
-# Specifications: Synthetic Band Manager v1.0
+# Specifications: Band Manager v1.0
 
 ## 1. Overview
 
-"Synthetic Band Manager" is a PC-based simulation game, distributed via Steam, where players create and manage a music band composed of artificial intelligences. The game follows the band's journey from humble beginnings to stardom through music creation, virtual concert performances, and interaction with AI fans.
+"Band Manager" is a PC-based simulation game, distributed via Steam, where players create and manage a music band composed of artificial intelligences. The game follows the band's journey from humble beginnings to stardom through music creation, virtual concert performances, and interaction with AI fans.
 
 ## 2. Platform and Interface
 

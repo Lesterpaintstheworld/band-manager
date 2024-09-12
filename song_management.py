@@ -81,7 +81,6 @@ class SongManagementTab(QWidget):
                 
                 self.load_songs()
                 self.song_selected.emit(title)
-                QMessageBox.information(self, "Success", f"New song '{title}' created successfully.")
             except Exception as e:
                 QMessageBox.warning(self, "Error", f"Failed to create new song: {str(e)}")
 

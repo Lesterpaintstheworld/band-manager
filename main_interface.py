@@ -26,7 +26,7 @@ class MainInterface(QWidget):
         self.initUI()
 
     def initUI(self):
-        self.setWindowTitle('Synthetic Band Manager')
+        self.setWindowTitle('Band Manager')
         self.showFullScreen()
 
         # Appliquer le style CSS
@@ -49,7 +49,7 @@ class MainInterface(QWidget):
         top_layout = QHBoxLayout()
         
         # Ajouter le titre du jeu
-        title_label = QLabel("Synthetic Band Manager")
+        title_label = QLabel("Band Manager")
         title_label.setObjectName("game-title")
         top_layout.addWidget(title_label, alignment=Qt.AlignCenter)
         

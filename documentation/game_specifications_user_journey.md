@@ -1,9 +1,9 @@
-# Synthetic Band Manager: User Journey
+# Band Manager: User Journey
 
 ## 1. Game Launch and Band Creation
 
 1. User launches the game through Steam.
-2. Welcome screen appears with the game title "Synthetic Band Manager".
+2. Welcome screen appears with the game title "Band Manager".
 3. User is prompted to enter their band name.
 4. After submitting the band name, it's saved to `band.json`.
 
@@ -74,4 +74,4 @@
 1. User explores options for additional avatar customization (if DLC is available).
 2. User learns about the possibility of publishing created songs to platforms like Spotify.
 
-This user journey provides a high-level overview of the key interactions and progression in the Synthetic Band Manager game. It will be expanded and refined as development progresses.
+This user journey provides a high-level overview of the key interactions and progression in the Band Manager game. It will be expanded and refined as development progresses.

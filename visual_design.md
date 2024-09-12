@@ -146,3 +146,27 @@ An illustrated style with a touch of surrealism, blending digital art techniques
 
 Concept Connection:  
 The design embodies the concept of the song by visually representing the magical fusion of diverse musical worlds, highlighting the dynamic energy and creativity brought forth when artists collaborate. The cosmic and colorful elements symbolize the dreams and inspirations that fuel their artistic connection.
+
+Cover Image Idea:  
+**"Chèvre Américaine: Liberté Éclectique"**
+
+Description:  
+Imaginez une scène vibrante et pleine de vie, représentant une chèvre majestueuse se tenant fièrement au sommet d'une colline verdoyante, baignée dans la lumière dorée du coucher de soleil. La chèvre, avec une fourrure éclatante et des détails artistiques rappelant des motifs folkloriques, regarde au loin vers des paysages symboliques des États-Unis, comme des montagnes imposantes et des prairies fleuries. En arrière-plan, le ciel devient un tableau vivant, avec des nuances de rose, d'orange et de violet se fondant dans les nuages, évoquant un sentiment de liberté et de surnaturel. Des notes de musique flottent dans l'air autour d'elle, représentant les mélodies joyeuses de la chanson.
+
+Dans le coin inférieur, un chemin sinueux mène à travers un champ de fleurs sauvages, suggérant l'idée d'un voyage et d'une exploration audacieuse. Des petits détails comme des étoiles scintillantes déjà visibles dans le ciel et quelques chèvres en bas de la colline ajoutent une touche de fantaisie, soulignant l’esprit libre qu’incarne cette chèvre.
+
+Key Elements:  
+1. La chèvre ornée de motifs folkloriques.
+2. Un coucher de soleil flamboyant et un ciel vibrant.
+3. Un chemin sinueux à travers des fleurs sauvages.
+4. Des éléments musicaux flottants (notes de musique).
+5. Des paysages emblématiques en arrière-plan.
+
+Color Palette:  
+Une palette chaude et accueillante, dominée par des oranges, des roses et des violets pour le ciel, des verts luxuriants pour la colline, et des touches de jaune pour la lumière du soleil, créant une ambiance joyeuse et inspirante.
+
+Style:  
+Illustré avec un style semi-réaliste, intégrant des éléments folkloriques et une approche ludique, tout en gardant une profondeur et une texture qui attirent l'œil.
+
+Concept Connection:  
+Cette illustration représente le sentiment de liberté et d'authenticité évoqué dans la chanson "Chevre Américaine". La chèvre symbolise non seulement la non-conformité, mais aussi l'exploration des paysages variés de la vie, incarnant l'esprit de ceux qui s'engagent sur leur propre chemin.

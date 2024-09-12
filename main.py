@@ -32,7 +32,7 @@ if os.path.exists(env_path):
 else:
     logging.warning(f".env file not found at {env_path}")
 
-class SyntheticBandManager:
+class BandManager:
     def __init__(self):
         self.app = QApplication(sys.argv)
         set_dark_theme(self.app)
@@ -45,7 +45,7 @@ class SyntheticBandManager:
         painter = QPainter(scaled_pixmap)
         painter.setPen(Qt.white)
         painter.setFont(QFont("Arial", 12))
-        painter.drawText(scaled_pixmap.rect().bottomRight() - QPoint(100, 30), "v0.1.0")
+        painter.drawText(scaled_pixmap.rect().bottomRight() - QPoint(100, 30), "v0.1.1")
         painter.end()
         
         self.splash = QSplashScreen(scaled_pixmap)
@@ -100,5 +100,5 @@ class SyntheticBandManager:
         return False
 
 if __name__ == "__main__":
-    manager = SyntheticBandManager()
+    manager = BandManager()
     manager.run()

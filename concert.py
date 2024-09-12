@@ -149,10 +149,6 @@ Current Fan Count: {self.fans}
         # Calculate total change
         change = base_increase + random_factor
         
-        # Apply a multiplier to make the growth more significant
-        multiplier = 10
-        change *= multiplier
-        
         self.target_fans = max(1, self.fans + change)
         self.fan_change = change
         self.update_speed = 1000

@@ -12,7 +12,7 @@ class WelcomeScreen(QWidget):
         self.initUI()
 
     def initUI(self):
-        self.setWindowTitle('Synthetic Band Manager')
+        self.setWindowTitle('Band Manager')
         self.showFullScreen()
 
         layout = QVBoxLayout()
@@ -21,7 +21,7 @@ class WelcomeScreen(QWidget):
         if self.change_name:
             welcome_label = QLabel("Change Band Name")
         else:
-            welcome_label = QLabel("Welcome to Synthetic Band Manager")
+            welcome_label = QLabel("Welcome to Band Manager")
         welcome_label.setAlignment(Qt.AlignCenter)
         welcome_label.setFont(QFont('Arial', 32, QFont.Bold))
         welcome_label.setStyleSheet("color: #ff0000;")
