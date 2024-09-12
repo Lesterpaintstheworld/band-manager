@@ -6,7 +6,8 @@ import traceback
 from dotenv import load_dotenv
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
 from PyQt5.QtGui import QPixmap, QPainter, QFont
-from PyQt5.QtCore import Qt, QTimer, QPoint
+from PyQt5.QtCore import Qt, QTimer, QPoint, PYQT_VERSION_STR, QT_VERSION_STR
+import PyQt5.QtCore
 from PyQt5.QtWidgets import QApplication
 from welcome_screen import WelcomeScreen
 # Import MainInterface will be done inside the after_splash method
@@ -34,8 +35,8 @@ print("Program started. Check the log file at:", log_file)
 
 # Log system information
 logging.info(f"Python version: {sys.version}")
-logging.info(f"PyQt5 version: {Qt.PYQT_VERSION_STR}")
-logging.info(f"Qt version: {Qt.QT_VERSION_STR}")
+logging.info(f"PyQt5 version: {PyQt5.QtCore.PYQT_VERSION_STR}")
+logging.info(f"Qt version: {PyQt5.QtCore.QT_VERSION_STR}")
 logging.info(f"Operating system: {sys.platform}")
 logging.info(f"Bundle directory: {bundle_dir}")
 
