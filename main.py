@@ -9,14 +9,30 @@ from dotenv import load_dotenv
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logging.info("Démarrage du programme")
 
+def is_numpy_source_directory(path):
+    return os.path.isfile(os.path.join(path, 'setup.py')) and \
+           os.path.isdir(os.path.join(path, 'numpy'))
+
+current_dir = os.getcwd()
+logging.info(f"Répertoire de travail actuel: {current_dir}")
+logging.info(f"Contenu du répertoire: {os.listdir(current_dir)}")
+
+if is_numpy_source_directory(current_dir):
+    logging.error("Le répertoire actuel semble être le répertoire source de NumPy.")
+    print("Erreur: Vous êtes dans le répertoire source de NumPy. Veuillez changer de répertoire et réessayer.")
+    sys.exit(1)
+
 try:
     import numpy as np
+    logging.info("NumPy importé avec succès")
 except ImportError as e:
     logging.error(f"Erreur lors de l'importation de NumPy: {e}")
-    logging.error(f"Chemin d'exécution actuel: {os.getcwd()}")
+    logging.error(f"Chemin d'exécution actuel: {current_dir}")
     logging.error(f"sys.path: {sys.path}")
-    print("Erreur lors de l'importation de NumPy. Vérifiez que NumPy est installé et que vous n'êtes pas dans le répertoire source de NumPy.")
-    print(f"Chemin d'exécution actuel: {os.getcwd()}")
+    logging.error(f"PYTHONPATH: {os.environ.get('PYTHONPATH', 'Non défini')}")
+    print("Erreur lors de l'importation de NumPy. Vérifiez que NumPy est installé correctement.")
+    print(f"Chemin d'exécution actuel: {current_dir}")
+    print("Consultez les logs pour plus de détails.")
     sys.exit(1)
 
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
