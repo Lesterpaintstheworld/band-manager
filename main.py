@@ -9,33 +9,12 @@ from dotenv import load_dotenv
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logging.info("Démarrage du programme")
 
-def is_numpy_source_directory(path):
-    return os.path.isfile(os.path.join(path, 'setup.py')) and \
-           os.path.isdir(os.path.join(path, 'numpy'))
-
 current_dir = os.getcwd()
 logging.info(f"Répertoire de travail actuel: {current_dir}")
 logging.info(f"Contenu du répertoire: {os.listdir(current_dir)}")
 
-if is_numpy_source_directory(current_dir):
-    logging.error("Le répertoire actuel semble être le répertoire source de NumPy.")
-    print("Erreur: Vous êtes dans le répertoire source de NumPy. Veuillez changer de répertoire et réessayer.")
-    sys.exit(1)
-
 try:
-    import os
-    import sys
-
-    # Ajoutez le chemin de NumPy au sys.path
-    numpy_path = os.path.join(os.path.dirname(sys.executable), 'numpy')
-    sys.path.append(numpy_path)
-
-    try:
-        import numpy as np
-    except ImportError as e:
-        print(f"Erreur lors de l'importation de NumPy: {e}")
-        print(f"Chemin de recherche Python: {sys.path}")
-        sys.exit(1)
+    import numpy as np
     logging.info("NumPy importé avec succès")
 except ImportError as e:
     logging.error(f"Erreur lors de l'importation de NumPy: {e}")
