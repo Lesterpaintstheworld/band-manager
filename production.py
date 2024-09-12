@@ -24,6 +24,13 @@ class ProductionTab(QWidget):
         self.initUI()
         self.load_api_key()
         self.load_system_prompt()
+        self.check_udiopro_api_key()
+
+    def check_udiopro_api_key(self):
+        udiopro_api_key = os.getenv('UDIOPRO_API_KEY')
+        if not udiopro_api_key:
+            self.result_area.append("Warning: UdioPro API key not found. Please add UDIOPRO_API_KEY to your .env file.")
+            logging.warning("UdioPro API key not found in .env file.")
 
     def initUI(self):
         main_layout = QHBoxLayout()
@@ -216,18 +223,26 @@ class ProductionTab(QWidget):
         try:
             response = requests.post(url, headers=headers, json=data)
             response.raise_for_status()
-            work_id = response.json().get('workId')
+            response_json = response.json()
+            
+            self.result_area.append(f"Debug: UdioPro API Response: {response_json}")
+            logging.info(f"UdioPro API Response: {response_json}")
+
+            work_id = response_json.get('workId')
 
             if work_id:
                 self.result_area.append(f"Debug: UdioPro API call successful. Work ID: {work_id}")
                 self.fetch_udiopro_result(work_id)
             else:
-                self.result_area.append("Error: Failed to get Work ID from UdioPro API")
-                logging.error("Failed to get Work ID from UdioPro API")
+                self.result_area.append(f"Error: Failed to get Work ID from UdioPro API. Response: {response_json}")
+                logging.error(f"Failed to get Work ID from UdioPro API. Response: {response_json}")
 
         except requests.RequestException as e:
             self.result_area.append(f"Error calling UdioPro API: {str(e)}")
             logging.error(f"Error calling UdioPro API: {str(e)}")
+            if hasattr(e, 'response') and e.response is not None:
+                self.result_area.append(f"Response content: {e.response.content}")
+                logging.error(f"Response content: {e.response.content}")
 
     def fetch_udiopro_result(self, work_id):
         self.result_area.append("\nDebug: Fetching result from UdioPro API")
