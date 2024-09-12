@@ -307,12 +307,27 @@ class ProductionTab(QWidget):
             self.result_area.clear()
             self.result_area.append("Generating song...")
             self.chat_area.append("Starting song generation...")
+            logger.info(f"Starting song generation with prompt: {gpt_response['short_prompt']}")
 
-            # For now, we'll just use the short_prompt to generate a dummy song
+            start_time = time.time()
+            # Generate the song
             song_data = self.udio_wrapper.song_generator.generate_song(
                 song_title=gpt_response['short_prompt'],
                 song_description="Dummy song description"
             )
+            end_time = time.time()
+            generation_time = end_time - start_time
+            logger.info(f"Song generation completed in {generation_time:.2f} seconds")
+
+            # Log the Udio API response
+            logger.info(f"Udio API response type: {type(song_data)}")
+            logger.info(f"Udio API response length: {len(song_data) if song_data else 'N/A'}")
+            if song_data:
+                logger.info(f"First 100 bytes of Udio API response: {song_data[:100]}")
+            else:
+                logger.warning("Udio API response is empty or None")
+
+            self.chat_area.append(f"Udio API response received. Length: {len(song_data) if song_data else 'N/A'}")
 
             if not song_data:
                 raise Exception("The generated song data is empty.")
@@ -322,21 +337,26 @@ class ProductionTab(QWidget):
             song_path = os.path.join("songs", song_filename)
             os.makedirs("songs", exist_ok=True)
             
+            logger.info(f"Saving song to {song_path}")
             with open(song_path, 'wb') as f:
                 f.write(song_data)
+            logger.info(f"Song saved successfully. File size: {len(song_data)} bytes")
             
             self.result_area.clear()
             self.result_area.append(f"Song generated and saved: {song_path}")
             self.chat_area.append(f"Song generated and saved: {song_path}")
             
             # Play the song in the audio player
+            logger.info("Attempting to play the generated song")
             self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_path)))
             self.player.error.connect(self.handle_player_error)
             self.player.play()
             
             if self.player.error() == QMediaPlayer.NoError:
+                logger.info("Song playback started successfully")
                 QMessageBox.information(self, "Success", "The song has been generated successfully and is now playing.")
             else:
+                logger.warning(f"Playback issue detected. Player error: {self.player.error()}")
                 QMessageBox.warning(self, "Playback Issue", "The song was generated successfully, but there might be an issue with playback. You can find the audio file at: " + song_path)
             
             # Emit the production_updated signal with the new content
@@ -345,7 +365,5 @@ class ProductionTab(QWidget):
             error_message = f"An error occurred while generating the song: {str(e)}"
             self.chat_area.append(error_message)
             self.result_area.append(f"Error: {str(e)}")
-            logger.error(f"Song generation error: {str(e)}", exc_info=True)
-            QMessageBox.critical(self, "Error", error_message)
             logger.error(f"Song generation error: {str(e)}", exc_info=True)
             QMessageBox.critical(self, "Error", error_message)

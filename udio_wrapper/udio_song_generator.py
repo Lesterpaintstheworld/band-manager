@@ -20,6 +20,8 @@ class UdioSongGenerator:
             dummy_audio = b'\x00\x01' * 44100  # 1 second of silence
             
             self.logger.info(f"Song generated successfully. Audio length: {len(dummy_audio)} bytes")
+            self.logger.info(f"First 100 bytes of generated audio: {dummy_audio[:100]}")
+            self.logger.info(f"Audio type: {type(dummy_audio)}")
             return dummy_audio
         except Exception as e:
             self.logger.error(f"Failed to generate song: {str(e)}", exc_info=True)
