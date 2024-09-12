@@ -193,7 +193,7 @@ class ProductionTab(QWidget):
             self.result_area.append("Generating song...")
             self.chat_area.append("Starting song generation...")
 
-            complete_song_sequence = self.udio_wrapper.create_complete_song(
+            song_data = self.udio_wrapper.create_complete_song(
                 short_prompt=gpt_response['short_prompt'],
                 extend_prompts=gpt_response['extend_prompts'],
                 outro_prompt=gpt_response['outro_prompt'],
@@ -203,20 +203,16 @@ class ProductionTab(QWidget):
                 custom_lyrics_outro=gpt_response['custom_lyrics_outro']
             )
 
-            if complete_song_sequence is None:
-                raise Exception("The generated song sequence is empty.")
+            if not song_data:
+                raise Exception("The generated song data is empty.")
 
             # Save the audio file in the songs/ folder
             song_filename = f"song_{int(time.time())}.mp3"
             song_path = os.path.join("songs", song_filename)
             os.makedirs("songs", exist_ok=True)
             
-            # The complete_song_sequence is now a file path, so we just need to copy it
-            import shutil
-            shutil.copy(complete_song_sequence, song_path)
-            
-            # Delete the temporary file
-            os.unlink(complete_song_sequence)
+            with open(song_path, 'wb') as f:
+                f.write(song_data)
             
             self.result_area.clear()
             self.result_area.append(f"Song generated and saved: {song_path}")
