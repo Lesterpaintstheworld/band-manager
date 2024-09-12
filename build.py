@@ -44,9 +44,11 @@ options = [
     '--exclude-module=tensorflow',
     '--hidden-import=numpy',
     '--hidden-import=matplotlib',
-    f'--add-data={site_packages}\\numpy;numpy',
+    f'--add-data={site_packages}\\Lib\\site-packages\\numpy;numpy',
     '--noupx',
     '--log-level=DEBUG',
+    '--add-data', f'{site_packages}\\Lib\\site-packages\\numpy;numpy',
+    '--add-data', f'{site_packages}\\Lib\\site-packages\\matplotlib;matplotlib',
 ]
 
 if sys.platform.startswith('win'):
