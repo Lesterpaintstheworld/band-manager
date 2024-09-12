@@ -193,7 +193,6 @@ class ProductionTab(QWidget):
         for i, lyric in enumerate(song_info['custom_lyrics_extend'], 1):
             self.result_area.append(f"{i}. {lyric}")
         self.result_area.append(f"Outro: {song_info['custom_lyrics_outro']}")
-        self.result_area.append("\nReminder: This is a conceptual representation only. No actual audio is generated or played.")
         self.result_area.append("Debug: Finished displaying song information")
         logging.info("Song information displayed in the production tab")
         
