@@ -89,41 +89,24 @@ class ProductionTab(QWidget):
 
     def load_suno_api(self):
         load_dotenv()
-        self.suno_api_url = 'https://api.suno.ai'
         self.suno_cookie = os.getenv('SUNO_COOKIE')
         if not self.suno_cookie:
             self.chat_area.append("Error: Suno API Cookie not found in .env file.")
             self.chat_area.append("Please add SUNO_COOKIE to your .env file.")
             self.suno_api = None
         else:
-            max_retries = 3
-            retry_delay = 5  # seconds
-            for attempt in range(max_retries):
-                try:
-                    headers = {'Cookie': self.suno_cookie}
-                    response = requests.get(f"{self.suno_api_url}/api/get_limit", headers=headers, timeout=10)
-                    if response.status_code == 200:
-                        self.chat_area.append("Suno API connection initialized successfully.")
-                        self.suno_api = True
-                        break
-                    elif response.status_code == 503:
-                        if attempt < max_retries - 1:
-                            self.chat_area.append(f"Suno API temporarily unavailable. Retrying in {retry_delay} seconds...")
-                            time.sleep(retry_delay)
-                        else:
-                            raise Exception(f"Failed to connect to Suno API after {max_retries} attempts. Status code: 503")
-                    else:
-                        raise Exception(f"Failed to connect to Suno API. Status code: {response.status_code}")
-                except requests.RequestException as e:
-                    if attempt < max_retries - 1:
-                        self.chat_area.append(f"Network error. Retrying in {retry_delay} seconds...")
-                        time.sleep(retry_delay)
-                    else:
-                        self.chat_area.append(f"Error initializing Suno API connection: {str(e)}")
-                        self.chat_area.append("Please check your network connection and Suno API URL in the .env file.")
-                        self.suno_api = None
-            if self.suno_api is None:
-                self.chat_area.append("Failed to initialize Suno API after multiple attempts.")
+            try:
+                self.suno_generator = SunoSongGenerator(self.suno_cookie)
+                response = requests.get("https://api.suno.ai/api/get_limit", headers={'Cookie': self.suno_cookie})
+                if response.status_code == 200:
+                    self.chat_area.append("Suno API connection initialized successfully.")
+                    self.suno_api = True
+                else:
+                    raise Exception(f"Failed to connect to Suno API. Status code: {response.status_code}")
+            except Exception as e:
+                self.chat_area.append(f"Error initializing Suno API connection: {str(e)}")
+                self.chat_area.append("Please check your network connection and Suno API Cookie in the .env file.")
+                self.suno_api = None
 
     def load_suno_api(self):
         load_dotenv()
@@ -345,114 +328,48 @@ class ProductionTab(QWidget):
         logger.info(f"Supported audio formats: {', '.join(supported_formats)}")
 
     def generate_song(self, gpt_response):
-        max_retries = 5
-        base_delay = 1
-        max_delay = 60
+        try:
+            self.result_area.clear()
+            self.result_area.append("Generating song...")
+            self.chat_area.append("Starting song generation...")
+            logger.info(f"Starting song generation with prompt: {gpt_response['short_prompt']}")
 
-        for attempt in range(max_retries):
-            try:
-                self.result_area.clear()
-                self.result_area.append(f"Generating song... (Attempt {attempt + 1}/{max_retries})")
-                self.chat_area.append(f"Starting song generation... (Attempt {attempt + 1}/{max_retries})")
-                logger.info(f"Starting song generation with prompt: {gpt_response['short_prompt']} (Attempt {attempt + 1}/{max_retries})")
+            start_time = time.time()
+            
+            # Generate the song using Suno API
+            song_paths = self.suno_generator.create_complete_song(gpt_response['short_prompt'])
+            
+            end_time = time.time()
+            generation_time = end_time - start_time
+            logger.info(f"Song generation completed in {generation_time:.2f} seconds")
 
-                start_time = time.time()
-                # Generate the song using Suno API
-                payload = {
-                    "prompt": gpt_response['short_prompt'],
-                    "make_instrumental": False,
-                    "wait_audio": False
-                }
-                headers = {'Cookie': self.suno_cookie}
-                response = requests.post(f"{self.suno_api_url}/api/generate", json=payload, headers=headers)
-                response.raise_for_status()  # Raise an exception for non-200 status codes
+            self.result_area.clear()
+            self.result_area.append(f"Songs generated and saved: {', '.join(song_paths)}")
+            self.chat_area.append(f"Songs generated and saved: {', '.join(song_paths)}")
+            
+            # Play the first song in the audio player
+            if song_paths:
+                logger.info("Attempting to play the generated song")
+                self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_paths[0])))
+                self.player.error.connect(self.handle_player_error)
+                self.player.play()
                 
-                data = response.json()
-                end_time = time.time()
-                generation_time = end_time - start_time
-                logger.info(f"Song generation request completed in {generation_time:.2f} seconds")
-
-                # Log the Suno API response
-                logger.info(f"Suno API response: {data}")
-
-                if not isinstance(data, list) or len(data) < 2:
-                    raise ValueError("Unexpected response format from Suno API")
-
-                self.chat_area.append(f"Suno API response received. IDs: {data[0]['id']}, {data[1]['id']}")
-
-                # Wait for the audio to be ready
-                ids = f"{data[0]['id']},{data[1]['id']}"
-                audio_urls = []
-                for _ in range(60):  # Wait for up to 5 minutes
-                    response = requests.get(f"{self.suno_api_url}/api/get?ids={ids}", headers={'Cookie': self.suno_cookie})
-                    response.raise_for_status()
-                    audio_info = response.json()
-                    if all(info['status'] == 'streaming' for info in audio_info):
-                        audio_urls = [info['audio_url'] for info in audio_info if 'audio_url' in info]
-                        break
-                    time.sleep(5)
-
-                if not audio_urls:
-                    raise Exception("Timeout: Audio generation took too long or no audio URLs were provided.")
-
-                # Download and save the audio files
-                song_paths = []
-                for i, url in enumerate(audio_urls):
-                    song_filename = f"song_{int(time.time())}_{i}.mp3"
-                    song_path = os.path.join("songs", song_filename)
-                    os.makedirs("songs", exist_ok=True)
-                    
-                    response = requests.get(url)
-                    response.raise_for_status()
-                    
-                    with open(song_path, 'wb') as f:
-                        f.write(response.content)
-                    logger.info(f"Song part {i+1} saved successfully at: {song_path}")
-                    song_paths.append(song_path)
-                
-                self.result_area.clear()
-                self.result_area.append(f"Songs generated and saved: {', '.join(song_paths)}")
-                self.chat_area.append(f"Songs generated and saved: {', '.join(song_paths)}")
-                
-                # Play the first song in the audio player
-                if song_paths:
-                    logger.info("Attempting to play the generated song")
-                    self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_paths[0])))
-                    self.player.error.connect(self.handle_player_error)
-                    self.player.play()
-                    
-                    if self.player.error() == QMediaPlayer.NoError:
-                        logger.info("Song playback started successfully")
-                        QMessageBox.information(self, "Success", "The songs have been generated successfully and the first one is now playing.")
-                    else:
-                        logger.warning(f"Playback issue detected. Player error: {self.player.error()}")
-                        QMessageBox.warning(self, "Playback Issue", "The songs were generated successfully, but there might be an issue with playback. You can find the audio files at: " + ', '.join(song_paths))
-                    
-                    # Emit the production_updated signal with the new content
-                    self.production_updated.emit(song_paths[0])
+                if self.player.error() == QMediaPlayer.NoError:
+                    logger.info("Song playback started successfully")
+                    QMessageBox.information(self, "Success", "The songs have been generated successfully and the first one is now playing.")
                 else:
-                    logger.warning("No songs were generated")
-                    QMessageBox.warning(self, "Generation Issue", "No songs were generated. Please try again.")
+                    logger.warning(f"Playback issue detected. Player error: {self.player.error()}")
+                    QMessageBox.warning(self, "Playback Issue", "The songs were generated successfully, but there might be an issue with playback. You can find the audio files at: " + ', '.join(song_paths))
                 
-                # If we reach this point, the song generation was successful, so we break out of the retry loop
-                break
+                # Emit the production_updated signal with the new content
+                self.production_updated.emit(song_paths[0])
+            else:
+                logger.warning("No songs were generated")
+                QMessageBox.warning(self, "Generation Issue", "No songs were generated. Please try again.")
 
-            except requests.RequestException as e:
-                if attempt < max_retries - 1:
-                    delay = min(base_delay * (2 ** attempt) + random.uniform(0, 1), max_delay)
-                    logger.warning(f"Attempt {attempt + 1} failed. Retrying in {delay:.2f} seconds...")
-                    self.chat_area.append(f"Attempt {attempt + 1} failed. Retrying in {delay:.2f} seconds...")
-                    time.sleep(delay)
-                else:
-                    error_message = f"Network error occurred while communicating with Suno API after {max_retries} attempts: {str(e)}"
-                    self.chat_area.append(error_message)
-                    self.result_area.append(f"Error: {str(e)}")
-                    logger.error(f"Suno API communication error: {str(e)}", exc_info=True)
-                    QMessageBox.critical(self, "Network Error", error_message)
-            except Exception as e:
-                error_message = f"An error occurred while generating the song: {str(e)}"
-                self.chat_area.append(error_message)
-                self.result_area.append(f"Error: {str(e)}")
-                logger.error(f"Song generation error: {str(e)}", exc_info=True)
-                QMessageBox.critical(self, "Error", error_message)
-                break  # Break the retry loop for non-network errors
+        except Exception as e:
+            error_message = f"An error occurred while generating the song: {str(e)}"
+            self.chat_area.append(error_message)
+            self.result_area.append(f"Error: {str(e)}")
+            logger.error(f"Song generation error: {str(e)}", exc_info=True)
+            QMessageBox.critical(self, "Error", error_message)
