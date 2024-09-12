@@ -187,6 +187,22 @@ class ProductionTab(QWidget):
             self.result_area.append("Generating song...")
             self.chat_area.append("Starting song generation...")
 
+    def handle_player_error(self, error):
+        error_msg = f"Media player error: {error}"
+        if error == QMediaPlayer.FormatError:
+            error_msg += " (Format Error: The media format is not supported.)"
+        elif error == QMediaPlayer.NetworkError:
+            error_msg += " (Network Error: A network error occurred.)"
+        elif error == QMediaPlayer.AccessDeniedError:
+            error_msg += " (Access Denied Error: There was a permissions issue.)"
+        elif error == QMediaPlayer.ServiceMissingError:
+            error_msg += " (Service Missing Error: A required media service is missing.)"
+        else:
+            error_msg += f" (Error code: {error})"
+        
+        self.chat_area.append(error_msg)
+        logger.error(error_msg)
+
             # For now, we'll just use the short_prompt to generate a dummy song
             song_data = self.udio_wrapper.song_generator.generate_song(
                 song_title=gpt_response['short_prompt'],
@@ -210,9 +226,13 @@ class ProductionTab(QWidget):
             
             # Play the song in the audio player
             self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_path)))
+            self.player.error.connect(self.handle_player_error)
             self.player.play()
             
-            QMessageBox.information(self, "Success", "The song has been generated successfully.")
+            if self.player.error() == QMediaPlayer.NoError:
+                QMessageBox.information(self, "Success", "The song has been generated successfully and is now playing.")
+            else:
+                QMessageBox.warning(self, "Playback Issue", "The song was generated successfully, but there might be an issue with playback. You can find the audio file at: " + song_path)
             
             # Emit the production_updated signal with the new content
             self.production_updated.emit(song_path)
