@@ -18,14 +18,14 @@ if current_dir not in sys.path:
 # Ajout du répertoire des bibliothèques Python au sys.path
 if getattr(sys, 'frozen', False):
     # Si l'application est "gelée" (compilée avec PyInstaller)
-    python_lib = os.path.join(sys._MEIPASS, 'lib')
-    if python_lib not in sys.path:
-        sys.path.append(python_lib)
+    base_dir = sys._MEIPASS
 else:
     # Si l'application est exécutée normalement
-    python_lib = os.path.join(sys.prefix, 'Lib', 'site-packages')
-    if python_lib not in sys.path:
-        sys.path.append(python_lib)
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+
+python_lib = os.path.join(base_dir, 'lib')
+if python_lib not in sys.path:
+    sys.path.append(python_lib)
 
 logging.info(f"Python version: {sys.version}")
 logging.info(f"sys.path: {sys.path}")
@@ -40,11 +40,14 @@ except ImportError as e:
     logging.error("Contenu du répertoire courant:")
     for item in os.listdir(current_dir):
         logging.error(f"- {item}")
-    logging.error(f"Contenu du répertoire Python lib ({python_lib}):")
-    try:
+    logging.error(f"Contenu du répertoire de base ({base_dir}):")
+    for item in os.listdir(base_dir):
+        logging.error(f"- {item}")
+    if os.path.exists(python_lib):
+        logging.error(f"Contenu du répertoire Python lib ({python_lib}):")
         for item in os.listdir(python_lib):
             logging.error(f"- {item}")
-    except FileNotFoundError:
+    else:
         logging.error(f"Le répertoire {python_lib} n'existe pas.")
     sys.exit(1)
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen

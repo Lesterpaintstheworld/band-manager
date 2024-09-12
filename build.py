@@ -54,6 +54,13 @@ if sys.platform.startswith('win'):
         '--add-data', f'{numpy_path};numpy',
     ])
 
+# Ajouter tous les fichiers de NumPy
+for root, dirs, files in os.walk(numpy_path):
+    for file in files:
+        full_path = os.path.join(root, file)
+        relative_path = os.path.relpath(full_path, numpy_path)
+        options.extend(['--add-data', f'{full_path};numpy\\{relative_path}'])
+
 PyInstaller.__main__.run(options)
 
 # Afficher le chemin de l'exécutable généré
