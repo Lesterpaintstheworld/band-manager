@@ -4,6 +4,7 @@ import sys
 import site
 import PyQt5
 import logging
+import venv
 
 # Configuration du logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -13,11 +14,23 @@ current_dir = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, current_dir)
 logging.info(f"Répertoire courant ajouté au chemin de recherche: {current_dir}")
 
-# Obtenir le chemin des packages site-packages
+# Vérifier si nous sommes dans un environnement virtuel
+in_venv = sys.prefix != sys.base_prefix
+if not in_venv:
+    logging.warning("Ce script n'est pas exécuté dans un environnement virtuel.")
+    venv_dir = os.path.join(current_dir, 'venv')
+    if not os.path.exists(venv_dir):
+        logging.info("Création d'un nouvel environnement virtuel...")
+        venv.create(venv_dir, with_pip=True)
+    logging.info(f"Veuillez activer l'environnement virtuel et réexécuter ce script.")
+    logging.info(f"Commande d'activation (PowerShell): .\\venv\\Scripts\\Activate.ps1")
+    sys.exit(1)
+
+# Obtenir le chemin des packages site-packages de l'environnement virtuel
 site_packages = site.getsitepackages()[0]
 logging.info(f"Chemin des packages site-packages: {site_packages}")
 
-# Obtenir le chemin d'installation de PyQt5
+# Obtenir le chemin d'installation de PyQt5 dans l'environnement virtuel
 pyqt5_path = os.path.dirname(PyQt5.__file__)
 logging.info(f"Chemin d'installation de PyQt5: {pyqt5_path}")
 
