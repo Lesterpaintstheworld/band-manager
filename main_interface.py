@@ -26,6 +26,7 @@ class MainInterface(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
+        self.load_suno_api()
 
     def initUI(self):
         self.setWindowTitle('Synthetic Band Manager')

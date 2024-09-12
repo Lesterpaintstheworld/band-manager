@@ -354,6 +354,9 @@ class ProductionTab(QWidget):
             # Log the Suno API response
             logger.info(f"Suno API response: {data}")
 
+            if not isinstance(data, list) or len(data) < 2:
+                raise ValueError("Unexpected response format from Suno API")
+
             self.chat_area.append(f"Suno API response received. IDs: {data[0]['id']}, {data[1]['id']}")
 
             # Wait for the audio to be ready
@@ -364,12 +367,12 @@ class ProductionTab(QWidget):
                 response.raise_for_status()
                 audio_info = response.json()
                 if all(info['status'] == 'streaming' for info in audio_info):
-                    audio_urls = [info['audio_url'] for info in audio_info]
+                    audio_urls = [info['audio_url'] for info in audio_info if 'audio_url' in info]
                     break
                 time.sleep(5)
 
             if not audio_urls:
-                raise Exception("Timeout: Audio generation took too long.")
+                raise Exception("Timeout: Audio generation took too long or no audio URLs were provided.")
 
             # Download and save the audio files
             song_paths = []
@@ -391,20 +394,24 @@ class ProductionTab(QWidget):
             self.chat_area.append(f"Songs generated and saved: {', '.join(song_paths)}")
             
             # Play the first song in the audio player
-            logger.info("Attempting to play the generated song")
-            self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_paths[0])))
-            self.player.error.connect(self.handle_player_error)
-            self.player.play()
-            
-            if self.player.error() == QMediaPlayer.NoError:
-                logger.info("Song playback started successfully")
-                QMessageBox.information(self, "Success", "The songs have been generated successfully and the first one is now playing.")
+            if song_paths:
+                logger.info("Attempting to play the generated song")
+                self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_paths[0])))
+                self.player.error.connect(self.handle_player_error)
+                self.player.play()
+                
+                if self.player.error() == QMediaPlayer.NoError:
+                    logger.info("Song playback started successfully")
+                    QMessageBox.information(self, "Success", "The songs have been generated successfully and the first one is now playing.")
+                else:
+                    logger.warning(f"Playback issue detected. Player error: {self.player.error()}")
+                    QMessageBox.warning(self, "Playback Issue", "The songs were generated successfully, but there might be an issue with playback. You can find the audio files at: " + ', '.join(song_paths))
+                
+                # Emit the production_updated signal with the new content
+                self.production_updated.emit(song_paths[0])
             else:
-                logger.warning(f"Playback issue detected. Player error: {self.player.error()}")
-                QMessageBox.warning(self, "Playback Issue", "The songs were generated successfully, but there might be an issue with playback. You can find the audio files at: " + ', '.join(song_paths))
-            
-            # Emit the production_updated signal with the new content
-            self.production_updated.emit(song_paths[0])
+                logger.warning("No songs were generated")
+                QMessageBox.warning(self, "Generation Issue", "No songs were generated. Please try again.")
         except requests.RequestException as e:
             error_message = f"Network error occurred while communicating with Suno API: {str(e)}"
             self.chat_area.append(error_message)

@@ -65,22 +65,12 @@ class SyntheticBandManager:
             self.welcome_screen.show()
 
     def show_main_interface(self):
-        from main_interface import MainInterface  # Import here to avoid circular import
-        if self.welcome_screen:
-            self.welcome_screen.close()
-        self.main_interface = MainInterface()
-        self.main_interface.change_band_name_signal.connect(self.change_band_name)
-        self.main_interface.exit_game_signal.connect(self.exit_game)
-        self.main_interface.show()
-
-    def show_main_interface(self):
         from main_interface import MainInterface
         if self.welcome_screen:
             self.welcome_screen.close()
         self.main_interface = MainInterface()
         self.main_interface.change_band_name_signal.connect(self.change_band_name)
         self.main_interface.exit_game_signal.connect(self.exit_game)
-        self.main_interface.load_suno_api()
         self.main_interface.show()
 
     def change_band_name(self):
