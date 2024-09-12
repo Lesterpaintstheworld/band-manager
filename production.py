@@ -189,10 +189,10 @@ class ProductionTab(QWidget):
             logger.info(f"Starting song generation with prompt: {gpt_response['short_prompt']}")
 
             start_time = time.time()
-            # For now, we'll just use the short_prompt to generate a dummy song
+            # Generate the song
             song_data = self.udio_wrapper.song_generator.generate_song(
                 song_title=gpt_response['short_prompt'],
-                song_description="Dummy song description"
+                song_description="Generated song description"
             )
             end_time = time.time()
             generation_time = end_time - start_time
@@ -216,11 +216,18 @@ class ProductionTab(QWidget):
             self.result_area.append(f"Song generated and saved: {song_path}")
             self.chat_area.append(f"Song generated and saved: {song_path}")
             
+            # Wait for a short time to ensure the file is fully written
+            time.sleep(1)
+            
             # Play the song in the audio player
             logger.info("Attempting to play the generated song")
             self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_path)))
             self.player.error.connect(self.handle_player_error)
             self.player.play()
+            
+            # Wait for the player to be ready
+            while self.player.state() == QMediaPlayer.LoadingMedia:
+                QApplication.processEvents()
             
             if self.player.error() == QMediaPlayer.NoError:
                 logger.info("Song playback started successfully")
