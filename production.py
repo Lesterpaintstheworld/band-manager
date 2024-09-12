@@ -243,6 +243,12 @@ class ProductionTab(QWidget):
         self.chat_area.append(error_msg)
         logger.error(error_msg)
 
+    def generate_song(self, gpt_response):
+        try:
+            self.result_area.clear()
+            self.result_area.append("Generating song...")
+            self.chat_area.append("Starting song generation...")
+
             # For now, we'll just use the short_prompt to generate a dummy song
             song_data = self.udio_wrapper.song_generator.generate_song(
                 song_title=gpt_response['short_prompt'],
@@ -280,5 +286,7 @@ class ProductionTab(QWidget):
             error_message = f"An error occurred while generating the song: {str(e)}"
             self.chat_area.append(error_message)
             self.result_area.append(f"Error: {str(e)}")
+            logger.error(f"Song generation error: {str(e)}", exc_info=True)
+            QMessageBox.critical(self, "Error", error_message)
             logger.error(f"Song generation error: {str(e)}", exc_info=True)
             QMessageBox.critical(self, "Error", error_message)
