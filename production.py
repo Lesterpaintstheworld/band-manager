@@ -186,14 +186,20 @@ class ProductionTab(QWidget):
             self.result_area.clear()
             self.result_area.append("Generating song...")
             self.chat_area.append("Starting song generation...")
+            logger.info(f"Starting song generation with prompt: {gpt_response['short_prompt']}")
 
+            start_time = time.time()
             # For now, we'll just use the short_prompt to generate a dummy song
             song_data = self.udio_wrapper.song_generator.generate_song(
                 song_title=gpt_response['short_prompt'],
                 song_description="Dummy song description"
             )
+            end_time = time.time()
+            generation_time = end_time - start_time
+            logger.info(f"Song generation completed in {generation_time:.2f} seconds")
 
             if not song_data:
+                logger.error("The generated song data is empty.")
                 raise Exception("The generated song data is empty.")
 
             # Save the audio file in the songs/ folder
@@ -201,21 +207,26 @@ class ProductionTab(QWidget):
             song_path = os.path.join("songs", song_filename)
             os.makedirs("songs", exist_ok=True)
             
+            logger.info(f"Saving song to {song_path}")
             with open(song_path, 'wb') as f:
                 f.write(song_data)
+            logger.info(f"Song saved successfully. File size: {len(song_data)} bytes")
             
             self.result_area.clear()
             self.result_area.append(f"Song generated and saved: {song_path}")
             self.chat_area.append(f"Song generated and saved: {song_path}")
             
             # Play the song in the audio player
+            logger.info("Attempting to play the generated song")
             self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_path)))
             self.player.error.connect(self.handle_player_error)
             self.player.play()
             
             if self.player.error() == QMediaPlayer.NoError:
+                logger.info("Song playback started successfully")
                 QMessageBox.information(self, "Success", "The song has been generated successfully and is now playing.")
             else:
+                logger.warning(f"Playback issue detected. Player error: {self.player.error()}")
                 QMessageBox.warning(self, "Playback Issue", "The song was generated successfully, but there might be an issue with playback. You can find the audio file at: " + song_path)
             
             # Emit the production_updated signal with the new content
