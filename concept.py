@@ -116,12 +116,16 @@ class ConceptTab(QWidget):
                 return
 
         try:
+            # Charger les informations du groupe
+            group_info = self.load_group_info()
+            
             self.stream_buffer = ""
             self.chat_area.append("Assistant: ")
             stream = self.client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-4",
                 messages=[
                     {"role": "system", "content": self.system_prompt},
+                    {"role": "system", "content": f"Group Information: {group_info}"},
                     {"role": "user", "content": user_message}
                 ],
                 stream=True
@@ -145,3 +149,10 @@ class ConceptTab(QWidget):
         # Sauvegarder le concept dans concept.md
         with open('concept.md', 'w', encoding='utf-8') as f:
             f.write(updated_concept)
+
+    def load_group_info(self):
+        try:
+            with open('band_info.txt', 'r', encoding='utf-8') as f:
+                return f.read().strip()
+        except FileNotFoundError:
+            return "Group information not available."
