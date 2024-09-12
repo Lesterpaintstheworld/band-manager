@@ -6,6 +6,7 @@ from PyQt5.QtGui import QPainter, QColor, QPen, QIcon
 from waveform_widget import WaveformWidget
 import time
 import logging
+import os
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
@@ -365,7 +366,10 @@ class ProductionTab(QWidget):
         if media.isNull():
             return
         file_path = media.canonicalUrl().toLocalFile()
-        self.waveform_widget.load_audio(file_path)
+        if file_path and os.path.exists(file_path):
+            self.waveform_widget.load_audio(file_path)
+        else:
+            logging.warning(f"Audio file not found or path is empty: {file_path}")
 
     def display_udiopro_result(self, result):
         self.result_area.append("\nUdioPro Generation Result:")
