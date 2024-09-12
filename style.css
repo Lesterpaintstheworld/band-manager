@@ -62,9 +62,9 @@ QWidget {
 
 /* Boutons */
 QPushButton {
-    background-color: #ff3300;
-    color: #1a0a1f;
-    border: none;
+    background-color: #2d1a33;
+    color: #ff9900;
+    border: 2px solid #ff3300;
     padding: 10px 20px;
     font-size: 18px;
     border-radius: 5px;
@@ -72,7 +72,21 @@ QPushButton {
 }
 
 QPushButton:hover {
-    background-color: #ff6600;
+    background-color: #3d2a43;
+}
+
+/* Player controls */
+#play-pause-button, #stop-button {
+    background-color: #2d1a33;
+    color: #ff9900;
+    border: 2px solid #ff3300;
+    padding: 5px 10px;
+    font-size: 16px;
+    border-radius: 3px;
+}
+
+#play-pause-button:hover, #stop-button:hover {
+    background-color: #3d2a43;
 }
 
 /* Champs de texte */

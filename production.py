@@ -416,6 +416,18 @@ class ProductionTab(QWidget):
         volume = value / 100.0
         self.player.setVolume(int(volume * 100))
 
+    def toggle_play_pause(self):
+        if self.player.state() == QMediaPlayer.PlayingState:
+            self.player.pause()
+        else:
+            self.player.play()
+
+    def update_play_pause_button(self, state):
+        if state == QMediaPlayer.PlayingState:
+            self.play_pause_button.setIcon(QIcon("pause_icon.png"))
+        else:
+            self.play_pause_button.setIcon(QIcon("play_icon.png"))
+
     def load_existing_songs(self):
         generated_songs_dir = QDir("generated_songs")
         if generated_songs_dir.exists():
