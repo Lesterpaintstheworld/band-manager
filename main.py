@@ -12,7 +12,13 @@ from welcome_screen import WelcomeScreen
 from style import set_dark_theme
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+log_file = os.path.join(os.path.dirname(sys.executable), 'band_manager.log')
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    filename=log_file,
+    filemode='w'
+)
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -51,16 +57,21 @@ class BandManager:
         self.splash = QSplashScreen(scaled_pixmap)
 
     def run(self):
+        logging.info("Application starting")
         self.splash.show()
         QTimer.singleShot(3000, self.after_splash)  # Show splash for 3 seconds
+        logging.info("Entering main event loop")
         sys.exit(self.app.exec_())
 
     def after_splash(self):
+        logging.info("Splash screen timer expired")
         self.splash.close()
         self.ensure_generated_songs_directory()
         if self.band_name_exists():
+            logging.info("Band name exists, showing main interface")
             self.show_main_interface()
         else:
+            logging.info("Band name doesn't exist, showing welcome screen")
             self.welcome_screen = WelcomeScreen()
             self.welcome_screen.submitted.connect(self.show_main_interface)
             self.welcome_screen.show()
@@ -99,6 +110,14 @@ class BandManager:
                 return 'name' in data and data['name']
         return False
 
+def exception_hook(exctype, value, traceback):
+    logging.error("Uncaught exception", exc_info=(exctype, value, traceback))
+    sys.__excepthook__(exctype, value, traceback)
+
 if __name__ == "__main__":
-    manager = BandManager()
-    manager.run()
+    sys.excepthook = exception_hook
+    try:
+        manager = BandManager()
+        manager.run()
+    except Exception as e:
+        logging.exception("Fatal error in main loop")
