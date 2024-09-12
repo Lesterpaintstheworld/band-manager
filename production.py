@@ -3,6 +3,7 @@ from PyQt5.QtCore import pyqtSignal, Qt, QUrl
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 import time
+import logging
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
@@ -11,6 +12,10 @@ from udio_wrapper.udio_authenticator import UdioAuthenticator
 from udio_wrapper.udio_song_generator import UdioSongGenerator
 from pydantic import BaseModel
 from typing import List
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 class ProductionTab(QWidget):
     production_updated = pyqtSignal(str)
@@ -228,6 +233,7 @@ class ProductionTab(QWidget):
             error_message = f"An error occurred while generating the song: {str(e)}"
             self.chat_area.append(error_message)
             self.result_area.append(f"Error: {str(e)}")
+            logger.error(f"Song generation error: {str(e)}", exc_info=True)
             QMessageBox.critical(self, "Error", error_message)
 
     def create_complete_song(self, short_prompt: str, extend_prompts: List[str], outro_prompt: str, num_extensions: int, custom_lyrics_short: str, custom_lyrics_extend: List[str], custom_lyrics_outro: str) -> bytes:
