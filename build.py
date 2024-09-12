@@ -3,16 +3,23 @@ import os
 import sys
 import site
 import PyQt5
+import logging
+
+# Configuration du logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Ajouter le répertoire courant au chemin de recherche
 current_dir = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, current_dir)
+logging.info(f"Répertoire courant ajouté au chemin de recherche: {current_dir}")
 
 # Obtenir le chemin des packages site-packages
 site_packages = site.getsitepackages()[0]
+logging.info(f"Chemin des packages site-packages: {site_packages}")
 
 # Obtenir le chemin d'installation de PyQt5
 pyqt5_path = os.path.dirname(PyQt5.__file__)
+logging.info(f"Chemin d'installation de PyQt5: {pyqt5_path}")
 
 options = [
     'main.py',
@@ -47,8 +54,22 @@ if sys.platform.startswith('win'):
         '--add-binary', f'{pyqt5_path}\\Qt5\\plugins\\platforms\\qwindows.dll;PyQt5/Qt5/plugins/platforms',
     ])
 
-PyInstaller.__main__.run(options)
+try:
+    logging.info("Démarrage du processus de construction...")
+    PyInstaller.__main__.run(options)
+    logging.info("Construction terminée avec succès.")
 
-# Afficher le chemin de l'exécutable généré
-output_path = os.path.join(current_dir, 'dist', 'BandManager.exe')
-print(f"Exécutable généré : {output_path}")
+    # Afficher le chemin de l'exécutable généré
+    output_path = os.path.join(current_dir, 'dist', 'BandManager.exe')
+    logging.info(f"Exécutable généré : {output_path}")
+    
+    if os.path.exists(output_path):
+        logging.info("L'exécutable a été créé avec succès.")
+    else:
+        logging.error("L'exécutable n'a pas été trouvé à l'emplacement attendu.")
+
+except Exception as e:
+    logging.error(f"Une erreur s'est produite lors de la construction : {str(e)}")
+    sys.exit(1)
+
+logging.info("Processus de construction terminé.")
