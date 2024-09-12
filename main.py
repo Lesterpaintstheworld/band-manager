@@ -45,7 +45,7 @@ class BandManager:
         painter = QPainter(scaled_pixmap)
         painter.setPen(Qt.white)
         painter.setFont(QFont("Arial", 12))
-        painter.drawText(scaled_pixmap.rect().bottomRight() - QPoint(100, 30), "v0.1.1")
+        painter.drawText(scaled_pixmap.rect().bottomRight() - QPoint(100, 30), "v0.2.0")
         painter.end()
         
         self.splash = QSplashScreen(scaled_pixmap)
