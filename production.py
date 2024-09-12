@@ -215,6 +215,9 @@ class ProductionTab(QWidget):
             import shutil
             shutil.copy(complete_song_sequence, song_path)
             
+            # Delete the temporary file
+            os.unlink(complete_song_sequence)
+            
             self.result_area.clear()
             self.result_area.append(f"Song generated and saved: {song_path}")
             self.chat_area.append(f"Song generated and saved: {song_path}")
