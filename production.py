@@ -11,6 +11,7 @@ from main import resource_path
 import requests
 from pydantic import BaseModel
 from typing import List
+from udio_wrapper.udio_song_generator import SunoSongGenerator
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -24,7 +25,7 @@ class ProductionTab(QWidget):
         self.initUI()
         self.load_api_key()
         self.load_system_prompt()
-        self.load_suno_api()
+        self.load_udiopro_api()
 
     def initUI(self):
         main_layout = QHBoxLayout()
@@ -70,7 +71,6 @@ class ProductionTab(QWidget):
 
         main_layout.addWidget(splitter)
 
-
     def load_api_key(self):
         load_dotenv()
         self.api_key = os.getenv('OPENAI_API_KEY')
@@ -86,14 +86,20 @@ class ProductionTab(QWidget):
                 print("Please check your API key in the .env file")
                 self.client = None
 
-    def load_suno_api(self):
-        # Temporarily disabled Suno API initialization
-        self.chat_area.append("Suno API initialization is currently disabled.")
-        self.suno_api = None
-
-    def load_suno_api(self):
-        self.chat_area.append("Suno API initialization is currently disabled.")
-        self.suno_api = None
+    def load_udiopro_api(self):
+        load_dotenv()
+        udiopro_api_key = os.getenv('UDIOPRO_API_KEY')
+        if not udiopro_api_key:
+            print("Error: UdioPro API key not found in .env file. Please add UDIOPRO_API_KEY to your .env file.")
+            self.udiopro_api = None
+        else:
+            try:
+                self.udiopro_api = SunoSongGenerator(udiopro_api_key)
+                self.chat_area.append("UdioPro API initialized successfully.")
+            except Exception as e:
+                print(f"Error initializing UdioPro API: {str(e)}")
+                print("Please check your API key in the .env file")
+                self.udiopro_api = None
 
     def load_system_prompt(self):
         try:
@@ -138,7 +144,7 @@ class ProductionTab(QWidget):
 
         try:
             stream = self.client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-4-1106-preview",
                 messages=[
                     {"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": f"Generate a JSON response for the following request: {user_message}"}
@@ -179,55 +185,48 @@ class ProductionTab(QWidget):
             logger.info(f"Starting song generation with prompt: {gpt_response['short_prompt']}")
 
             start_time = time.time()
-            # Generate the song
-            try:
-                song_data = self.udio_wrapper.song_generator.generate_song(
-                    song_title=gpt_response['short_prompt'],
-                    song_description="Generated song description"
-                )
-                logger.info("Udio generate_song method called successfully")
-            except Exception as udio_error:
-                logger.error(f"Error in Udio generate_song method: {str(udio_error)}", exc_info=True)
-                raise Exception(f"Udio song generation failed: {str(udio_error)}")
-
+            
+            # Generate the song using UdioPro API
+            work_id = self.udiopro_api.generate_song(
+                title=gpt_response['short_prompt'],
+                prompt=gpt_response['short_prompt'],
+                model="chirp-v3.5",
+                disable_callback=True
+            )
+            
+            # Get audio URLs
+            audio_urls = self.udiopro_api.get_audio_urls(work_id)
+            
             end_time = time.time()
             generation_time = end_time - start_time
             logger.info(f"Song generation completed in {generation_time:.2f} seconds")
 
-            # Log the Udio API response
-            logger.info(f"Udio API response type: {type(song_data)}")
-            logger.info(f"Udio API response length: {len(song_data) if song_data else 'N/A'}")
-            if song_data:
-                logger.info(f"First 100 bytes of Udio API response: {song_data[:100]}")
-            else:
-                logger.warning("Udio API response is empty or None")
+            if not audio_urls:
+                logger.error("No audio URLs received from UdioPro API.")
+                raise Exception("No audio URLs received from UdioPro API.")
 
-            self.chat_area.append(f"Udio API response received. Length: {len(song_data) if song_data else 'N/A'}")
+            # Download and save the audio files
+            song_paths = []
+            for i, url in enumerate(audio_urls):
+                song_filename = f"song_{int(time.time())}_{i}.mp3"
+                song_path = os.path.join("songs", song_filename)
+                os.makedirs("songs", exist_ok=True)
+                
+                response = requests.get(url)
+                response.raise_for_status()
+                
+                with open(song_path, 'wb') as f:
+                    f.write(response.content)
+                logger.info(f"Song part {i+1} saved successfully at: {song_path}")
+                song_paths.append(song_path)
 
-            if not song_data:
-                logger.error("The generated song data is empty.")
-                raise Exception("The generated song data is empty.")
-
-            # Save the audio file in the songs/ folder
-            song_filename = f"song_{int(time.time())}.mp3"
-            song_path = os.path.join("songs", song_filename)
-            os.makedirs("songs", exist_ok=True)
-            
-            logger.info(f"Saving song to {song_path}")
-            with open(song_path, 'wb') as f:
-                f.write(song_data)
-            logger.info(f"Song saved successfully. File size: {len(song_data)} bytes")
-            
             self.result_area.clear()
-            self.result_area.append(f"Song generated and saved: {song_path}")
-            self.chat_area.append(f"Song generated and saved: {song_path}")
+            self.result_area.append(f"Song generated and saved: {', '.join(song_paths)}")
+            self.chat_area.append(f"Song generated and saved: {', '.join(song_paths)}")
             
-            # Wait for a short time to ensure the file is fully written
-            time.sleep(1)
-            
-            # Play the song in the audio player
+            # Play the first song in the audio player
             logger.info("Attempting to play the generated song")
-            self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_path)))
+            self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_paths[0])))
             self.player.error.connect(self.handle_player_error)
             self.player.play()
             
@@ -240,10 +239,10 @@ class ProductionTab(QWidget):
                 QMessageBox.information(self, "Success", "The song has been generated successfully and is now playing.")
             else:
                 logger.warning(f"Playback issue detected. Player error: {self.player.error()}")
-                QMessageBox.warning(self, "Playback Issue", "The song was generated successfully, but there might be an issue with playback. You can find the audio file at: " + song_path)
+                QMessageBox.warning(self, "Playback Issue", "The song was generated successfully, but there might be an issue with playback. You can find the audio file at: " + song_paths[0])
             
             # Emit the production_updated signal with the new content
-            self.production_updated.emit(song_path)
+            self.production_updated.emit(song_paths[0])
         except Exception as e:
             error_message = f"An error occurred while generating the song: {str(e)}"
             self.chat_area.append(error_message)
@@ -292,66 +291,11 @@ class ProductionTab(QWidget):
         self.chat_area.append(f"Supported audio formats: {', '.join(supported_formats)}")
         logger.info(f"Supported audio formats: {', '.join(supported_formats)}")
 
-    def generate_song(self, user_prompt):
-        try:
-            self.result_area.clear()
-            self.result_area.append("Generating song...")
-            self.chat_area.append("Starting song generation...")
-            logger.info(f"Starting song generation with prompt: {user_prompt}")
-
-            start_time = time.time()
-            
-            # Generate the song
-            song_paths = self.suno_api.create_complete_song(
-                title=user_prompt,
-                prompt=user_prompt,
-                model="chirp-v3.5",
-                disable_callback=True
-            )
-            
-            end_time = time.time()
-            generation_time = end_time - start_time
-            logger.info(f"Song generation completed in {generation_time:.2f} seconds")
-
-            if not song_paths:
-                logger.error("The generated song data is empty.")
-                raise Exception("The generated song data is empty.")
-
-            self.result_area.clear()
-            self.result_area.append(f"Song generated and saved: {', '.join(song_paths)}")
-            self.chat_area.append(f"Song generated and saved: {', '.join(song_paths)}")
-            
-            # Play the first song in the audio player
-            logger.info("Attempting to play the generated song")
-            self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_paths[0])))
-            self.player.error.connect(self.handle_player_error)
-            self.player.play()
-            
-            # Wait for the player to be ready
-            while self.player.state() == QMediaPlayer.LoadingMedia:
-                QApplication.processEvents()
-            
-            if self.player.error() == QMediaPlayer.NoError:
-                logger.info("Song playback started successfully")
-                QMessageBox.information(self, "Success", "The song has been generated successfully and is now playing.")
-            else:
-                logger.warning(f"Playback issue detected. Player error: {self.player.error()}")
-                QMessageBox.warning(self, "Playback Issue", "The song was generated successfully, but there might be an issue with playback. You can find the audio file at: " + song_paths[0])
-            
-            # Emit the production_updated signal with the new content
-            self.production_updated.emit(song_paths[0])
-        except Exception as e:
-            error_message = f"An error occurred while generating the song: {str(e)}"
-            self.chat_area.append(error_message)
-            self.result_area.append(f"Error: {str(e)}")
-            logger.error(f"Song generation error: {str(e)}", exc_info=True)
-            QMessageBox.critical(self, "Error", error_message)
-
     def handle_user_prompt(self):
         user_prompt = self.input_field.text()
         if user_prompt:
             self.chat_area.append(f"You: {user_prompt}")
             self.input_field.clear()
-            self.generate_song(user_prompt)
+            self.generate_song({"short_prompt": user_prompt})
         else:
             QMessageBox.warning(self, "Empty Prompt", "Please enter a prompt for song generation.")
