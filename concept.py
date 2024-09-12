@@ -150,9 +150,46 @@ class ConceptTab(QWidget):
         with open('concept.md', 'w', encoding='utf-8') as f:
             f.write(updated_concept)
 
-    def load_group_info(self):
+    def load_context_info(self):
+        context = ""
+        files_to_read = ['band_info.txt', 'concept.md', 'management.md']
+        for file in files_to_read:
+            try:
+                with open(file, 'r', encoding='utf-8') as f:
+                    context += f"Content of {file}:\n{f.read().strip()}\n\n"
+            except FileNotFoundError:
+                context += f"File {file} not found.\n\n"
+        return context
+
+    def send_message(self):
+        user_message = self.input_field.text()
+        self.chat_area.append(f"You: {user_message}")
+        self.input_field.clear()
+
+        if not self.api_key:
+            self.chat_area.append("Error: OpenAI API key not found. Please check your .env file.")
+            return
+
+        if self.client is None:
+            try:
+                self.client = OpenAI(api_key=self.api_key)
+                self.chat_area.append("OpenAI client reinitialized successfully.")
+            except Exception as e:
+                self.chat_area.append(f"Error reinitializing OpenAI client: {str(e)}")
+                return
+
         try:
-            with open('band_info.txt', 'r', encoding='utf-8') as f:
-                return f.read().strip()
-        except FileNotFoundError:
-            return "Group information not available."
+            # Charger les informations contextuelles
+            context_info = self.load_context_info()
+            
+            self.stream_buffer = ""
+            self.chat_area.append("Assistant: ")
+            stream = self.client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": self.system_prompt},
+                    {"role": "system", "content": f"Context Information:\n{context_info}"},
+                    {"role": "user", "content": user_message}
+                ],
+                stream=True
+            )
