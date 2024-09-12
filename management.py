@@ -93,4 +93,4 @@ class ManagementTab(QWidget):
         self.chat_area.append("Informations du groupe automatiquement mises à jour et sauvegardées.")
 
     def update_info(self):
-        self.chat_area.append("Les informations du groupe sont automatiquement sauvegardées lorsque vous les modifiez.")
+        self.chat_area.append("✓")
