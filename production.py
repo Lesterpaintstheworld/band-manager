@@ -89,14 +89,16 @@ class ProductionTab(QWidget):
 
     def load_suno_api(self):
         load_dotenv()
-        self.suno_api_url = os.getenv('SUNO_API_URL', 'http://localhost:3000')
-        if not self.suno_api_url:
-            self.chat_area.append("Error: Suno API URL not found in .env file.")
-            self.chat_area.append("Please add SUNO_API_URL to your .env file.")
+        self.suno_api_url = os.getenv('SUNO_API_URL', 'https://api.suno.ai')
+        self.suno_cookie = os.getenv('SUNO_COOKIE')
+        if not self.suno_api_url or not self.suno_cookie:
+            self.chat_area.append("Error: Suno API URL or Cookie not found in .env file.")
+            self.chat_area.append("Please add SUNO_API_URL and SUNO_COOKIE to your .env file.")
             self.suno_api = None
         else:
             try:
-                response = requests.get(f"{self.suno_api_url}/api/get_limit")
+                headers = {'Cookie': self.suno_cookie}
+                response = requests.get(f"{self.suno_api_url}/api/get_limit", headers=headers)
                 if response.status_code == 200:
                     self.chat_area.append("Suno API connection initialized successfully.")
                     self.suno_api = True
@@ -104,7 +106,7 @@ class ProductionTab(QWidget):
                     raise Exception(f"Failed to connect to Suno API. Status code: {response.status_code}")
             except Exception as e:
                 self.chat_area.append(f"Error initializing Suno API connection: {str(e)}")
-                self.chat_area.append("Please check your Suno API URL in the .env file.")
+                self.chat_area.append("Please check your Suno API URL and Cookie in the .env file.")
                 self.suno_api = None
 
     def load_system_prompt(self):
@@ -318,7 +320,8 @@ class ProductionTab(QWidget):
                 "make_instrumental": False,
                 "wait_audio": False
             }
-            response = requests.post(f"{self.suno_api_url}/api/generate", json=payload)
+            headers = {'Cookie': self.suno_cookie}
+            response = requests.post(f"{self.suno_api_url}/api/generate", json=payload, headers=headers)
             if response.status_code != 200:
                 raise Exception(f"Suno API request failed with status code: {response.status_code}")
             
@@ -336,7 +339,7 @@ class ProductionTab(QWidget):
             ids = f"{data[0]['id']},{data[1]['id']}"
             audio_urls = []
             for _ in range(60):  # Wait for up to 5 minutes
-                response = requests.get(f"{self.suno_api_url}/api/get?ids={ids}")
+                response = requests.get(f"{self.suno_api_url}/api/get?ids={ids}", headers={'Cookie': self.suno_cookie})
                 if response.status_code != 200:
                     raise Exception(f"Failed to get audio information. Status code: {response.status_code}")
                 audio_info = response.json()
