@@ -191,6 +191,15 @@ Current Fan Count: {self.fans}
             QMessageBox.critical(self, "Erreur de chargement", error_message)
             sys.exit(1)
 
+    def load_system_prompt(self):
+        try:
+            with open(resource_path('prompts/concert.md'), 'r', encoding='utf-8') as f:
+                self.system_prompt = f.read()
+        except FileNotFoundError:
+            error_message = f"Erreur : Le fichier prompts/concert.md n'a pas été trouvé."
+            print(error_message)
+            self.system_prompt = "You are an AI assistant helping with concert simulations."
+
     def load_other_prompts(self):
         prompt_files = ['concept.md', 'lyrics.md', 'composition.md', 'visual_design.md', 'critique.md']
         for file in prompt_files:
