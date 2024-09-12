@@ -42,6 +42,8 @@ options = [
     '--exclude-module=transformers',
     '--exclude-module=torch',
     '--exclude-module=tensorflow',
+    '--hidden-import=numpy',
+    '--hidden-import=matplotlib',
     '--noupx',
     '--log-level=DEBUG',
 ]
