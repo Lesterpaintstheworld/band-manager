@@ -3,7 +3,7 @@ import logging
 import os
 import time
 
-class SunoSongGenerator:
+class UdioSongGenerator:
     API_BASE_URL = "https://udioapi.pro/api"
 
     def __init__(self, api_key):

@@ -11,7 +11,7 @@ from main import resource_path
 import requests
 from pydantic import BaseModel
 from typing import List
-from udio_wrapper.udio_song_generator import SunoSongGenerator
+from udio_wrapper.udio_song_generator import UdioSongGenerator
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -94,7 +94,7 @@ class ProductionTab(QWidget):
             self.udiopro_api = None
         else:
             try:
-                self.udiopro_api = SunoSongGenerator(udiopro_api_key)
+                self.udiopro_api = UdioSongGenerator(udiopro_api_key)
                 self.chat_area.append("UdioPro API initialized successfully.")
             except Exception as e:
                 print(f"Error initializing UdioPro API: {str(e)}")
@@ -190,8 +190,7 @@ class ProductionTab(QWidget):
             work_id = self.udiopro_api.generate_song(
                 title=gpt_response['short_prompt'],
                 prompt=gpt_response['short_prompt'],
-                model="chirp-v3.5",
-                disable_callback=True
+                model="chirp-v3.5"
             )
             
             # Get audio URLs
