@@ -49,6 +49,27 @@ except ImportError as e:
             logging.error(f"- {item}")
     else:
         logging.error(f"Le répertoire {python_lib} n'existe pas.")
+    
+    # Add more detailed logging
+    logging.error("Detailed NumPy import error information:")
+    logging.error(f"NumPy path: {np.__file__ if 'numpy' in sys.modules else 'Not found'}")
+    logging.error(f"Python version: {sys.version}")
+    logging.error(f"Platform: {sys.platform}")
+    logging.error(f"Executable: {sys.executable}")
+    
+    # Try to import NumPy components individually
+    try:
+        import numpy.core._multiarray_umath
+        logging.info("numpy.core._multiarray_umath imported successfully")
+    except ImportError as e:
+        logging.error(f"Error importing numpy.core._multiarray_umath: {e}")
+    
+    try:
+        import numpy.core._multiarray_tests
+        logging.info("numpy.core._multiarray_tests imported successfully")
+    except ImportError as e:
+        logging.error(f"Error importing numpy.core._multiarray_tests: {e}")
+    
     sys.exit(1)
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
 from PyQt5.QtGui import QPixmap, QPainter, QFont
