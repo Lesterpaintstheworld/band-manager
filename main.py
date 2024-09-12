@@ -7,6 +7,8 @@ import argparse
 from dotenv import load_dotenv
 
 print(f"Répertoire de travail actuel : {os.getcwd()}")
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.info("Démarrage du programme")
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
 from PyQt5.QtGui import QPixmap, QPainter, QFont
 from PyQt5.QtCore import Qt, QTimer, QPoint, PYQT_VERSION_STR, QT_VERSION_STR
@@ -88,7 +90,8 @@ def global_exception_handler(exctype, value, tb):
     error_msg = f"An unexpected error occurred:\n{str(value)}\n\nPlease check the log file for more details."
     logging.error(error_msg)
     print(error_msg)  # Print to console as well
-    QMessageBox.critical(None, "Error", error_msg)
+    # Commentez la ligne suivante pour éviter que l'application ne se ferme immédiatement
+    # QMessageBox.critical(None, "Error", error_msg)
 
 sys.excepthook = global_exception_handler
 
@@ -203,7 +206,11 @@ def exception_hook(exctype, value, traceback):
 if __name__ == "__main__":
     sys.excepthook = exception_hook
     try:
+        logging.info("Création de l'instance BandManager")
         manager = BandManager()
+        logging.info("Lancement de l'application")
         manager.run()
     except Exception as e:
-        logging.exception("Fatal error in main loop")
+        logging.exception("Erreur fatale dans la boucle principale")
+        print(f"Une erreur fatale s'est produite : {str(e)}")
+        input("Appuyez sur Entrée pour quitter...")
