@@ -96,9 +96,9 @@ class ProductionTab(QWidget):
             self.udio_wrapper = None
         else:
             try:
-                from udio_wrapper import UdioAuthenticator, UdioSongGenerator
+                from udio_wrapper import UdioAuthenticator, UdioWrapper
                 authenticator = UdioAuthenticator(self.udio_token1, self.udio_token2)
-                self.udio_wrapper = UdioSongGenerator(authenticator)
+                self.udio_wrapper = UdioWrapper(authenticator)
                 self.chat_area.append("Udio connection initialized successfully.")
             except Exception as e:
                 self.chat_area.append(f"Error initializing Udio connection: {str(e)}")

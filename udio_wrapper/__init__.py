@@ -7,4 +7,4 @@ class UdioWrapper:
         self.song_generator = UdioSongGenerator(authenticator)
 
     def create_complete_song(self, *args, **kwargs):
-        return self.song_generator.generate_song(*args, **kwargs)
+        return self.song_generator.create_complete_song(*args, **kwargs)
