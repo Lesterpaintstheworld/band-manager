@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QPushButton, QHBoxLayout, QLineEdit, QApplication, QMessageBox, QSplitter
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QPushButton, QHBoxLayout, QLineEdit, QApplication, QMessageBox, QSplitter, QSlider
 from PyQt5.QtCore import pyqtSignal, Qt, QUrl
-from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent, QMediaPlaylist
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent, QMediaPlaylist, QAudio
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 import time
 import logging
@@ -70,6 +70,28 @@ class ProductionTab(QWidget):
         self.video_widget = QVideoWidget()
         self.player.setVideoOutput(self.video_widget)
         right_layout.addWidget(self.video_widget)
+
+        # Audio controls
+        controls_layout = QHBoxLayout()
+        self.play_button = QPushButton("Play")
+        self.pause_button = QPushButton("Pause")
+        self.stop_button = QPushButton("Stop")
+        self.volume_slider = QSlider(Qt.Horizontal)
+        self.volume_slider.setRange(0, 100)
+        self.volume_slider.setValue(50)
+
+        controls_layout.addWidget(self.play_button)
+        controls_layout.addWidget(self.pause_button)
+        controls_layout.addWidget(self.stop_button)
+        controls_layout.addWidget(self.volume_slider)
+
+        right_layout.addLayout(controls_layout)
+
+        # Connect audio control signals
+        self.play_button.clicked.connect(self.player.play)
+        self.pause_button.clicked.connect(self.player.pause)
+        self.stop_button.clicked.connect(self.player.stop)
+        self.volume_slider.valueChanged.connect(self.set_volume)
 
         # Splitter pour diviser l'écran
         splitter = QSplitter(Qt.Horizontal)
@@ -351,6 +373,10 @@ class ProductionTab(QWidget):
             self.input_field.clear()
             self.send_message()
         # Removed the else clause to prevent the warning when there's input
+
+    def set_volume(self, value):
+        volume = value / 100.0
+        self.player.setVolume(int(volume * 100))
 
 class UdioProWorker(QThread):
     result_ready = pyqtSignal(dict)
