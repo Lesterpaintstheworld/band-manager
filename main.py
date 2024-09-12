@@ -14,28 +14,27 @@ logging.info("Démarrage du programme")
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, current_dir)
 
-logging.info(f"Tentative d'importation de NumPy. sys.path: {sys.path}")
+# Ajout du répertoire des bibliothèques Python au sys.path
+python_lib = os.path.join(sys._MEIPASS, 'lib') if getattr(sys, 'frozen', False) else os.path.join(sys.prefix, 'lib')
+sys.path.insert(0, python_lib)
+
+logging.info(f"Python version: {sys.version}")
+logging.info(f"sys.path: {sys.path}")
+
+logging.info("Tentative d'importation de NumPy")
 try:
     import numpy as np
     logging.info(f"NumPy importé avec succès. Version: {np.__version__}")
 except ImportError as e:
     logging.error(f"Erreur lors de l'importation de NumPy: {e}")
-    logging.info("Tentative d'ajout du répertoire parent au sys.path")
-    parent_dir = os.path.dirname(current_dir)
-    sys.path.insert(0, parent_dir)
-    logging.info(f"Nouveau sys.path après ajout du répertoire parent: {sys.path}")
-    try:
-        import numpy as np
-        logging.info(f"NumPy importé avec succès après ajout du répertoire parent. Version: {np.__version__}")
-    except ImportError as e:
-        logging.error(f"Échec de l'importation de NumPy même après ajout du répertoire parent: {e}")
-        logging.error("Contenu du répertoire courant:")
-        for item in os.listdir(current_dir):
-            logging.error(f"- {item}")
-        logging.error("Contenu du répertoire parent:")
-        for item in os.listdir(parent_dir):
-            logging.error(f"- {item}")
-        sys.exit(1)
+    logging.error(f"sys.path: {sys.path}")
+    logging.error("Contenu du répertoire courant:")
+    for item in os.listdir(current_dir):
+        logging.error(f"- {item}")
+    logging.error("Contenu du répertoire Python lib:")
+    for item in os.listdir(python_lib):
+        logging.error(f"- {item}")
+    sys.exit(1)
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
 from PyQt5.QtGui import QPixmap, QPainter, QFont
 from PyQt5.QtCore import Qt, QTimer, QPoint, PYQT_VERSION_STR, QT_VERSION_STR
