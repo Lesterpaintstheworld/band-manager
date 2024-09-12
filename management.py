@@ -35,6 +35,11 @@ class ManagementTab(QWidget):
         self.send_button.clicked.connect(self.send_message)
         layout.addWidget(self.send_button)
 
+        # Bouton pour mettre à jour les informations du groupe
+        self.update_button = QPushButton("Mettre à jour les informations du groupe")
+        self.update_button.clicked.connect(self.update_info)
+        layout.addWidget(self.update_button)
+
         # Charger les informations existantes
         self.load_info()
 
@@ -79,4 +84,9 @@ class ManagementTab(QWidget):
         current_info = self.info_area.toPlainText()
         with open('band_info.txt', 'w', encoding='utf-8') as f:
             f.write(current_info)
-        self.chat_area.append("Informations du groupe mises à jour et sauvegardées.")
+        
+        # Mise à jour du fichier management.md
+        with open('management.md', 'w', encoding='utf-8') as f:
+            f.write(current_info)
+        
+        self.chat_area.append("Informations du groupe mises à jour et sauvegardées dans band_info.txt et management.md.")
