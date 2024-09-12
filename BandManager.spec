@@ -8,7 +8,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[('C:\\Python312\\Lib\\site-packages\\PyQt5\\Qt5\\bin\\Qt5Core.dll', 'PyQt5/Qt5/bin'), ('C:\\Python312\\Lib\\site-packages\\PyQt5\\Qt5\\bin\\Qt5Gui.dll', 'PyQt5/Qt5/bin'), ('C:\\Python312\\Lib\\site-packages\\PyQt5\\Qt5\\bin\\Qt5Widgets.dll', 'PyQt5/Qt5/bin'), ('C:\\Python312\\Lib\\site-packages\\PyQt5\\Qt5\\plugins\\platforms\\qwindows.dll', 'PyQt5/Qt5/plugins/platforms')],
-    datas=[('C:\\Users\\conta\\synthetic-band-manager\\prompts', 'prompts'), ('C:\\Users\\conta\\synthetic-band-manager\\*.md', '.'), ('C:\\Users\\conta\\synthetic-band-manager\\*.json', '.'), ('C:\\Users\\conta\\synthetic-band-manager\\style.css', '.'), ('C:\\Users\\conta\\synthetic-band-manager\\spinner.gif', '.'), ('C:\\Users\\conta\\synthetic-band-manager\\.env', '.'), ('C:\\Users\\conta\\synthetic-band-manager\\splash.png', '.'), ('C:\\Python312\\Lib\\site-packages\\matplotlib', 'matplotlib')],
+    datas=[('C:\\Users\\conta\\band-manager\\prompts', 'prompts'), ('C:\\Users\\conta\\band-manager\\*.md', '.'), ('C:\\Users\\conta\\band-manager\\*.json', '.'), ('C:\\Users\\conta\\band-manager\\style.css', '.'), ('C:\\Users\\conta\\band-manager\\spinner.gif', '.'), ('C:\\Users\\conta\\band-manager\\.env', '.'), ('C:\\Users\\conta\\band-manager\\splash.png', '.'), ('C:\\Python312\\Lib\\site-packages\\matplotlib', 'matplotlib')],
     hiddenimports=['PyQt5.QtCore', 'PyQt5.QtGui', 'PyQt5.QtWidgets', 'openai', 'dotenv', 'matplotlib'],
     hookspath=[],
     hooksconfig={},
@@ -41,5 +41,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['C:\\Users\\conta\\synthetic-band-manager\\icon.ico'],
+    icon=['C:\\Users\\conta\\band-manager\\icon.ico'],
 )
