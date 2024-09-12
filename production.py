@@ -11,6 +11,7 @@ from main import resource_path
 import requests
 from pydantic import BaseModel
 from typing import List
+import json
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -185,6 +186,101 @@ class ProductionTab(QWidget):
         self.result_area.append("\nReminder: This is a conceptual representation only. No actual audio is generated or played.")
         self.result_area.append("Debug: Finished displaying song information")
         logging.info("Song information displayed in the production tab")
+        
+        # Call UdioPro API
+        self.call_udiopro_api(song_info)
+
+    def call_udiopro_api(self, song_info):
+        self.result_area.append("\nDebug: Calling UdioPro API")
+        logging.info("Calling UdioPro API")
+
+        # Construct the prompt for UdioPro
+        prompt = f"{song_info['short_prompt']} "
+        prompt += " ".join(song_info['extend_prompts'])
+        prompt += f" {song_info['outro_prompt']}"
+
+        # Prepare the API request
+        url = "https://udioapi.pro/api/feed"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {os.getenv('UDIOPRO_API_KEY')}"
+        }
+        data = {
+            "prompt": prompt,
+            "title": "Generated Song",
+            "customMode": False,
+            "instrumental": False,
+            "disable_callback": True
+        }
+
+        try:
+            response = requests.post(url, headers=headers, json=data)
+            response.raise_for_status()
+            work_id = response.json().get('workId')
+
+            if work_id:
+                self.result_area.append(f"Debug: UdioPro API call successful. Work ID: {work_id}")
+                self.fetch_udiopro_result(work_id)
+            else:
+                self.result_area.append("Error: Failed to get Work ID from UdioPro API")
+                logging.error("Failed to get Work ID from UdioPro API")
+
+        except requests.RequestException as e:
+            self.result_area.append(f"Error calling UdioPro API: {str(e)}")
+            logging.error(f"Error calling UdioPro API: {str(e)}")
+
+    def fetch_udiopro_result(self, work_id):
+        self.result_area.append("\nDebug: Fetching result from UdioPro API")
+        logging.info("Fetching result from UdioPro API")
+
+        url = f"https://udioapi.pro/api/feed?workId={work_id}"
+        headers = {
+            "Authorization": f"Bearer {os.getenv('UDIOPRO_API_KEY')}"
+        }
+
+        max_attempts = 10
+        attempt = 0
+
+        while attempt < max_attempts:
+            try:
+                response = requests.get(url, headers=headers)
+                response.raise_for_status()
+                result = response.json()
+
+                if result['type'] == 'complete':
+                    self.display_udiopro_result(result)
+                    break
+                elif result['type'] in ['new', 'text', 'first']:
+                    self.result_area.append(f"Debug: UdioPro generation in progress. Status: {result['type']}")
+                    time.sleep(10)  # Wait for 10 seconds before next attempt
+                else:
+                    self.result_area.append(f"Error: Unexpected result type from UdioPro API: {result['type']}")
+                    logging.error(f"Unexpected result type from UdioPro API: {result['type']}")
+                    break
+
+            except requests.RequestException as e:
+                self.result_area.append(f"Error fetching UdioPro result: {str(e)}")
+                logging.error(f"Error fetching UdioPro result: {str(e)}")
+                break
+
+            attempt += 1
+
+        if attempt == max_attempts:
+            self.result_area.append("Error: Maximum attempts reached while fetching UdioPro result")
+            logging.error("Maximum attempts reached while fetching UdioPro result")
+
+    def display_udiopro_result(self, result):
+        self.result_area.append("\nUdioPro Generation Result:")
+        for song in result['response_data']:
+            self.result_area.append(f"\nTitle: {song['title']}")
+            self.result_area.append(f"Audio URL: {song['audio_url']}")
+            self.result_area.append(f"Image URL: {song['image_url']}")
+            self.result_area.append(f"Duration: {song['duration']} seconds")
+            self.result_area.append(f"Tags: {song['tags']}")
+            self.result_area.append(f"Prompt: {song['prompt']}")
+
+        self.result_area.append("\nDebug: UdioPro result displayed")
+        logging.info("UdioPro result displayed")
 
     def handle_player_error(self, error):
         error_msg = f"Media player error: {error}"
