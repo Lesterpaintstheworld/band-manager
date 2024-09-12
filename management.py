@@ -1,9 +1,15 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QLineEdit, QPushButton
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap
+import os
+from openai import OpenAI
 
 class ManagementTab(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
+        self.load_system_prompt()
+        self.client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
     def initUI(self):
         layout = QVBoxLayout()
@@ -14,30 +20,60 @@ class ManagementTab(QWidget):
         self.info_area.setReadOnly(True)
         layout.addWidget(self.info_area)
 
+        # Zone de chat
+        self.chat_area = QTextEdit()
+        self.chat_area.setReadOnly(True)
+        layout.addWidget(self.chat_area)
+
         # Champ de saisie pour les nouvelles informations
         self.input_field = QLineEdit()
+        self.input_field.returnPressed.connect(self.send_message)
         layout.addWidget(self.input_field)
 
-        # Bouton pour mettre à jour les informations
-        self.update_button = QPushButton("Mettre à jour")
-        self.update_button.clicked.connect(self.update_info)
-        layout.addWidget(self.update_button)
+        # Bouton pour envoyer le message
+        self.send_button = QPushButton("Envoyer")
+        self.send_button.clicked.connect(self.send_message)
+        layout.addWidget(self.send_button)
 
         # Charger les informations existantes
         self.load_info()
 
+    def load_system_prompt(self):
+        try:
+            with open('prompts/management.md', 'r', encoding='utf-8') as f:
+                self.system_prompt = f.read().strip()
+        except FileNotFoundError:
+            self.system_prompt = "You are a helpful assistant for band management."
+
     def load_info(self):
-        # Charger les informations existantes depuis un fichier ou une base de données
-        # Pour l'instant, nous utiliserons des informations factices
-        info = "Nom du groupe : The Rockers\nStyle : Rock alternatif\nObjectif : Devenir le meilleur groupe de rock du monde"
-        self.info_area.setPlainText(info)
+        try:
+            with open('band_info.txt', 'r', encoding='utf-8') as f:
+                info = f.read()
+            self.info_area.setPlainText(info)
+        except FileNotFoundError:
+            info = "Nom du groupe : The Rockers\nStyle : Rock alternatif\nObjectif : Devenir le meilleur groupe de rock du monde"
+            self.info_area.setPlainText(info)
+
+    def send_message(self):
+        user_message = self.input_field.text()
+        self.chat_area.append(f"Vous : {user_message}")
+        self.input_field.clear()
+
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": self.system_prompt},
+                    {"role": "user", "content": user_message}
+                ]
+            )
+            ai_message = response.choices[0].message.content
+            self.chat_area.append(f"Assistant : {ai_message}")
+        except Exception as e:
+            self.chat_area.append(f"Erreur : {str(e)}")
 
     def update_info(self):
-        # Mettre à jour les informations avec le texte saisi
-        new_info = self.input_field.text()
-        if new_info:
-            current_info = self.info_area.toPlainText()
-            updated_info = current_info + "\n" + new_info
-            self.info_area.setPlainText(updated_info)
-            self.input_field.clear()
-            # Ici, vous pouvez ajouter du code pour sauvegarder les informations mises à jour
+        current_info = self.info_area.toPlainText()
+        with open('band_info.txt', 'w', encoding='utf-8') as f:
+            f.write(current_info)
+        self.chat_area.append("Informations du groupe mises à jour et sauvegardées.")
