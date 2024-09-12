@@ -203,24 +203,14 @@ class ProductionTab(QWidget):
             visual_design_content = self.read_file(resource_path('visual_design.md'))
 
             stream = self.client.chat.completions.create(
-                model="gpt-4-1106-preview",
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": self.system_prompt},
-                    {"role": "user", "content": f"""
-                    Concept:
-                    {concept_content}
-                    
-                    Lyrics: 
-                    {lyrics_content}
-                    
-                    Composition:
-                    {composition_content}
-                    
-                    Visual Design:
-                    {visual_design_content}
-                    
-                    Generate a JSON response for the following request: {user_message}
-                    """}
+                    {"role": "system", "content": f"Concept:\n{concept_content}"},
+                    {"role": "system", "content": f"Lyrics:\n{lyrics_content}"},
+                    {"role": "system", "content": f"Composition:\n{composition_content}"},
+                    {"role": "system", "content": f"Visual Design:\n{visual_design_content}"},
+                    {"role": "user", "content": f"Generate a JSON response for the following request: {user_message}"}
                 ],
                 response_format={"type": "json_object"},
                 stream=True
