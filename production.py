@@ -182,25 +182,15 @@ class ProductionTab(QWidget):
         self.production_updated.emit(updated_content)
 
     def generate_song(self, gpt_response):
-        if not self.udio_wrapper:
-            error_message = "Error: The Udio connection is not configured correctly or the connection to Udio failed."
-            self.chat_area.append(error_message)
-            QMessageBox.critical(self, "Error", error_message)
-            return
-
         try:
             self.result_area.clear()
             self.result_area.append("Generating song...")
             self.chat_area.append("Starting song generation...")
 
-            song_data = self.udio_wrapper.create_complete_song(
-                short_prompt=gpt_response['short_prompt'],
-                extend_prompts=gpt_response['extend_prompts'],
-                outro_prompt=gpt_response['outro_prompt'],
-                num_extensions=gpt_response['num_extensions'],
-                custom_lyrics_short=gpt_response['custom_lyrics_short'],
-                custom_lyrics_extend=gpt_response['custom_lyrics_extend'],
-                custom_lyrics_outro=gpt_response['custom_lyrics_outro']
+            # For now, we'll just use the short_prompt to generate a dummy song
+            song_data = self.udio_wrapper.song_generator.generate_song(
+                song_title=gpt_response['short_prompt'],
+                song_description="Dummy song description"
             )
 
             if not song_data:
