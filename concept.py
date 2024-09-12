@@ -193,3 +193,12 @@ class ConceptTab(QWidget):
                 ],
                 stream=True
             )
+            for chunk in stream:
+                if chunk.choices[0].delta.content is not None:
+                    self.stream_buffer += chunk.choices[0].delta.content
+                    self.chat_area.insertPlainText(chunk.choices[0].delta.content)
+                    QApplication.processEvents()
+            self.update_concept(self.stream_buffer)
+        except Exception as e:
+            self.chat_area.append(f"Error sending message: {str(e)}")
+            self.chat_area.append("Please check your internet connection and the validity of your API key.")
