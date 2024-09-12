@@ -18,11 +18,13 @@ sys.path.insert(0, current_dir)
 if getattr(sys, 'frozen', False):
     # Si l'application est "gelée" (compilée avec PyInstaller)
     python_lib = os.path.join(sys._MEIPASS, 'lib')
+    if python_lib not in sys.path:
+        sys.path.append(python_lib)
 else:
     # Si l'application est exécutée normalement
     python_lib = os.path.join(sys.prefix, 'Lib', 'site-packages')
-
-sys.path.insert(0, python_lib)
+    if python_lib not in sys.path:
+        sys.path.append(python_lib)
 
 logging.info(f"Python version: {sys.version}")
 logging.info(f"sys.path: {sys.path}")
