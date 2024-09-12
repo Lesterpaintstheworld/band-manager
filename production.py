@@ -260,6 +260,12 @@ class ProductionTab(QWidget):
         prompt += " ".join(song_info['extend_prompts'])
         prompt += f" {song_info['outro_prompt']}"
 
+        if not os.getenv('UDIOPRO_API_KEY'):
+            error_msg = "Error: UdioPro API key not found. Please check your .env file."
+            self.result_area.append(error_msg)
+            logging.error(error_msg)
+            return
+
         self.worker = UdioProWorker(prompt, os.getenv('UDIOPRO_API_KEY'))
         self.worker.result_ready.connect(self.display_udiopro_result)
         self.worker.error_occurred.connect(self.handle_udiopro_error)
@@ -269,8 +275,10 @@ class ProductionTab(QWidget):
         logging.info("UdioPro API call initiated")
 
     def handle_udiopro_error(self, error_message):
-        self.result_area.append(f"Error: {error_message}")
-        logging.error(error_message)
+        error_msg = f"Error in UdioPro API call: {error_message}"
+        self.result_area.append(error_msg)
+        logging.error(error_msg)
+        QMessageBox.warning(self, "UdioPro API Error", error_msg)
 
     def fetch_udiopro_result(self, work_id):
         self.result_area.append("\nDebug: Fetching result from UdioPro API")

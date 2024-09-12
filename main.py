@@ -57,12 +57,19 @@ class SyntheticBandManager:
 
     def after_splash(self):
         self.splash.close()
+        self.ensure_generated_songs_directory()
         if self.band_name_exists():
             self.show_main_interface()
         else:
             self.welcome_screen = WelcomeScreen()
             self.welcome_screen.submitted.connect(self.show_main_interface)
             self.welcome_screen.show()
+
+    def ensure_generated_songs_directory(self):
+        generated_songs_dir = 'generated_songs'
+        if not os.path.exists(generated_songs_dir):
+            os.makedirs(generated_songs_dir)
+            logging.info(f"Created directory: {generated_songs_dir}")
 
     def show_main_interface(self):
         from main_interface import MainInterface
