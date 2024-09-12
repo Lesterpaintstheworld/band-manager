@@ -48,11 +48,14 @@ class ProductionTab(QWidget):
 
         self.chat_area = QTextEdit()
         self.chat_area.setReadOnly(True)
+        self.chat_area.setStyleSheet("font-size: 14pt;")
         left_layout.addWidget(self.chat_area)
 
         input_layout = QHBoxLayout()
         self.input_field = QLineEdit()
+        self.input_field.setStyleSheet("font-size: 14pt;")
         self.send_button = QPushButton("Send")
+        self.send_button.setStyleSheet("font-size: 14pt;")
         self.send_button.clicked.connect(self.send_message)
         input_layout.addWidget(self.input_field)
         input_layout.addWidget(self.send_button)
@@ -61,6 +64,7 @@ class ProductionTab(QWidget):
 
         self.result_area = QTextEdit()
         self.result_area.setReadOnly(True)
+        self.result_area.setStyleSheet("font-size: 14pt;")
         left_layout.addWidget(self.result_area)
 
         # Right part
