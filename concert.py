@@ -73,6 +73,7 @@ class ConcertTab(QWidget):
         audience_size = math.ceil(self.fans * 1.2)
 
         # Charger les contenus les plus récents
+        management_content = self.read_file(resource_path('management.md'))
         concept_content = self.read_file(resource_path('concept.md'))
         lyrics_content = self.read_file(resource_path('lyrics.md'))
         composition_content = self.read_file(resource_path('composition.md'))
@@ -80,25 +81,7 @@ class ConcertTab(QWidget):
         visual_design_content = self.read_file(resource_path('visual_design.md'))
         critique_content = self.read_file(resource_path('critique.md'))
 
-        prompt = f"""Create a short, engaging story about the band's concert performance of their new song. Use the following information:
-
-Concept:
-{concept_content}
-
-Lyrics:
-{lyrics_content}
-
-Composition:
-{composition_content}
-
-Production:
-{production_content}
-
-Visual Design:
-{visual_design_content}
-
-Critique:
-{critique_content}
+        prompt = f"""Create a short, engaging story about the band's concert performance of their new song. Use the provided information.
 
 Audience Size: {audience_size}
 Current Fan Count: {self.fans}
@@ -112,8 +95,14 @@ Current Fan Count: {self.fans}
             stream = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": "You are a creative writer narrating concert experiences."},
-                    {"role": "user", "content": prompt}
+                    {"role": "system", "content": self.system_prompt},
+                    {"role": "system", "content": f"Management:\n{management_content}"},
+                    {"role": "system", "content": f"Concept:\n{concept_content}"},
+                    {"role": "system", "content": f"Lyrics:\n{lyrics_content}"},
+                    {"role": "system", "content": f"Composition:\n{composition_content}"},
+                    {"role": "system", "content": f"Visual Design:\n{visual_design_content}"},
+                    {"role": "system", "content": f"Production:\n{production_content}"},
+                    {"role": "system", "content": f"Critique:\n{critique_content}"},
                 ],
                 stream=True
             )
