@@ -107,11 +107,17 @@ class ProductionTab(QWidget):
                 if response.status_code == 200:
                     self.chat_area.append("Suno API connection initialized successfully.")
                     self.suno_api = True
+                elif response.status_code == 503:
+                    self.chat_area.append("Suno API is currently unavailable (503 Service Unavailable).")
+                    self.chat_area.append("This is likely a temporary issue. Please try again later.")
+                    self.suno_api = None
                 else:
-                    raise Exception(f"Failed to connect to Suno API. Status code: {response.status_code}")
-            except Exception as e:
-                self.chat_area.append(f"Error initializing Suno API connection: {str(e)}")
-                self.chat_area.append("Please check your Suno API URL and Cookie in the .env file.")
+                    self.chat_area.append(f"Failed to connect to Suno API. Status code: {response.status_code}")
+                    self.chat_area.append("Please check your Suno API URL and Cookie in the .env file.")
+                    self.suno_api = None
+            except requests.exceptions.RequestException as e:
+                self.chat_area.append(f"Error connecting to Suno API: {str(e)}")
+                self.chat_area.append("Please check your internet connection and Suno API URL.")
                 self.suno_api = None
 
     def load_system_prompt(self):
