@@ -95,18 +95,18 @@ class ProductionTab(QWidget):
 
     def load_suno_api(self):
         load_dotenv()
-        self.suno_api_token = os.getenv('SUNO_API_TOKEN')
-        if not self.suno_api_token:
-            self.chat_area.append("Error: Suno API Token not found in .env file.")
-            self.chat_area.append("Please add SUNO_API_TOKEN to your .env file.")
+        self.udioapipro_key = os.getenv('UDIOAPIPRO_KEY')
+        if not self.udioapipro_key:
+            self.chat_area.append("Error: UdioApiPro Key not found in .env file.")
+            self.chat_area.append("Please add UDIOAPIPRO_KEY to your .env file.")
             self.suno_api = None
         else:
             try:
-                self.suno_api = SunoSongGenerator(self.suno_api_token)
-                self.chat_area.append("Suno API connection initialized successfully.")
+                self.suno_api = SunoSongGenerator(self.udioapipro_key)
+                self.chat_area.append("UdioApiPro connection initialized successfully.")
             except Exception as e:
-                self.chat_area.append(f"Error initializing Suno API: {str(e)}")
-                self.chat_area.append("Please check your Suno API Token in the .env file.")
+                self.chat_area.append(f"Error initializing UdioApiPro: {str(e)}")
+                self.chat_area.append("Please check your UdioApiPro Key in the .env file.")
                 self.suno_api = None
 
     def load_system_prompt(self):

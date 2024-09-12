@@ -6,8 +6,8 @@ import time
 class SunoSongGenerator:
     API_BASE_URL = "https://udioapi.pro/api"
 
-    def __init__(self, api_token):
-        self.api_token = api_token
+    def __init__(self, api_key):
+        self.api_key = api_key
         self.logger = logging.getLogger(__name__)
 
     def generate_song(self, title, prompt, gpt_description_prompt="", make_instrumental=False, model="chirp-v3.5"):
@@ -22,7 +22,7 @@ class SunoSongGenerator:
                 "make_instrumental": make_instrumental,
                 "model": model,
                 "disable_callback": True,
-                "token": self.api_token
+                "api_key": self.api_key
             }
             
             response = requests.post(f"{self.API_BASE_URL}/generate", json=payload)
@@ -42,7 +42,7 @@ class SunoSongGenerator:
     def get_audio_urls(self, work_id, max_attempts=60, delay=5):
         try:
             for _ in range(max_attempts):
-                response = requests.get(f"{self.API_BASE_URL}/get_result?workId={work_id}&token={self.api_token}")
+                response = requests.get(f"{self.API_BASE_URL}/get_result?workId={work_id}&api_key={self.api_key}")
                 response.raise_for_status()
                 result = response.json()
                 
