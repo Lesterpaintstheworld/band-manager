@@ -10,18 +10,14 @@ class SunoSongGenerator:
         self.api_key = api_key
         self.logger = logging.getLogger(__name__)
 
-    def generate_song(self, title, prompt, gpt_description_prompt="", custom_mode=False, make_instrumental=False, model="chirp-v3.5", callback_url="", disable_callback=False):
+    def generate_song(self, title, prompt, model="chirp-v3.5", disable_callback=True):
         try:
             self.logger.info(f"Generating song with prompt: {prompt}")
             
             payload = {
                 "title": title,
                 "prompt": prompt,
-                "gpt_description_prompt": gpt_description_prompt,
-                "custom_mode": custom_mode,
-                "make_instrumental": make_instrumental,
                 "model": model,
-                "callback_url": callback_url,
                 "disable_callback": disable_callback,
                 "token": self.api_key
             }

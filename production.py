@@ -292,25 +292,21 @@ class ProductionTab(QWidget):
         self.chat_area.append(f"Supported audio formats: {', '.join(supported_formats)}")
         logger.info(f"Supported audio formats: {', '.join(supported_formats)}")
 
-    def generate_song(self, gpt_response):
+    def generate_song(self, user_prompt):
         try:
             self.result_area.clear()
             self.result_area.append("Generating song...")
             self.chat_area.append("Starting song generation...")
-            logger.info(f"Starting song generation with prompt: {gpt_response['short_prompt']}")
+            logger.info(f"Starting song generation with prompt: {user_prompt}")
 
             start_time = time.time()
             
             # Generate the song
             song_paths = self.suno_api.create_complete_song(
-                title=gpt_response['short_prompt'],
-                prompt=gpt_response['short_prompt'],
-                gpt_description_prompt=gpt_response.get('extend_prompts', [''])[0],
-                custom_mode=False,  # You can make this configurable if needed
-                make_instrumental=False,  # You can make this configurable if needed
-                model="chirp-v3.5",  # You can make this configurable if needed
-                callback_url="",  # You can add a callback URL if needed
-                disable_callback=True  # Set to True if you're not using a callback URL
+                title=user_prompt,
+                prompt=user_prompt,
+                model="chirp-v3.5",
+                disable_callback=True
             )
             
             end_time = time.time()
@@ -350,3 +346,12 @@ class ProductionTab(QWidget):
             self.result_area.append(f"Error: {str(e)}")
             logger.error(f"Song generation error: {str(e)}", exc_info=True)
             QMessageBox.critical(self, "Error", error_message)
+
+    def handle_user_prompt(self):
+        user_prompt = self.input_field.text()
+        if user_prompt:
+            self.chat_area.append(f"You: {user_prompt}")
+            self.input_field.clear()
+            self.generate_song(user_prompt)
+        else:
+            QMessageBox.warning(self, "Empty Prompt", "Please enter a prompt for song generation.")

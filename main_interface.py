@@ -83,6 +83,7 @@ class MainInterface(QWidget):
         self.lyrics_tab = LyricsTab()
         self.composition_tab = CompositionTab()
         self.production_tab = ProductionTab()
+        self.production_tab.send_button.clicked.connect(self.production_tab.handle_user_prompt)
         self.visual_design_tab = VisualDesignTab()
         self.concert_tab = ConcertTab()
         self.critique_tab = CritiqueTab()
