@@ -115,39 +115,66 @@ class LyricsTab(QWidget):
                 return
 
         try:
-            # Update the system prompt with the latest content from all relevant files
+            # Read content from relevant files
             lyrics_prompt = self.read_file(resource_path('prompts/lyrics.md'))
             concept_content = self.read_file(resource_path('concept.md'))
             composition_content = self.read_file(resource_path('composition.md'))
             management_content = self.read_file(resource_path('management.md'))
-            updated_system_prompt = f"{lyrics_prompt}\n\nContext from concept.md:\n{concept_content}\n\nContext from composition.md:\n{composition_content}\n\nContext from management.md:\n{management_content}"
 
             self.stream_buffer = ""
             self.chat_area.append("Assistant: ")
-            stream = self.client.chat.completions.create(
+            
+            # Generate title
+            title_stream = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": updated_system_prompt},
-                    {"role": "user", "content": user_message}
+                    {"role": "system", "content": lyrics_prompt},
+                    {"role": "system", "content": f"Concept:\n{concept_content}"},
+                    {"role": "system", "content": f"Composition:\n{composition_content}"},
+                    {"role": "system", "content": f"Management:\n{management_content}"},
+                    {"role": "user", "content": f"Generate a title for a song based on this prompt: {user_message}"}
                 ],
                 stream=True
             )
-            for chunk in stream:
+            
+            title = ""
+            for chunk in title_stream:
                 if chunk.choices[0].delta.content is not None:
-                    self.stream_buffer += chunk.choices[0].delta.content
+                    title += chunk.choices[0].delta.content
                     self.chat_area.insertPlainText(chunk.choices[0].delta.content)
                     QApplication.processEvents()
-            self.update_lyrics(self.stream_buffer)
+            
+            self.chat_area.append("\n\nGenerating lyrics...")
+            
+            # Generate lyrics
+            lyrics_stream = self.client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": lyrics_prompt},
+                    {"role": "system", "content": f"Concept:\n{concept_content}"},
+                    {"role": "system", "content": f"Composition:\n{composition_content}"},
+                    {"role": "system", "content": f"Management:\n{management_content}"},
+                    {"role": "user", "content": f"Generate lyrics for a song titled '{title}' based on this prompt: {user_message}"}
+                ],
+                stream=True
+            )
+            
+            lyrics = ""
+            for chunk in lyrics_stream:
+                if chunk.choices[0].delta.content is not None:
+                    lyrics += chunk.choices[0].delta.content
+                    self.chat_area.insertPlainText(chunk.choices[0].delta.content)
+                    QApplication.processEvents()
+            
+            self.update_lyrics(f"Title: {title}\n\n{lyrics}")
         except Exception as e:
             self.chat_area.append(f"Error sending message: {str(e)}")
             self.chat_area.append("Please check your internet connection and the validity of your API key.")
 
     def update_lyrics(self, new_content):
-        current_lyrics = self.result_area.toPlainText()
-        updated_lyrics = current_lyrics + "\n\n" + new_content
-        self.result_area.setPlainText(updated_lyrics)
-        self.lyrics_updated.emit(updated_lyrics)
+        self.result_area.setPlainText(new_content)
+        self.lyrics_updated.emit(new_content)
         
         # Sauvegarder les paroles dans lyrics.md
         with open('lyrics.md', 'w', encoding='utf-8') as f:
-            f.write(updated_lyrics)
+            f.write(new_content)
