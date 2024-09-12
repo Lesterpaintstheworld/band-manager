@@ -3,7 +3,7 @@ import os
 import sys
 import site
 import PyQt5
-import numpy as np
+import numpy
 
 # Ajouter le répertoire courant au chemin de recherche
 current_dir = os.path.abspath(os.path.dirname(__file__))
@@ -16,7 +16,7 @@ site_packages = site.getsitepackages()[0]
 pyqt5_path = os.path.dirname(PyQt5.__file__)
 
 # Obtenir le chemin d'installation de NumPy
-numpy_path = os.path.dirname(np.__file__)
+numpy_path = os.path.dirname(numpy.__file__)
 
 options = [
     'main.py',
@@ -52,6 +52,9 @@ if sys.platform.startswith('win'):
         '--add-binary', f'{pyqt5_path}\\Qt5\\bin\\Qt5Widgets.dll;PyQt5/Qt5/bin',
         '--add-binary', f'{pyqt5_path}\\Qt5\\plugins\\platforms\\qwindows.dll;PyQt5/Qt5/plugins/platforms',
         '--add-data', f'{numpy_path};numpy',
+        '--hidden-import=numpy',
+        '--hidden-import=numpy.core._methods',
+        '--hidden-import=numpy.lib.format',
     ])
 
 # Ajouter tous les fichiers de NumPy
