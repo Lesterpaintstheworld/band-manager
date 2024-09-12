@@ -20,6 +20,16 @@ logging.basicConfig(
     filemode='w'
 )
 
+# Add immediate logging to check if the program starts
+logging.info("Program started")
+print("Program started. Check the log file at:", log_file)
+
+# Log system information
+logging.info(f"Python version: {sys.version}")
+logging.info(f"PyQt5 version: {Qt.PYQT_VERSION_STR}")
+logging.info(f"Qt version: {Qt.QT_VERSION_STR}")
+logging.info(f"Operating system: {sys.platform}")
+
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
     try:
@@ -40,12 +50,17 @@ else:
 
 class BandManager:
     def __init__(self):
+        logging.info("Initializing BandManager")
         self.app = QApplication(sys.argv)
+        logging.info("QApplication created")
         set_dark_theme(self.app)
+        logging.info("Dark theme set")
         self.welcome_screen = None
         self.main_interface = None
         splash_pixmap = QPixmap(resource_path("splash.png"))
+        logging.info(f"Splash image loaded from: {resource_path('splash.png')}")
         scaled_pixmap = splash_pixmap.scaled(QApplication.primaryScreen().size(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+        logging.info("Splash image scaled")
         
         # Add version number to the splash screen
         painter = QPainter(scaled_pixmap)
@@ -53,8 +68,10 @@ class BandManager:
         painter.setFont(QFont("Arial", 12))
         painter.drawText(scaled_pixmap.rect().bottomRight() - QPoint(100, 30), "v0.2.0")
         painter.end()
+        logging.info("Version number added to splash screen")
         
         self.splash = QSplashScreen(scaled_pixmap)
+        logging.info("Splash screen created")
 
     def run(self):
         logging.info("Application starting")
