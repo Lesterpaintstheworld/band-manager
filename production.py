@@ -152,6 +152,8 @@ class ProductionTab(QWidget):
             parsed_response = json.loads(gpt_response)
             
             self.update_production(gpt_response)
+            self.chat_area.append("Debug: Displaying song information (no audio generation)")
+            logging.info("Displaying song information in production tab (no audio generation)")
             self.display_song_info(parsed_response)
             
         except Exception as e:
@@ -167,6 +169,7 @@ class ProductionTab(QWidget):
         self.result_area.clear()
         self.result_area.append("Song Information (Conceptual Only):")
         self.result_area.append("Note: This is a conceptual representation. No audio is generated.")
+        self.result_area.append("Debug: Starting to display song information")
         self.result_area.append(f"Short Prompt: {song_info['short_prompt']}")
         self.result_area.append(f"Number of Extensions: {song_info['num_extensions']}")
         self.result_area.append(f"Outro Prompt: {song_info['outro_prompt']}")
@@ -180,6 +183,8 @@ class ProductionTab(QWidget):
             self.result_area.append(f"{i}. {lyric}")
         self.result_area.append(f"Outro: {song_info['custom_lyrics_outro']}")
         self.result_area.append("\nReminder: This is a conceptual representation only. No actual audio is generated or played.")
+        self.result_area.append("Debug: Finished displaying song information")
+        logging.info("Song information displayed in the production tab")
 
     def handle_player_error(self, error):
         error_msg = f"Media player error: {error}"
