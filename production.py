@@ -207,17 +207,18 @@ class ProductionTab(QWidget):
         prompt += f" {song_info['outro_prompt']}"
 
         # Prepare the API request
-        url = "https://udioapi.pro/api/feed"
+        url = "https://udioapi.pro/api/generate"
         headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {os.getenv('UDIOPRO_API_KEY')}"
+            "Content-Type": "application/json"
         }
         data = {
             "prompt": prompt,
             "title": "Generated Song",
-            "customMode": False,
-            "instrumental": False,
-            "disable_callback": False  # Changed to False to enable callback
+            "custom_mode": False,
+            "make_instrumental": False,
+            "model": "chirp-v3.5",
+            "disable_callback": False,
+            "token": os.getenv('UDIOPRO_API_KEY')
         }
 
         try:
@@ -251,9 +252,13 @@ class ProductionTab(QWidget):
         self.result_area.append("\nDebug: Fetching result from UdioPro API")
         logging.info("Fetching result from UdioPro API")
 
-        url = f"https://udioapi.pro/api/feed?workId={work_id}"
+        url = f"https://udioapi.pro/api/generate"
         headers = {
-            "Authorization": f"Bearer {os.getenv('UDIOPRO_API_KEY')}"
+            "Content-Type": "application/json"
+        }
+        data = {
+            "workId": work_id,
+            "token": os.getenv('UDIOPRO_API_KEY')
         }
 
         max_attempts = 10
@@ -261,20 +266,16 @@ class ProductionTab(QWidget):
 
         while attempt < max_attempts:
             try:
-                response = requests.get(url, headers=headers)
+                response = requests.post(url, headers=headers, json=data)
                 response.raise_for_status()
                 result = response.json()
 
-                if result['type'] == 'complete':
-                    self.display_udiopro_result(result)
+                if result['code'] == 200 and result['data']['callbackType'] == 'complete':
+                    self.display_udiopro_result(result['data'])
                     break
-                elif result['type'] in ['new', 'text', 'first']:
-                    self.result_area.append(f"Debug: UdioPro generation in progress. Status: {result['type']}")
-                    time.sleep(10)  # Wait for 10 seconds before next attempt
                 else:
-                    self.result_area.append(f"Error: Unexpected result type from UdioPro API: {result['type']}")
-                    logging.error(f"Unexpected result type from UdioPro API: {result['type']}")
-                    break
+                    self.result_area.append(f"Debug: UdioPro generation in progress. Status: {result['data']['callbackType']}")
+                    time.sleep(10)  # Wait for 10 seconds before next attempt
 
             except requests.RequestException as e:
                 self.result_area.append(f"Error fetching UdioPro result: {str(e)}")
@@ -289,13 +290,15 @@ class ProductionTab(QWidget):
 
     def display_udiopro_result(self, result):
         self.result_area.append("\nUdioPro Generation Result:")
-        for song in result['response_data']:
+        for song in result['data']:
             self.result_area.append(f"\nTitle: {song['title']}")
             self.result_area.append(f"Audio URL: {song['audio_url']}")
             self.result_area.append(f"Image URL: {song['image_url']}")
             self.result_area.append(f"Duration: {song['duration']} seconds")
             self.result_area.append(f"Tags: {song['tags']}")
             self.result_area.append(f"Prompt: {song['prompt']}")
+            self.result_area.append(f"Model: {song['model_name']}")
+            self.result_area.append(f"Creation Time: {song['createTime']}")
 
         self.result_area.append("\nDebug: UdioPro result displayed")
         logging.info("UdioPro result displayed")
