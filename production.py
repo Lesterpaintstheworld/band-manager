@@ -117,6 +117,10 @@ class ProductionTab(QWidget):
         self.load_system_prompt()
         
         user_message = self.input_field.text()
+        if not user_message:
+            self.chat_area.append("Error: Empty input. Please enter a prompt.")
+            return
+
         self.chat_area.append(f"You: {user_message}")
         self.input_field.clear()
 
@@ -209,5 +213,4 @@ class ProductionTab(QWidget):
             self.chat_area.append(f"You: {user_prompt}")
             self.input_field.clear()
             self.send_message()
-        else:
-            QMessageBox.warning(self, "Empty Prompt", "Please enter a prompt for song information.")
+        # Removed the else clause to prevent the warning when there's input
