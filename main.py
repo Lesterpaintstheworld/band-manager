@@ -14,19 +14,27 @@ logging.info("Démarrage du programme")
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, current_dir)
 
+logging.info(f"Tentative d'importation de NumPy. sys.path: {sys.path}")
 try:
     import numpy as np
-    logging.info("NumPy importé avec succès")
+    logging.info(f"NumPy importé avec succès. Version: {np.__version__}")
 except ImportError as e:
     logging.error(f"Erreur lors de l'importation de NumPy: {e}")
     logging.info("Tentative d'ajout du répertoire parent au sys.path")
     parent_dir = os.path.dirname(current_dir)
     sys.path.insert(0, parent_dir)
+    logging.info(f"Nouveau sys.path après ajout du répertoire parent: {sys.path}")
     try:
         import numpy as np
-        logging.info("NumPy importé avec succès après ajout du répertoire parent")
+        logging.info(f"NumPy importé avec succès après ajout du répertoire parent. Version: {np.__version__}")
     except ImportError as e:
         logging.error(f"Échec de l'importation de NumPy même après ajout du répertoire parent: {e}")
+        logging.error("Contenu du répertoire courant:")
+        for item in os.listdir(current_dir):
+            logging.error(f"- {item}")
+        logging.error("Contenu du répertoire parent:")
+        for item in os.listdir(parent_dir):
+            logging.error(f"- {item}")
         sys.exit(1)
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
 from PyQt5.QtGui import QPixmap, QPainter, QFont
