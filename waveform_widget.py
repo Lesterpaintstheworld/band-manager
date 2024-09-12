@@ -1,8 +1,16 @@
+import os
+import sys
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter, QColor, QPen
 from pydub import AudioSegment
-import numpy as np
+
+try:
+    import numpy as np
+except ImportError:
+    print("Error importing NumPy. Make sure you're not in the NumPy source directory.")
+    print("Current working directory:", os.getcwd())
+    sys.exit(1)
 
 class WaveformWidget(QWidget):
     def __init__(self, parent=None):
