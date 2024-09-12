@@ -15,9 +15,9 @@ class ManagementTab(QWidget):
         layout = QVBoxLayout()
         self.setLayout(layout)
 
-        # Zone de texte pour afficher les informations du groupe
+        # Zone de texte pour afficher et éditer les informations du groupe
         self.info_area = QTextEdit()
-        self.info_area.setReadOnly(True)
+        self.info_area.textChanged.connect(self.save_info)
         layout.addWidget(self.info_area)
 
         # Zone de chat
@@ -81,7 +81,7 @@ class ManagementTab(QWidget):
         except Exception as e:
             self.chat_area.append(f"Erreur : {str(e)}")
 
-    def update_info(self):
+    def save_info(self):
         current_info = self.info_area.toPlainText()
         with open('band_info.txt', 'w', encoding='utf-8') as f:
             f.write(current_info)
@@ -90,4 +90,7 @@ class ManagementTab(QWidget):
         with open('management.md', 'w', encoding='utf-8') as f:
             f.write(current_info)
         
-        self.chat_area.append("Informations du groupe mises à jour et sauvegardées dans band_info.txt et management.md.")
+        self.chat_area.append("Informations du groupe automatiquement mises à jour et sauvegardées.")
+
+    def update_info(self):
+        self.chat_area.append("Les informations du groupe sont automatiquement sauvegardées lorsque vous les modifiez.")
