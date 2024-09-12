@@ -52,8 +52,8 @@ class WaveformWidget(QWidget):
         painter.setPen(QPen(QColor(0, 255, 0), 2))
         for i, value in enumerate(self.waveform_data):
             x = i * width
-            painter.drawLine(x, mid_height, x, mid_height - value)
-            painter.drawLine(x, mid_height, x, mid_height + value)
+            painter.drawLine(int(x), int(mid_height), int(x), int(mid_height - value))
+            painter.drawLine(int(x), int(mid_height), int(x), int(mid_height + value))
 
         # Draw playback position
         if self.duration > 0:
