@@ -16,53 +16,6 @@ logging.info(f"Contenu du répertoire: {os.listdir(current_dir)}")
 # Print Python path
 logging.info(f"Python path: {sys.path}")
 
-# Check if we're in NumPy source directory
-if os.path.basename(current_dir) == 'numpy':
-    logging.warning("Warning: Current directory is 'numpy'. This might cause import issues.")
-    os.chdir('..')
-    logging.info(f"Changed directory to: {os.getcwd()}")
-
-try:
-    import numpy as np
-    logging.info(f"NumPy importé avec succès. Version: {np.__version__}")
-    logging.info(f"Chemin d'installation de NumPy: {np.__file__}")
-    print(f"NumPy importé avec succès. Version: {np.__version__}")
-    print(f"Chemin d'installation de NumPy: {np.__file__}")
-except ImportError as e:
-    logging.error(f"Erreur lors de l'importation de NumPy: {e}")
-    logging.error(f"Chemin d'exécution actuel: {current_dir}")
-    logging.error(f"sys.path: {sys.path}")
-    logging.error(f"PYTHONPATH: {os.environ.get('PYTHONPATH', 'Non défini')}")
-    
-    # Vérifier si NumPy est installé dans le répertoire site-packages
-    import site
-    site_packages = site.getsitepackages()
-    numpy_found = False
-    for path in site_packages:
-        if os.path.exists(os.path.join(path, 'numpy')):
-            numpy_found = True
-            logging.info(f"NumPy trouvé dans: {path}")
-            print(f"NumPy trouvé dans: {path}")
-            break
-    
-    if not numpy_found:
-        logging.error("NumPy n'a pas été trouvé dans les répertoires site-packages.")
-        print("NumPy n'a pas été trouvé dans les répertoires site-packages.")
-    
-    print("Erreur lors de l'importation de NumPy. Vérifiez que NumPy est installé correctement.")
-    print(f"Chemin d'exécution actuel: {current_dir}")
-    print("Consultez les logs pour plus de détails.")
-    sys.exit(1)
-
-# Add a check for numpy.random
-try:
-    from numpy import random
-    logging.info("numpy.random imported successfully")
-    print("numpy.random imported successfully")
-except ImportError as e:
-    logging.error(f"Error importing numpy.random: {e}")
-    print(f"Error importing numpy.random: {e}")
-
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
 from PyQt5.QtGui import QPixmap, QPainter, QFont
 from PyQt5.QtCore import Qt, QTimer, QPoint
