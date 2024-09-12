@@ -58,3 +58,7 @@ if sys.platform.startswith('win'):
     ])
 
 PyInstaller.__main__.run(options)
+
+# Afficher le chemin de l'exécutable généré
+output_path = os.path.join(current_dir, 'dist', 'BandManager.exe')
+print(f"Exécutable généré : {output_path}")

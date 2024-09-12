@@ -5,6 +5,8 @@ import logging
 import traceback
 import argparse
 from dotenv import load_dotenv
+
+print(f"Répertoire de travail actuel : {os.getcwd()}")
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
 from PyQt5.QtGui import QPixmap, QPainter, QFont
 from PyQt5.QtCore import Qt, QTimer, QPoint, PYQT_VERSION_STR, QT_VERSION_STR
