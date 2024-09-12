@@ -29,6 +29,13 @@ logging.basicConfig(
     filemode='w'
 )
 
+# Add a console handler to see logs in console as well
+console = logging.StreamHandler()
+console.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+console.setFormatter(formatter)
+logging.getLogger('').addHandler(console)
+
 # Add immediate logging to check if the program starts
 logging.info("Program started")
 print("Program started. Check the log file at:", log_file)
@@ -68,7 +75,10 @@ def global_exception_handler(exctype, value, tb):
     logging.error("Uncaught exception", exc_info=(exctype, value, tb))
     traceback_str = ''.join(traceback.format_tb(tb))
     logging.error(f"Traceback:\n{traceback_str}")
-    QMessageBox.critical(None, "Error", f"An unexpected error occurred:\n{str(value)}\n\nPlease check the log file for more details.")
+    error_msg = f"An unexpected error occurred:\n{str(value)}\n\nPlease check the log file for more details."
+    logging.error(error_msg)
+    print(error_msg)  # Print to console as well
+    QMessageBox.critical(None, "Error", error_msg)
 
 sys.excepthook = global_exception_handler
 
