@@ -91,9 +91,16 @@ class CritiqueTab(QWidget):
         # Set the critic name
         self.set_critic_name()
         
-        # Append fan count and JSON instructions to the system prompt
+        # Append fan count and instructions to the system prompt
         self.system_prompt += f"\n\nCurrent fan count: {self.fan_count}\n\n"
-        self.system_prompt += "Please provide your critique in a natural, conversational format. Include ratings out of 10 for each aspect (concept, lyrics, composition, visual design) and an overall rating. Explain your ratings and provide constructive feedback for each aspect. Conclude with an overall assessment of the song."
+        self.system_prompt += "Please provide your critique in a natural, conversational format. Include ratings out of 10 for each aspect (concept, lyrics, composition, visual design, production) and an overall rating. Explain your ratings and provide constructive feedback for each aspect. Conclude with an overall assessment of the song."
+
+    def read_file(self, filepath):
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                return f.read()
+        except FileNotFoundError:
+            return f"File {filepath} not found."
 
     def set_critic_name(self):
         if self.fan_count <= 10:
@@ -145,10 +152,22 @@ class CritiqueTab(QWidget):
                 return
 
             self.chat_area.append("Assistant: Generating critique...")
+            # Read content from relevant files
+            concept_content = self.read_file('concept.md')
+            lyrics_content = self.read_file('lyrics.md')
+            composition_content = self.read_file('composition.md')
+            visual_design_content = self.read_file('visual_design.md')
+            production_content = self.read_file('production.md')
+
             stream = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": self.system_prompt},
+                    {"role": "system", "content": f"Concept:\n{concept_content}"},
+                    {"role": "system", "content": f"Lyrics:\n{lyrics_content}"},
+                    {"role": "system", "content": f"Composition:\n{composition_content}"},
+                    {"role": "system", "content": f"Visual Design:\n{visual_design_content}"},
+                    {"role": "system", "content": f"Production:\n{production_content}"},
                     {"role": "user", "content": f"Generate a critique for the following: {user_message}"}
                 ],
                 stream=True
