@@ -12,6 +12,7 @@ import requests
 from pydantic import BaseModel
 from typing import List
 import json
+from PyQt5.QtCore import QThread, pyqtSignal
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -208,47 +209,17 @@ class ProductionTab(QWidget):
         prompt += " ".join(song_info['extend_prompts'])
         prompt += f" {song_info['outro_prompt']}"
 
-        # Prepare the API request
-        url = "https://udioapi.pro/api/generate"
-        headers = {
-            "Content-Type": "application/json"
-        }
-        data = {
-            "prompt": prompt,
-            "title": "Generated Song",
-            "custom_mode": False,
-            "make_instrumental": False,
-            "model": "chirp-v3.5",
-            "disable_callback": True,  # Changed to True
-            "token": os.getenv('UDIOPRO_API_KEY')
-        }
+        self.worker = UdioProWorker(prompt, os.getenv('UDIOPRO_API_KEY'))
+        self.worker.result_ready.connect(self.display_udiopro_result)
+        self.worker.error_occurred.connect(self.handle_udiopro_error)
+        self.worker.start()
 
-        try:
-            response = requests.post(url, headers=headers, json=data)
-            response.raise_for_status()
-            response_json = response.json()
-            
-            self.result_area.append(f"Debug: UdioPro API Response: {response_json}")
-            logging.info(f"UdioPro API Response: {response_json}")
+        self.result_area.append("\nNote: UdioPro API call initiated. Please wait for the result.")
+        logging.info("UdioPro API call initiated")
 
-            work_id = response_json.get('workId')
-
-            if work_id:
-                self.result_area.append(f"Debug: UdioPro API call successful. Work ID: {work_id}")
-                self.fetch_udiopro_result(work_id)
-            else:
-                self.result_area.append(f"Error: Failed to get Work ID from UdioPro API. Response: {response_json}")
-                logging.error(f"Failed to get Work ID from UdioPro API. Response: {response_json}")
-
-        except requests.RequestException as e:
-            self.result_area.append(f"Error calling UdioPro API: {str(e)}")
-            logging.error(f"Error calling UdioPro API: {str(e)}")
-            if hasattr(e, 'response') and e.response is not None:
-                self.result_area.append(f"Response content: {e.response.content}")
-                logging.error(f"Response content: {e.response.content}")
-        
-        self.result_area.append("\nNote: If you're testing, please wait a few minutes before checking the result.")
-        logging.info("Advised user to wait before checking result if testing")
+    def handle_udiopro_error(self, error_message):
+        self.result_area.append(f"Error: {error_message}")
+        logging.error(error_message)
 
     def fetch_udiopro_result(self, work_id):
         self.result_area.append("\nDebug: Fetching result from UdioPro API")
@@ -293,15 +264,18 @@ class ProductionTab(QWidget):
             self.result_area.append("Error: Maximum attempts reached while fetching UdioPro result")
             logging.error("Maximum attempts reached while fetching UdioPro result")
 
-    def download_and_play_audio(self, audio_url):
+    def download_and_play_audio(self, audio_url, song_title):
         try:
             response = requests.get(audio_url)
             response.raise_for_status()
 
-            # Generate a unique filename for each downloaded audio
-            filename = f"temp_audio_{int(time.time())}.mp3"
+            # Create a 'generated_songs' directory if it doesn't exist
+            os.makedirs('generated_songs', exist_ok=True)
 
-            # Save the audio file temporarily
+            # Generate a filename based on the song title
+            filename = os.path.join('generated_songs', f"{song_title.replace(' ', '_')}_{int(time.time())}.mp3")
+
+            # Save the audio file
             with open(filename, 'wb') as f:
                 f.write(response.content)
 
@@ -313,8 +287,11 @@ class ProductionTab(QWidget):
                 self.player.setPlaylist(self.playlist)
                 self.player.play()
 
-            self.result_area.append(f"Audio downloaded: {filename}")
-            logging.info(f"Audio downloaded: {filename}")
+            self.result_area.append(f"Audio saved and added to playlist: {filename}")
+            logging.info(f"Audio saved and added to playlist: {filename}")
+            
+            # Open the folder containing the saved file
+            os.startfile(os.path.dirname(filename))
         except Exception as e:
             self.result_area.append(f"Error downloading audio: {str(e)}")
             logging.error(f"Error downloading audio: {str(e)}")
@@ -375,3 +352,78 @@ class ProductionTab(QWidget):
             self.input_field.clear()
             self.send_message()
         # Removed the else clause to prevent the warning when there's input
+
+class UdioProWorker(QThread):
+    result_ready = pyqtSignal(dict)
+    error_occurred = pyqtSignal(str)
+
+    def __init__(self, prompt, api_key):
+        super().__init__()
+        self.prompt = prompt
+        self.api_key = api_key
+
+    def run(self):
+        try:
+            url = "https://udioapi.pro/api/generate"
+            headers = {
+                "Content-Type": "application/json"
+            }
+            data = {
+                "prompt": self.prompt,
+                "title": "Generated Song",
+                "custom_mode": False,
+                "make_instrumental": False,
+                "model": "chirp-v3.5",
+                "disable_callback": True,
+                "token": self.api_key
+            }
+
+            response = requests.post(url, headers=headers, json=data)
+            response.raise_for_status()
+            response_json = response.json()
+
+            work_id = response_json.get('workId')
+            if work_id:
+                self.fetch_result(work_id)
+            else:
+                self.error_occurred.emit(f"Failed to get Work ID from UdioPro API. Response: {response_json}")
+
+        except requests.RequestException as e:
+            self.error_occurred.emit(f"Error calling UdioPro API: {str(e)}")
+
+    def fetch_result(self, work_id):
+        url = f"https://udioapi.pro/api/feed"
+        params = {
+            "workId": work_id
+        }
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.api_key}"
+        }
+
+        max_attempts = 30
+        attempt = 0
+
+        while attempt < max_attempts:
+            try:
+                response = requests.get(url, params=params, headers=headers)
+                response.raise_for_status()
+                result = response.json()
+
+                if result['type'] == 'complete':
+                    self.result_ready.emit(result)
+                    break
+                elif result['type'] in ['new', 'text', 'first']:
+                    time.sleep(10)  # Wait for 10 seconds before next attempt
+                else:
+                    self.error_occurred.emit(f"Unexpected result type: {result['type']}")
+                    break
+
+            except requests.RequestException as e:
+                self.error_occurred.emit(f"Error fetching UdioPro result: {str(e)}")
+                break
+
+            attempt += 1
+
+        if attempt == max_attempts:
+            self.error_occurred.emit("Maximum attempts reached while fetching UdioPro result")
