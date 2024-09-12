@@ -3,6 +3,7 @@ import json
 import os
 import logging
 import traceback
+import argparse
 from dotenv import load_dotenv
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
 from PyQt5.QtGui import QPixmap, QPainter, QFont
@@ -12,6 +13,11 @@ from PyQt5.QtWidgets import QApplication
 from welcome_screen import WelcomeScreen
 # Import MainInterface will be done inside the after_splash method
 from style import set_dark_theme
+
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description='Band Manager Application')
+parser.add_argument('--verbose', action='store_true', help='Enable verbose logging')
+args = parser.parse_args()
 
 # Configure logging
 if getattr(sys, 'frozen', False):
@@ -23,7 +29,7 @@ else:
 
 log_file = os.path.join(bundle_dir, 'band_manager.log')
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.DEBUG if args.verbose else logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     filename=log_file,
     filemode='w'
@@ -31,7 +37,7 @@ logging.basicConfig(
 
 # Add a console handler to see logs in console as well
 console = logging.StreamHandler()
-console.setLevel(logging.DEBUG)
+console.setLevel(logging.DEBUG if args.verbose else logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 console.setFormatter(formatter)
 logging.getLogger('').addHandler(console)
@@ -39,6 +45,8 @@ logging.getLogger('').addHandler(console)
 # Add immediate logging to check if the program starts
 logging.info("Program started")
 print("Program started. Check the log file at:", log_file)
+if args.verbose:
+    print("Verbose logging enabled")
 
 # Log system information
 logging.info(f"Python version: {sys.version}")
