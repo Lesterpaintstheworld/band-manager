@@ -1,8 +1,8 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QPushButton, QHBoxLayout, QLineEdit, QApplication, QMessageBox, QSplitter, QSlider, QFrame
-from PyQt5.QtCore import pyqtSignal, Qt, QUrl, QTimer
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QPushButton, QHBoxLayout, QLineEdit, QApplication, QMessageBox, QSplitter, QSlider, QFrame, QListWidget
+from PyQt5.QtCore import pyqtSignal, Qt, QUrl, QTimer, QDir
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent, QMediaPlaylist, QAudio
 from PyQt5.QtMultimediaWidgets import QVideoWidget
-from PyQt5.QtGui import QPainter, QColor, QPen
+from PyQt5.QtGui import QPainter, QColor, QPen, QIcon
 from waveform_widget import WaveformWidget
 import time
 import logging
@@ -72,6 +72,11 @@ class ProductionTab(QWidget):
         right_layout = QVBoxLayout()
         right_widget.setLayout(right_layout)
 
+        # Song list
+        self.song_list = QListWidget()
+        self.song_list.itemClicked.connect(self.play_selected_song)
+        right_layout.addWidget(self.song_list)
+
         # Player frame
         player_frame = QFrame()
         player_frame.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
@@ -89,9 +94,9 @@ class ProductionTab(QWidget):
 
         # Audio controls
         controls_layout = QHBoxLayout()
-        self.play_button = QPushButton("Play")
-        self.pause_button = QPushButton("Pause")
-        self.stop_button = QPushButton("Stop")
+        self.play_button = QPushButton(QIcon("play_icon.png"), "")
+        self.pause_button = QPushButton(QIcon("pause_icon.png"), "")
+        self.stop_button = QPushButton(QIcon("stop_icon.png"), "")
         self.volume_slider = QSlider(Qt.Horizontal)
         self.volume_slider.setRange(0, 100)
         self.volume_slider.setValue(50)
@@ -103,10 +108,7 @@ class ProductionTab(QWidget):
 
         player_layout.addLayout(controls_layout)
 
-        # Center the player frame vertically
-        right_layout.addStretch()
         right_layout.addWidget(player_frame)
-        right_layout.addStretch()
 
         # Connect audio control signals
         self.play_button.clicked.connect(self.player.play)
@@ -117,6 +119,9 @@ class ProductionTab(QWidget):
         # Connect player signals for waveform update
         self.player.positionChanged.connect(self.waveform_widget.update_position)
         self.player.durationChanged.connect(self.waveform_widget.set_duration)
+
+        # Load existing songs
+        self.load_existing_songs()
 
         # Splitter to divide the screen
         splitter = QSplitter(Qt.Horizontal)
@@ -402,6 +407,18 @@ class ProductionTab(QWidget):
     def set_volume(self, value):
         volume = value / 100.0
         self.player.setVolume(int(volume * 100))
+
+    def load_existing_songs(self):
+        generated_songs_dir = QDir("generated_songs")
+        if generated_songs_dir.exists():
+            song_files = generated_songs_dir.entryList(["*.mp3"], QDir.Files)
+            for song_file in song_files:
+                self.song_list.addItem(song_file)
+
+    def play_selected_song(self, item):
+        song_path = os.path.join("generated_songs", item.text())
+        self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_path)))
+        self.player.play()
 
 class UdioProWorker(QThread):
     result_ready = pyqtSignal(dict)
