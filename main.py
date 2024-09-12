@@ -19,7 +19,15 @@ try:
     logging.info("NumPy importé avec succès")
 except ImportError as e:
     logging.error(f"Erreur lors de l'importation de NumPy: {e}")
-    sys.exit(1)
+    logging.info("Tentative d'ajout du répertoire parent au sys.path")
+    parent_dir = os.path.dirname(current_dir)
+    sys.path.insert(0, parent_dir)
+    try:
+        import numpy as np
+        logging.info("NumPy importé avec succès après ajout du répertoire parent")
+    except ImportError as e:
+        logging.error(f"Échec de l'importation de NumPy même après ajout du répertoire parent: {e}")
+        sys.exit(1)
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
 from PyQt5.QtGui import QPixmap, QPainter, QFont
 from PyQt5.QtCore import Qt, QTimer, QPoint, PYQT_VERSION_STR, QT_VERSION_STR
