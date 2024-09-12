@@ -40,6 +40,29 @@ logging.info(f"Qt version: {PyQt5.QtCore.QT_VERSION_STR}")
 logging.info(f"Operating system: {sys.platform}")
 logging.info(f"Bundle directory: {bundle_dir}")
 
+# Add more detailed logging
+logging.info("Importing required modules...")
+logging.info("Modules imported successfully")
+
+# Log environment variables
+logging.info("Environment variables:")
+for key, value in os.environ.items():
+    logging.info(f"{key}: {value}")
+
+# Check if running as executable
+if getattr(sys, 'frozen', False):
+    logging.info("Running as executable")
+else:
+    logging.info("Running as script")
+
+# Log current working directory
+logging.info(f"Current working directory: {os.getcwd()}")
+
+# Log contents of the bundle directory
+logging.info(f"Contents of bundle directory ({bundle_dir}):")
+for item in os.listdir(bundle_dir):
+    logging.info(f"- {item}")
+
 # Set up global exception handler
 def global_exception_handler(exctype, value, tb):
     logging.error("Uncaught exception", exc_info=(exctype, value, tb))
