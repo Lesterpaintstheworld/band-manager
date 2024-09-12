@@ -8,8 +8,7 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 from main import resource_path
-from udio_wrapper.udio_authenticator import UdioAuthenticator
-from udio_wrapper.udio_song_generator import UdioSongGenerator
+from udio_wrapper import UdioWrapper
 from pydantic import BaseModel
 from typing import List
 
@@ -89,25 +88,19 @@ class ProductionTab(QWidget):
 
     def load_udio_token(self):
         load_dotenv()
-        self.udio_token1 = os.getenv('UDIO_AUTH_TOKEN_1')
-        self.udio_token2 = os.getenv('UDIO_AUTH_TOKEN_2')
-        if not self.udio_token1 or not self.udio_token2:
-            self.chat_area.append(f"Error: Udio authentication tokens not found in .env file. UDIO_AUTH_TOKEN_1: {self.udio_token1}, UDIO_AUTH_TOKEN_2: {self.udio_token2}")
-            self.chat_area.append("Please add UDIO_AUTH_TOKEN_1 and UDIO_AUTH_TOKEN_2 to your .env file.")
-            self.udio_authenticator = None
-            self.udio_song_generator = None
+        self.udio_token = os.getenv('UDIO_AUTH_TOKEN')
+        if not self.udio_token:
+            self.chat_area.append("Error: Udio authentication token not found in .env file.")
+            self.chat_area.append("Please add UDIO_AUTH_TOKEN to your .env file.")
+            self.udio_wrapper = None
         else:
             try:
-                self.udio_authenticator = UdioAuthenticator(self.udio_token1, self.udio_token2)
-                self.udio_song_generator = UdioSongGenerator(self.udio_authenticator)
-                # Test the connection
-                self.udio_authenticator.test_connection()
+                self.udio_wrapper = UdioWrapper(self.udio_token)
                 self.chat_area.append("Udio connection initialized successfully.")
             except Exception as e:
                 self.chat_area.append(f"Error initializing Udio connection: {str(e)}")
-                self.chat_area.append("Please check your Udio authentication tokens in the .env file.")
-                self.udio_authenticator = None
-                self.udio_song_generator = None
+                self.chat_area.append("Please check your Udio authentication token in the .env file.")
+                self.udio_wrapper = None
 
     def load_system_prompt(self):
         try:
@@ -186,7 +179,7 @@ class ProductionTab(QWidget):
         self.production_updated.emit(updated_content)
 
     def generate_song(self, gpt_response):
-        if not self.udio_song_generator:
+        if not self.udio_wrapper:
             error_message = "Error: The Udio connection is not configured correctly or the connection to Udio failed."
             self.chat_area.append(error_message)
             QMessageBox.critical(self, "Error", error_message)
@@ -197,7 +190,7 @@ class ProductionTab(QWidget):
             self.result_area.append("Generating song...")
             self.chat_area.append("Starting song generation...")
 
-            complete_song_sequence = self.create_complete_song(
+            complete_song_sequence = self.udio_wrapper.create_complete_song(
                 short_prompt=gpt_response['short_prompt'],
                 extend_prompts=gpt_response['extend_prompts'],
                 outro_prompt=gpt_response['outro_prompt'],
@@ -214,8 +207,10 @@ class ProductionTab(QWidget):
             song_filename = f"song_{int(time.time())}.mp3"
             song_path = os.path.join("songs", song_filename)
             os.makedirs("songs", exist_ok=True)
-            with open(song_path, "wb") as f:
-                f.write(complete_song_sequence)
+            
+            # The complete_song_sequence is now a file path, so we just need to copy it
+            import shutil
+            shutil.copy(complete_song_sequence, song_path)
             
             self.result_area.clear()
             self.result_area.append(f"Song generated and saved: {song_path}")
@@ -235,45 +230,3 @@ class ProductionTab(QWidget):
             self.result_area.append(f"Error: {str(e)}")
             logger.error(f"Song generation error: {str(e)}", exc_info=True)
             QMessageBox.critical(self, "Error", error_message)
-
-    def create_complete_song(self, short_prompt: str, extend_prompts: List[str], outro_prompt: str, num_extensions: int, custom_lyrics_short: str, custom_lyrics_extend: List[str], custom_lyrics_outro: str) -> bytes:
-        """
-        Create a complete song using the Udio API.
-
-        Args:
-            short_prompt (str): The initial prompt for generating the song.
-            extend_prompts (List[str]): List of prompts for extending the song.
-            outro_prompt (str): Prompt for adding an outro to the song.
-            num_extensions (int): Number of times to extend the song.
-            custom_lyrics_short (str): Custom lyrics for the initial song generation.
-            custom_lyrics_extend (List[str]): List of custom lyrics for each extension.
-            custom_lyrics_outro (str): Custom lyrics for the outro.
-
-        Returns:
-            bytes: The complete song data as bytes.
-        """
-        try:
-            song_sequence = self.udio_song_generator.generate_song(
-                song_title=short_prompt,
-                song_description=custom_lyrics_short
-            )
-            
-            for i in range(num_extensions):
-                song_sequence = self.udio_song_generator.extend_song(
-                    prompt=extend_prompts[i],
-                    audio_conditioning_path=song_sequence,
-                    audio_conditioning_song_id=song_sequence.split('/')[-1].split('.')[0],
-                    custom_lyrics=custom_lyrics_extend[i]
-                )
-            
-            song_sequence = self.udio_song_generator.add_outro(
-                prompt=outro_prompt,
-                audio_conditioning_path=song_sequence,
-                audio_conditioning_song_id=song_sequence.split('/')[-1].split('.')[0],
-                custom_lyrics=custom_lyrics_outro
-            )
-            
-            return song_sequence
-        except Exception as e:
-            print(f"Error creating complete song with Udio: {e}")
-            return None
