@@ -39,13 +39,13 @@ class ProductionTab(QWidget):
             logging.warning("UdioPro API key not found in .env file.")
 
     def initUI(self):
-        main_layout = QHBoxLayout()
-        self.setLayout(main_layout)
+        self.main_layout = QHBoxLayout()
+        self.setLayout(self.main_layout)
 
         # Left part
-        left_widget = QWidget()
+        self.left_widget = QWidget()
         left_layout = QVBoxLayout()
-        left_widget.setLayout(left_layout)
+        self.left_widget.setLayout(left_layout)
 
         self.chat_area = QTextEdit()
         self.chat_area.setReadOnly(True)
@@ -69,14 +69,10 @@ class ProductionTab(QWidget):
         self.result_area.textChanged.connect(self.save_production)
         left_layout.addWidget(self.result_area)
 
-    def save_production(self):
-        with open('production.md', 'w', encoding='utf-8') as f:
-            f.write(self.result_area.toPlainText())
-
         # Right part
-        right_widget = QWidget()
+        self.right_widget = QWidget()
         right_layout = QVBoxLayout()
-        right_widget.setLayout(right_layout)
+        self.right_widget.setLayout(right_layout)
 
         # Song list
         self.song_list = QListWidget()
@@ -134,11 +130,15 @@ class ProductionTab(QWidget):
 
         # Splitter to divide the screen
         splitter = QSplitter(Qt.Horizontal)
-        splitter.addWidget(left_widget)
-        splitter.addWidget(right_widget)
+        splitter.addWidget(self.left_widget)
+        splitter.addWidget(self.right_widget)
         splitter.setSizes([int(self.width() * 0.5), int(self.width() * 0.5)])
 
-        main_layout.addWidget(splitter)
+        self.main_layout.addWidget(splitter)
+
+    def save_production(self):
+        with open('production.md', 'w', encoding='utf-8') as f:
+            f.write(self.result_area.toPlainText())
 
     def load_api_key(self):
         load_dotenv()

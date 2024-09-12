@@ -19,8 +19,8 @@ class CritiqueTab(QWidget):
         self.client = None
 
     def initUI(self):
-        layout = QHBoxLayout()
-        self.setLayout(layout)
+        self.layout = QHBoxLayout()
+        self.setLayout(self.layout)
 
         # Chat area
         chat_layout = QVBoxLayout()
@@ -40,28 +40,28 @@ class CritiqueTab(QWidget):
         input_layout.addWidget(self.send_button)
 
         chat_layout.addLayout(input_layout)
-        layout.addLayout(chat_layout)
+        self.layout.addLayout(chat_layout)
 
         # Critique display area
-        critique_layout = QVBoxLayout()
+        self.critique_layout = QVBoxLayout()
         self.critic_name_label = QLabel()
         self.critic_name_label.setAlignment(Qt.AlignCenter)
         font = QFont()
         font.setPointSize(14)
         font.setBold(True)
         self.critic_name_label.setFont(font)
-        critique_layout.addWidget(self.critic_name_label)
+        self.critique_layout.addWidget(self.critic_name_label)
 
         self.result_area = QTextEdit()
         self.result_area.textChanged.connect(self.save_critique)
         self.result_area.textChanged.connect(lambda: self.result_area.ensureCursorVisible())
-        critique_layout.addWidget(self.result_area)
+        self.critique_layout.addWidget(self.result_area)
+
+        self.layout.addLayout(self.critique_layout)
 
     def save_critique(self):
         with open('critique.md', 'w', encoding='utf-8') as f:
             f.write(self.result_area.toPlainText())
-
-        layout.addLayout(critique_layout)
 
     def load_api_key(self):
         load_dotenv()

@@ -56,8 +56,8 @@ class VisualDesignTab(QWidget):
             self.chat_area.append("Warning: visual_design.md file not found. Starting with empty visual design.")
 
     def initUI(self):
-        layout = QHBoxLayout()
-        self.setLayout(layout)
+        self.layout = QHBoxLayout()
+        self.setLayout(self.layout)
 
         # Chat area
         chat_layout = QVBoxLayout()
@@ -77,17 +77,13 @@ class VisualDesignTab(QWidget):
         input_layout.addWidget(self.send_button)
 
         chat_layout.addLayout(input_layout)
-        layout.addLayout(chat_layout)
+        self.layout.addLayout(chat_layout)
 
         # Visual design display area
         self.result_area = QTextEdit()
         self.result_area.textChanged.connect(self.save_visual_design)
         self.result_area.textChanged.connect(lambda: self.result_area.ensureCursorVisible())
-        layout.addWidget(self.result_area)
-
-    def save_visual_design(self):
-        with open('visual_design.md', 'w', encoding='utf-8') as f:
-            f.write(self.result_area.toPlainText())
+        self.layout.addWidget(self.result_area)
 
         # Image display area
         scroll_area = QScrollArea()
@@ -99,7 +95,7 @@ class VisualDesignTab(QWidget):
         self.image_layout = QVBoxLayout(self.image_container)
         scroll_area.setWidget(self.image_container)
 
-        layout.addWidget(scroll_area)
+        self.layout.addWidget(scroll_area)
 
         # Add spinner
         self.spinner = QLabel()
@@ -108,6 +104,10 @@ class VisualDesignTab(QWidget):
         self.spinner.setMovie(self.spinner_movie)
         self.spinner.hide()
         self.image_layout.addWidget(self.spinner)
+
+    def save_visual_design(self):
+        with open('visual_design.md', 'w', encoding='utf-8') as f:
+            f.write(self.result_area.toPlainText())
 
     def load_api_key(self):
         load_dotenv()
