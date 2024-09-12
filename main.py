@@ -23,7 +23,19 @@ if is_numpy_source_directory(current_dir):
     sys.exit(1)
 
 try:
-    import numpy as np
+    import os
+    import sys
+
+    # Ajoutez le chemin de NumPy au sys.path
+    numpy_path = os.path.join(os.path.dirname(sys.executable), 'numpy')
+    sys.path.append(numpy_path)
+
+    try:
+        import numpy as np
+    except ImportError as e:
+        print(f"Erreur lors de l'importation de NumPy: {e}")
+        print(f"Chemin de recherche Python: {sys.path}")
+        sys.exit(1)
     logging.info("NumPy importé avec succès")
 except ImportError as e:
     logging.error(f"Erreur lors de l'importation de NumPy: {e}")

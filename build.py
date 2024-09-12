@@ -44,6 +44,7 @@ options = [
     '--exclude-module=tensorflow',
     '--hidden-import=numpy',
     '--hidden-import=matplotlib',
+    f'--add-data={site_packages}\\numpy;numpy',
     '--noupx',
     '--log-level=DEBUG',
 ]
