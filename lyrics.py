@@ -122,7 +122,7 @@ class LyricsTab(QWidget):
             management_content = self.read_file(resource_path('management.md'))
 
             self.stream_buffer = ""
-            self.chat_area.append("Assistant: ")
+            self.chat_area.append("Assistant : ")
             
             # Generate title
             title_stream = self.client.chat.completions.create(

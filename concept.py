@@ -131,7 +131,7 @@ class ConceptTab(QWidget):
             context_info = self.load_context_info()
             
             self.stream_buffer = ""
-            self.chat_area.append("Assistant: ")
+            self.chat_area.append("Assistant : ")
             stream = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[

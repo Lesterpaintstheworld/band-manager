@@ -227,7 +227,7 @@ class ProductionTab(QWidget):
             )
             
             gpt_response = ""
-            self.chat_area.append("Assistant: ")
+            self.chat_area.append("Assistant : ")
             for chunk in stream:
                 if chunk.choices[0].delta.content is not None:
                     gpt_response += chunk.choices[0].delta.content

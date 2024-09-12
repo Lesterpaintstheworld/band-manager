@@ -130,7 +130,7 @@ class CompositionTab(QWidget):
 
         try:
             self.stream_buffer = ""
-            self.chat_area.append("Assistant: ")
+            self.chat_area.append("Assistant : ")
             
             # Read content from relevant files
             concept_content = self.read_file(resource_path('concept.md'))
