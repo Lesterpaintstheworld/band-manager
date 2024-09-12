@@ -1,52 +1,53 @@
 import requests
 import logging
-import tempfile
 import os
 import time
-import random
 
 class SunoSongGenerator:
-    API_BASE_URL = "https://api.suno.ai"
+    API_BASE_URL = "https://udioapi.pro/api"
 
-    def __init__(self, suno_cookie):
-        self.suno_cookie = suno_cookie
+    def __init__(self, api_token):
+        self.api_token = api_token
         self.logger = logging.getLogger(__name__)
 
-    def generate_song(self, prompt, make_instrumental=False, wait_audio=False):
+    def generate_song(self, title, prompt, gpt_description_prompt="", make_instrumental=False, model="chirp-v3.5"):
         try:
             self.logger.info(f"Generating song with prompt: {prompt}")
             
             payload = {
+                "title": title,
                 "prompt": prompt,
+                "gpt_description_prompt": gpt_description_prompt,
+                "custom_mode": False,
                 "make_instrumental": make_instrumental,
-                "wait_audio": wait_audio
+                "model": model,
+                "disable_callback": True,
+                "token": self.api_token
             }
-            headers = {'Cookie': self.suno_cookie}
             
-            response = requests.post(f"{self.API_BASE_URL}/api/generate", json=payload, headers=headers)
+            response = requests.post(f"{self.API_BASE_URL}/generate", json=payload)
             response.raise_for_status()
             
             data = response.json()
             self.logger.info(f"Suno API response: {data}")
             
-            if not isinstance(data, list) or len(data) < 2:
+            if 'workId' not in data:
                 raise ValueError("Unexpected response format from Suno API")
             
-            return data[0]['id'], data[1]['id']
+            return data['workId']
         except Exception as e:
             self.logger.error(f"Failed to generate song: {str(e)}", exc_info=True)
             raise Exception(f"Failed to generate song: {str(e)}")
 
-    def get_audio_urls(self, ids, max_attempts=60, delay=5):
+    def get_audio_urls(self, work_id, max_attempts=60, delay=5):
         try:
-            ids_str = f"{ids[0]},{ids[1]}"
             for _ in range(max_attempts):
-                response = requests.get(f"{self.API_BASE_URL}/api/get?ids={ids_str}", headers={'Cookie': self.suno_cookie})
+                response = requests.get(f"{self.API_BASE_URL}/get_result?workId={work_id}&token={self.api_token}")
                 response.raise_for_status()
-                audio_info = response.json()
+                result = response.json()
                 
-                if all(info['status'] == 'streaming' for info in audio_info):
-                    return [info['audio_url'] for info in audio_info if 'audio_url' in info]
+                if result.get('code') == 200 and result.get('data', {}).get('callbackType') == 'complete':
+                    return [item['audio_url'] for item in result['data']['data'] if 'audio_url' in item]
                 
                 time.sleep(delay)
             
@@ -55,13 +56,13 @@ class SunoSongGenerator:
             self.logger.error(f"Failed to get audio URLs: {str(e)}", exc_info=True)
             raise Exception(f"Failed to get audio URLs: {str(e)}")
 
-    def create_complete_song(self, prompt, make_instrumental=False):
+    def create_complete_song(self, title, prompt, gpt_description_prompt="", make_instrumental=False, model="chirp-v3.5"):
         try:
             # Generate initial song
-            ids = self.generate_song(prompt, make_instrumental)
+            work_id = self.generate_song(title, prompt, gpt_description_prompt, make_instrumental, model)
             
             # Get audio URLs
-            audio_urls = self.get_audio_urls(ids)
+            audio_urls = self.get_audio_urls(work_id)
             
             # Download and save the audio files
             song_paths = []

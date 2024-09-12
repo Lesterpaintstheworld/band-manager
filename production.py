@@ -94,30 +94,18 @@ class ProductionTab(QWidget):
 
     def load_suno_api(self):
         load_dotenv()
-        self.suno_api_url = os.getenv('SUNO_API_URL', 'https://api.suno.ai')
-        self.suno_cookie = os.getenv('SUNO_COOKIE')
-        if not self.suno_api_url or not self.suno_cookie:
-            self.chat_area.append("Error: Suno API URL or Cookie not found in .env file.")
-            self.chat_area.append("Please add SUNO_API_URL and SUNO_COOKIE to your .env file.")
+        self.suno_api_token = os.getenv('SUNO_API_TOKEN')
+        if not self.suno_api_token:
+            self.chat_area.append("Error: Suno API Token not found in .env file.")
+            self.chat_area.append("Please add SUNO_API_TOKEN to your .env file.")
             self.suno_api = None
         else:
             try:
-                headers = {'Cookie': self.suno_cookie}
-                response = requests.get(f"{self.suno_api_url}/api/get_limit", headers=headers)
-                if response.status_code == 200:
-                    self.chat_area.append("Suno API connection initialized successfully.")
-                    self.suno_api = True
-                elif response.status_code == 503:
-                    self.chat_area.append("Suno API is currently unavailable (503 Service Unavailable).")
-                    self.chat_area.append("This is likely a temporary issue. Please try again later.")
-                    self.suno_api = None
-                else:
-                    self.chat_area.append(f"Failed to connect to Suno API. Status code: {response.status_code}")
-                    self.chat_area.append("Please check your Suno API URL and Cookie in the .env file.")
-                    self.suno_api = None
-            except requests.exceptions.RequestException as e:
-                self.chat_area.append(f"Error connecting to Suno API: {str(e)}")
-                self.chat_area.append("Please check your internet connection and Suno API URL.")
+                self.suno_api = SunoSongGenerator(self.suno_api_token)
+                self.chat_area.append("Suno API connection initialized successfully.")
+            except Exception as e:
+                self.chat_area.append(f"Error initializing Suno API: {str(e)}")
+                self.chat_area.append("Please check your Suno API Token in the .env file.")
                 self.suno_api = None
 
     def load_system_prompt(self):
@@ -318,8 +306,55 @@ class ProductionTab(QWidget):
         logger.info(f"Supported audio formats: {', '.join(supported_formats)}")
 
     def generate_song(self, gpt_response):
-        self.result_area.clear()
-        self.result_area.append("Song generation is currently disabled.")
-        self.chat_area.append("Song generation is currently disabled.")
-        logger.info("Song generation attempt was made, but the feature is currently disabled.")
-        QMessageBox.information(self, "Info", "Song generation is currently disabled.")
+        try:
+            self.result_area.clear()
+            self.result_area.append("Generating song...")
+            self.chat_area.append("Starting song generation...")
+            logger.info(f"Starting song generation with prompt: {gpt_response['short_prompt']}")
+
+            start_time = time.time()
+            
+            # Generate the song
+            song_paths = self.suno_api.create_complete_song(
+                title=gpt_response['short_prompt'],
+                prompt=gpt_response['short_prompt'],
+                gpt_description_prompt=gpt_response.get('extend_prompts', [''])[0]
+            )
+            
+            end_time = time.time()
+            generation_time = end_time - start_time
+            logger.info(f"Song generation completed in {generation_time:.2f} seconds")
+
+            if not song_paths:
+                logger.error("The generated song data is empty.")
+                raise Exception("The generated song data is empty.")
+
+            self.result_area.clear()
+            self.result_area.append(f"Song generated and saved: {', '.join(song_paths)}")
+            self.chat_area.append(f"Song generated and saved: {', '.join(song_paths)}")
+            
+            # Play the first song in the audio player
+            logger.info("Attempting to play the generated song")
+            self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_paths[0])))
+            self.player.error.connect(self.handle_player_error)
+            self.player.play()
+            
+            # Wait for the player to be ready
+            while self.player.state() == QMediaPlayer.LoadingMedia:
+                QApplication.processEvents()
+            
+            if self.player.error() == QMediaPlayer.NoError:
+                logger.info("Song playback started successfully")
+                QMessageBox.information(self, "Success", "The song has been generated successfully and is now playing.")
+            else:
+                logger.warning(f"Playback issue detected. Player error: {self.player.error()}")
+                QMessageBox.warning(self, "Playback Issue", "The song was generated successfully, but there might be an issue with playback. You can find the audio file at: " + song_paths[0])
+            
+            # Emit the production_updated signal with the new content
+            self.production_updated.emit(song_paths[0])
+        except Exception as e:
+            error_message = f"An error occurred while generating the song: {str(e)}"
+            self.chat_area.append(error_message)
+            self.result_area.append(f"Error: {str(e)}")
+            logger.error(f"Song generation error: {str(e)}", exc_info=True)
+            QMessageBox.critical(self, "Error", error_message)
