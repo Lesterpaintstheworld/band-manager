@@ -80,6 +80,7 @@ class SyntheticBandManager:
         self.main_interface = MainInterface()
         self.main_interface.change_band_name_signal.connect(self.change_band_name)
         self.main_interface.exit_game_signal.connect(self.exit_game)
+        self.main_interface.load_suno_api()
         self.main_interface.show()
 
     def change_band_name(self):
