@@ -38,6 +38,7 @@ class ConcertTab(QWidget):
         left_layout = QVBoxLayout()
         self.chat_area = QTextEdit()
         self.chat_area.setReadOnly(True)
+        self.chat_area.append("Welcome to the Concert Tab! Here you can simulate your band's concert performance. Click the 'Start Concert' button when you're ready to perform and see how your fan base grows!")
         left_layout.addWidget(self.chat_area)
 
         self.start_concert_button = QPushButton("Start Concert")

@@ -27,6 +27,7 @@ class CritiqueTab(QWidget):
         self.chat_area = QTextEdit()
         self.chat_area.setReadOnly(True)
         self.chat_area.textChanged.connect(lambda: self.chat_area.ensureCursorVisible())
+        self.chat_area.append("Welcome to the Critique Tab! Here you can receive feedback on your song from a music critic. Enter the details of your song in the input field below to get a comprehensive critique.")
         chat_layout.addWidget(self.chat_area)
 
         input_layout = QHBoxLayout()
