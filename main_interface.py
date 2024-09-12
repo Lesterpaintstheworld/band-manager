@@ -13,7 +13,8 @@ from critique import CritiqueTab
 import os
 import sys
 from dotenv import load_dotenv
-from udio_wrapper import UdioWrapper
+from udio_wrapper.udio_authenticator import UdioAuthenticator
+from udio_wrapper.udio_song_generator import UdioSongGenerator
 
 class MainInterface(QWidget):
     change_band_name_signal = pyqtSignal()
