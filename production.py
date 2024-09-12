@@ -187,6 +187,46 @@ class ProductionTab(QWidget):
             self.result_area.append("Generating song...")
             self.chat_area.append("Starting song generation...")
 
+            # For now, we'll just use the short_prompt to generate a dummy song
+            song_data = self.udio_wrapper.song_generator.generate_song(
+                song_title=gpt_response['short_prompt'],
+                song_description="Dummy song description"
+            )
+
+            if not song_data:
+                raise Exception("The generated song data is empty.")
+
+            # Save the audio file in the songs/ folder
+            song_filename = f"song_{int(time.time())}.mp3"
+            song_path = os.path.join("songs", song_filename)
+            os.makedirs("songs", exist_ok=True)
+            
+            with open(song_path, 'wb') as f:
+                f.write(song_data)
+            
+            self.result_area.clear()
+            self.result_area.append(f"Song generated and saved: {song_path}")
+            self.chat_area.append(f"Song generated and saved: {song_path}")
+            
+            # Play the song in the audio player
+            self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_path)))
+            self.player.error.connect(self.handle_player_error)
+            self.player.play()
+            
+            if self.player.error() == QMediaPlayer.NoError:
+                QMessageBox.information(self, "Success", "The song has been generated successfully and is now playing.")
+            else:
+                QMessageBox.warning(self, "Playback Issue", "The song was generated successfully, but there might be an issue with playback. You can find the audio file at: " + song_path)
+            
+            # Emit the production_updated signal with the new content
+            self.production_updated.emit(song_path)
+        except Exception as e:
+            error_message = f"An error occurred while generating the song: {str(e)}"
+            self.chat_area.append(error_message)
+            self.result_area.append(f"Error: {str(e)}")
+            logger.error(f"Song generation error: {str(e)}", exc_info=True)
+            QMessageBox.critical(self, "Error", error_message)
+
     def handle_player_error(self, error):
         error_msg = f"Media player error: {error}"
         if error == QMediaPlayer.FormatError:
