@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QPushButton, QHBoxLayout, QLineEdit, QApplication, QMessageBox, QSplitter
 from PyQt5.QtCore import pyqtSignal, Qt, QUrl
-from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent, QMediaPlaylist
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 import time
 import logging
@@ -25,6 +25,8 @@ class ProductionTab(QWidget):
         self.load_api_key()
         self.load_system_prompt()
         self.check_udiopro_api_key()
+        self.playlist = QMediaPlaylist()
+        self.player.setPlaylist(self.playlist)
 
     def check_udiopro_api_key(self):
         udiopro_api_key = os.getenv('UDIOPRO_API_KEY')
@@ -252,38 +254,32 @@ class ProductionTab(QWidget):
         self.result_area.append("\nDebug: Fetching result from UdioPro API")
         logging.info("Fetching result from UdioPro API")
 
-        url = f"https://udioapi.pro/api/generate"
-        headers = {
-            "Content-Type": "application/json"
+        url = f"https://udioapi.pro/api/feed"
+        params = {
+            "workId": work_id
         }
-        data = {
-            "workId": work_id,
-            "token": os.getenv('UDIOPRO_API_KEY')
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {os.getenv('UDIOPRO_API_KEY')}"
         }
 
-        max_attempts = 30  # Increased max attempts
+        max_attempts = 30
         attempt = 0
 
         while attempt < max_attempts:
             try:
-                response = requests.post(url, headers=headers, json=data)
+                response = requests.get(url, params=params, headers=headers)
                 response.raise_for_status()
                 result = response.json()
 
-                if result['code'] == 200:
-                    if result['data']['callbackType'] == 'complete':
-                        self.display_udiopro_result(result['data'])
-                        self.download_and_play_audio(result['data'])
-                        break
-                    elif result['data']['callbackType'] == 'progress':
-                        progress = result['data'].get('progress', 0)
-                        self.result_area.append(f"Debug: UdioPro generation in progress. Progress: {progress}%")
-                        time.sleep(10)  # Wait for 10 seconds before next attempt
-                    else:
-                        self.result_area.append(f"Debug: Unexpected callback type: {result['data']['callbackType']}")
-                        break
+                if result['type'] == 'complete':
+                    self.display_udiopro_result(result)
+                    break
+                elif result['type'] in ['new', 'text', 'first']:
+                    self.result_area.append(f"Debug: UdioPro generation in progress. Status: {result['type']}")
+                    time.sleep(10)  # Wait for 10 seconds before next attempt
                 else:
-                    self.result_area.append(f"Debug: Unexpected response code: {result['code']}")
+                    self.result_area.append(f"Debug: Unexpected result type: {result['type']}")
                     break
 
             except requests.RequestException as e:
@@ -297,29 +293,38 @@ class ProductionTab(QWidget):
             self.result_area.append("Error: Maximum attempts reached while fetching UdioPro result")
             logging.error("Maximum attempts reached while fetching UdioPro result")
 
-    def download_and_play_audio(self, result_data):
+    def download_and_play_audio(self, audio_url):
         try:
-            audio_url = result_data['data'][0]['audio_url']
             response = requests.get(audio_url)
             response.raise_for_status()
 
+            # Generate a unique filename for each downloaded audio
+            filename = f"temp_audio_{int(time.time())}.mp3"
+
             # Save the audio file temporarily
-            with open('temp_audio.mp3', 'wb') as f:
+            with open(filename, 'wb') as f:
                 f.write(response.content)
 
-            # Play the audio
-            self.player.setMedia(QMediaContent(QUrl.fromLocalFile('temp_audio.mp3')))
-            self.player.play()
+            # Add the audio to the playlist
+            self.playlist.addMedia(QMediaContent(QUrl.fromLocalFile(filename)))
 
-            self.result_area.append("Audio downloaded and playing.")
-            logging.info("Audio downloaded and playing.")
+            # If this is the first song, start playing
+            if self.playlist.mediaCount() == 1:
+                self.player.setPlaylist(self.playlist)
+                self.player.play()
+
+            self.result_area.append(f"Audio downloaded: {filename}")
+            logging.info(f"Audio downloaded: {filename}")
         except Exception as e:
-            self.result_area.append(f"Error downloading or playing audio: {str(e)}")
-            logging.error(f"Error downloading or playing audio: {str(e)}")
+            self.result_area.append(f"Error downloading audio: {str(e)}")
+            logging.error(f"Error downloading audio: {str(e)}")
 
     def display_udiopro_result(self, result):
         self.result_area.append("\nUdioPro Generation Result:")
-        for song in result['data']:
+        self.result_area.append(f"Type: {result['type']}")
+        self.result_area.append(f"Created at: {result['created_at']}")
+        
+        for song in result['response_data']:
             self.result_area.append(f"\nTitle: {song['title']}")
             self.result_area.append(f"Audio URL: {song['audio_url']}")
             self.result_area.append(f"Image URL: {song['image_url']}")
@@ -328,6 +333,9 @@ class ProductionTab(QWidget):
             self.result_area.append(f"Prompt: {song['prompt']}")
             self.result_area.append(f"Model: {song['model_name']}")
             self.result_area.append(f"Creation Time: {song['createTime']}")
+            
+            # Download and play the audio
+            self.download_and_play_audio(song['audio_url'])
 
         self.result_area.append("\nDebug: UdioPro result displayed")
         logging.info("UdioPro result displayed")
