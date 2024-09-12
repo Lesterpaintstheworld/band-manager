@@ -311,7 +311,7 @@ class ProductionTab(QWidget):
             self.result_area.append(f"Creation Time: {song['createTime']}")
             
             # Download and play the audio
-            self.download_and_play_audio(song['audio_url'])
+            self.download_and_play_audio(song['audio_url'], song['title'])
 
         self.result_area.append("\nDebug: UdioPro result displayed")
         logging.info("UdioPro result displayed")
