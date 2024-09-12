@@ -25,7 +25,7 @@ class ProductionTab(QWidget):
         self.initUI()
         self.load_api_key()
         self.load_system_prompt()
-        self.load_udio_token()
+        self.load_suno_api()
 
     def initUI(self):
         main_layout = QHBoxLayout()
@@ -86,6 +86,28 @@ class ProductionTab(QWidget):
                 print(f"Error initializing OpenAI client: {str(e)}")
                 print("Please check your API key in the .env file")
                 self.client = None
+
+    def load_suno_api(self):
+        load_dotenv()
+        self.suno_api_url = os.getenv('SUNO_API_URL', 'https://api.suno.ai')
+        self.suno_cookie = os.getenv('SUNO_COOKIE')
+        if not self.suno_api_url or not self.suno_cookie:
+            self.chat_area.append("Error: Suno API URL or Cookie not found in .env file.")
+            self.chat_area.append("Please add SUNO_API_URL and SUNO_COOKIE to your .env file.")
+            self.suno_api = None
+        else:
+            try:
+                headers = {'Cookie': self.suno_cookie}
+                response = requests.get(f"{self.suno_api_url}/api/get_limit", headers=headers)
+                if response.status_code == 200:
+                    self.chat_area.append("Suno API connection initialized successfully.")
+                    self.suno_api = True
+                else:
+                    raise Exception(f"Failed to connect to Suno API. Status code: {response.status_code}")
+            except Exception as e:
+                self.chat_area.append(f"Error initializing Suno API connection: {str(e)}")
+                self.chat_area.append("Please check your Suno API URL and Cookie in the .env file.")
+                self.suno_api = None
 
     def load_suno_api(self):
         load_dotenv()
