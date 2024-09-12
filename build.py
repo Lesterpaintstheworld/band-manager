@@ -38,6 +38,8 @@ options = [
     '--hidden-import=dotenv',
     '--hidden-import=numpy',
     '--hidden-import=numpy.core._dtype_ctypes',
+    '--hidden-import=numpy.core._methods',
+    '--hidden-import=numpy.lib.format',
     '--exclude-module=transformers',
     '--exclude-module=torch',
     '--exclude-module=tensorflow',
@@ -52,9 +54,6 @@ if sys.platform.startswith('win'):
         '--add-binary', f'{pyqt5_path}\\Qt5\\bin\\Qt5Widgets.dll;PyQt5/Qt5/bin',
         '--add-binary', f'{pyqt5_path}\\Qt5\\plugins\\platforms\\qwindows.dll;PyQt5/Qt5/plugins/platforms',
         '--add-data', f'{numpy_path};numpy',
-        '--hidden-import=numpy',
-        '--hidden-import=numpy.core._methods',
-        '--hidden-import=numpy.lib.format',
     ])
 
 # Ajouter tous les fichiers de NumPy
