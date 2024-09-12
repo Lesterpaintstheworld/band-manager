@@ -131,12 +131,23 @@ class CompositionTab(QWidget):
         try:
             self.stream_buffer = ""
             self.chat_area.append("Assistant: ")
+            
+            # Read content from relevant files
+            concept_content = self.read_file(resource_path('concept.md'))
+            lyrics_content = self.read_file(resource_path('lyrics.md'))
+            production_content = self.read_file(resource_path('production.md'))
+            
+            messages = [
+                {"role": "system", "content": self.system_prompt},
+                {"role": "system", "content": f"Concept:\n{concept_content}"},
+                {"role": "system", "content": f"Lyrics:\n{lyrics_content}"},
+                {"role": "system", "content": f"Production:\n{production_content}"},
+                {"role": "user", "content": user_message}
+            ]
+            
             stream = self.client.chat.completions.create(
                 model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": self.system_prompt},
-                    {"role": "user", "content": user_message}
-                ],
+                messages=messages,
                 stream=True
             )
             for chunk in stream:
