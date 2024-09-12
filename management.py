@@ -23,7 +23,7 @@ class ManagementTab(QWidget):
         # Zone de chat
         self.chat_area = QTextEdit()
         self.chat_area.setReadOnly(True)
-        self.chat_area.append("Hey! I'm Echo, your band manager. Welcome to the Management Tab! Here you can manage your band's information and strategy. Use the input field below to ask questions or make decisions about your band's management.")
+        self.chat_area.append("Hey! I'm the band manager. Welcome to the Management Tab! Here you can manage your band's information and strategy. Use the input field below to ask questions or make decisions about your band's management.")
         layout.addWidget(self.chat_area)
 
         # Champ de saisie pour les nouvelles informations
