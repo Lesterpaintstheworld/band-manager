@@ -259,11 +259,36 @@ class ProductionTab(QWidget):
             error_msg += " (Access Denied Error: There was a permissions issue.)"
         elif error == QMediaPlayer.ServiceMissingError:
             error_msg += " (Service Missing Error: A required media service is missing.)"
+        elif error == QMediaPlayer.ResourceError:
+            error_msg += " (Resource Error: The media resource could not be resolved.)"
         else:
             error_msg += f" (Error code: {error})"
         
         self.chat_area.append(error_msg)
         logger.error(error_msg)
+        
+        # Check if the file exists and is readable
+        song_path = self.player.media().canonicalUrl().toLocalFile()
+        if not os.path.exists(song_path):
+            self.chat_area.append(f"Error: The audio file does not exist at {song_path}")
+            logger.error(f"Audio file not found: {song_path}")
+        elif not os.access(song_path, os.R_OK):
+            self.chat_area.append(f"Error: The audio file is not readable at {song_path}")
+            logger.error(f"Audio file not readable: {song_path}")
+        else:
+            file_size = os.path.getsize(song_path)
+            self.chat_area.append(f"Audio file exists and is readable. File size: {file_size} bytes")
+            logger.info(f"Audio file info: {song_path}, Size: {file_size} bytes")
+
+        # Try to get more information about the media
+        media_status = self.player.mediaStatus()
+        self.chat_area.append(f"Media status: {media_status}")
+        logger.info(f"Media status: {media_status}")
+
+        # Check supported audio formats
+        supported_formats = QMediaPlayer.supportedMimeTypes()
+        self.chat_area.append(f"Supported audio formats: {', '.join(supported_formats)}")
+        logger.info(f"Supported audio formats: {', '.join(supported_formats)}")
 
     def generate_song(self, gpt_response):
         try:
