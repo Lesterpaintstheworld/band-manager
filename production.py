@@ -190,17 +190,29 @@ class ProductionTab(QWidget):
 
             start_time = time.time()
             # Generate the song
-            song_data = self.udio_wrapper.song_generator.generate_song(
-                song_title=gpt_response['short_prompt'],
-                song_description="Generated song description"
-            )
+            try:
+                song_data = self.udio_wrapper.song_generator.generate_song(
+                    song_title=gpt_response['short_prompt'],
+                    song_description="Generated song description"
+                )
+                logger.info("Udio generate_song method called successfully")
+            except Exception as udio_error:
+                logger.error(f"Error in Udio generate_song method: {str(udio_error)}", exc_info=True)
+                raise Exception(f"Udio song generation failed: {str(udio_error)}")
+
             end_time = time.time()
             generation_time = end_time - start_time
             logger.info(f"Song generation completed in {generation_time:.2f} seconds")
 
             # Log the Udio API response
-            logger.info(f"Udio API response: {song_data}")
-            self.chat_area.append(f"Udio API response: {song_data[:100]}...")  # Display first 100 characters in chat area
+            logger.info(f"Udio API response type: {type(song_data)}")
+            logger.info(f"Udio API response length: {len(song_data) if song_data else 'N/A'}")
+            if song_data:
+                logger.info(f"First 100 bytes of Udio API response: {song_data[:100]}")
+            else:
+                logger.warning("Udio API response is empty or None")
+
+            self.chat_area.append(f"Udio API response received. Length: {len(song_data) if song_data else 'N/A'}")
 
             if not song_data:
                 logger.error("The generated song data is empty.")

@@ -13,13 +13,16 @@ class UdioSongGenerator:
     def generate_song(self, song_title, song_description):
         try:
             self.logger.info(f"Generating song: {song_title}")
+            self.logger.info(f"Song description: {song_description}")
+            
             # Placeholder for actual song generation logic
             # For now, we'll return a dummy audio content
             dummy_audio = b'\x00\x01' * 44100  # 1 second of silence
-            self.logger.info("Song generated successfully")
+            
+            self.logger.info(f"Song generated successfully. Audio length: {len(dummy_audio)} bytes")
             return dummy_audio
         except Exception as e:
-            self.logger.error(f"Failed to generate song: {str(e)}")
+            self.logger.error(f"Failed to generate song: {str(e)}", exc_info=True)
             raise Exception(f"Failed to generate song: {str(e)}")
 
     def extend_song(self, prompt, audio_conditioning_path, audio_conditioning_song_id, custom_lyrics):
