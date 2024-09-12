@@ -217,7 +217,7 @@ class ProductionTab(QWidget):
             "title": "Generated Song",
             "customMode": False,
             "instrumental": False,
-            "disable_callback": True
+            "disable_callback": False  # Changed to False to enable callback
         }
 
         try:
@@ -243,6 +243,9 @@ class ProductionTab(QWidget):
             if hasattr(e, 'response') and e.response is not None:
                 self.result_area.append(f"Response content: {e.response.content}")
                 logging.error(f"Response content: {e.response.content}")
+        
+        self.result_area.append("\nNote: If you're testing, please wait a few minutes before checking the result.")
+        logging.info("Advised user to wait before checking result if testing")
 
     def fetch_udiopro_result(self, work_id):
         self.result_area.append("\nDebug: Fetching result from UdioPro API")
