@@ -7,6 +7,7 @@ import sys
 import json
 import random
 import math
+import logging
 from main import resource_path
 
 class ConcertTab(QWidget):
@@ -103,6 +104,7 @@ Current Fan Count: {self.fans}
                     {"role": "system", "content": f"Visual Design:\n{visual_design_content}"},
                     {"role": "system", "content": f"Production:\n{production_content}"},
                     {"role": "system", "content": f"Critique:\n{critique_content}"},
+                    {"role": "user", "content": prompt}
                 ],
                 stream=True
             )
@@ -119,7 +121,9 @@ Current Fan Count: {self.fans}
             self.update_fans(audience_size)
 
         except Exception as e:
-            self.chat_area.append(f"Error during concert: {str(e)}")
+            error_message = f"Erreur lors du concert : {str(e)}"
+            self.chat_area.append(error_message)
+            logging.error(error_message)
 
     def read_file(self, filename):
         try:
