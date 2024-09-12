@@ -322,8 +322,7 @@ class ProductionTab(QWidget):
             }
             headers = {'Cookie': self.suno_cookie}
             response = requests.post(f"{self.suno_api_url}/api/generate", json=payload, headers=headers)
-            if response.status_code != 200:
-                raise Exception(f"Suno API request failed with status code: {response.status_code}")
+            response.raise_for_status()  # Raise an exception for non-200 status codes
             
             data = response.json()
             end_time = time.time()
@@ -340,8 +339,7 @@ class ProductionTab(QWidget):
             audio_urls = []
             for _ in range(60):  # Wait for up to 5 minutes
                 response = requests.get(f"{self.suno_api_url}/api/get?ids={ids}", headers={'Cookie': self.suno_cookie})
-                if response.status_code != 200:
-                    raise Exception(f"Failed to get audio information. Status code: {response.status_code}")
+                response.raise_for_status()
                 audio_info = response.json()
                 if all(info['status'] == 'streaming' for info in audio_info):
                     audio_urls = [info['audio_url'] for info in audio_info]
@@ -359,8 +357,7 @@ class ProductionTab(QWidget):
                 os.makedirs("songs", exist_ok=True)
                 
                 response = requests.get(url)
-                if response.status_code != 200:
-                    raise Exception(f"Failed to download audio from {url}")
+                response.raise_for_status()
                 
                 with open(song_path, 'wb') as f:
                     f.write(response.content)
@@ -386,6 +383,12 @@ class ProductionTab(QWidget):
             
             # Emit the production_updated signal with the new content
             self.production_updated.emit(song_paths[0])
+        except requests.RequestException as e:
+            error_message = f"Network error occurred while communicating with Suno API: {str(e)}"
+            self.chat_area.append(error_message)
+            self.result_area.append(f"Error: {str(e)}")
+            logger.error(f"Suno API communication error: {str(e)}", exc_info=True)
+            QMessageBox.critical(self, "Network Error", error_message)
         except Exception as e:
             error_message = f"An error occurred while generating the song: {str(e)}"
             self.chat_area.append(error_message)

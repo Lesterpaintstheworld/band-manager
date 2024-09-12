@@ -290,3 +290,4 @@ yaspin==3.0.2
 zipp==3.20.1
 requests==2.31.0
 git+https://github.com/gcui-art/suno-api.git
+requests==2.31.0
