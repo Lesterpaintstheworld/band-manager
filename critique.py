@@ -53,9 +53,13 @@ class CritiqueTab(QWidget):
         critique_layout.addWidget(self.critic_name_label)
 
         self.result_area = QTextEdit()
-        self.result_area.setReadOnly(True)
+        self.result_area.textChanged.connect(self.save_critique)
         self.result_area.textChanged.connect(lambda: self.result_area.ensureCursorVisible())
         critique_layout.addWidget(self.result_area)
+
+    def save_critique(self):
+        with open('critique.md', 'w', encoding='utf-8') as f:
+            f.write(self.result_area.toPlainText())
 
         layout.addLayout(critique_layout)
 

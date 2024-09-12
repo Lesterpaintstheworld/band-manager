@@ -65,9 +65,13 @@ class ConceptTab(QWidget):
 
         # Concept display area
         self.result_area = QTextEdit()
-        self.result_area.setReadOnly(True)
+        self.result_area.textChanged.connect(self.save_concept)
         self.result_area.textChanged.connect(lambda: self.result_area.ensureCursorVisible())
         layout.addWidget(self.result_area)
+
+    def save_concept(self):
+        with open('concept.md', 'w', encoding='utf-8') as f:
+            f.write(self.result_area.toPlainText())
 
     def load_api_key(self):
         load_dotenv()

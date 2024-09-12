@@ -65,9 +65,13 @@ class ProductionTab(QWidget):
         left_layout.addLayout(input_layout)
 
         self.result_area = QTextEdit()
-        self.result_area.setReadOnly(True)
         self.result_area.setStyleSheet("font-size: 14pt;")
+        self.result_area.textChanged.connect(self.save_production)
         left_layout.addWidget(self.result_area)
+
+    def save_production(self):
+        with open('production.md', 'w', encoding='utf-8') as f:
+            f.write(self.result_area.toPlainText())
 
         # Right part
         right_widget = QWidget()
