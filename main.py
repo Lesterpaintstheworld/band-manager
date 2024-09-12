@@ -9,6 +9,17 @@ from dotenv import load_dotenv
 print(f"Répertoire de travail actuel : {os.getcwd()}")
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logging.info("Démarrage du programme")
+
+# Ajout du chemin du répertoire courant au sys.path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, current_dir)
+
+try:
+    import numpy as np
+    logging.info("NumPy importé avec succès")
+except ImportError as e:
+    logging.error(f"Erreur lors de l'importation de NumPy: {e}")
+    sys.exit(1)
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
 from PyQt5.QtGui import QPixmap, QPainter, QFont
 from PyQt5.QtCore import Qt, QTimer, QPoint, PYQT_VERSION_STR, QT_VERSION_STR
