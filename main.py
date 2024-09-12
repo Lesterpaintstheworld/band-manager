@@ -13,6 +13,15 @@ current_dir = os.getcwd()
 logging.info(f"Répertoire de travail actuel: {current_dir}")
 logging.info(f"Contenu du répertoire: {os.listdir(current_dir)}")
 
+# Print Python path
+logging.info(f"Python path: {sys.path}")
+
+# Check if we're in NumPy source directory
+if os.path.basename(current_dir) == 'numpy':
+    logging.warning("Warning: Current directory is 'numpy'. This might cause import issues.")
+    os.chdir('..')
+    logging.info(f"Changed directory to: {os.getcwd()}")
+
 try:
     import numpy as np
     logging.info(f"NumPy importé avec succès. Version: {np.__version__}")
@@ -44,6 +53,15 @@ except ImportError as e:
     print(f"Chemin d'exécution actuel: {current_dir}")
     print("Consultez les logs pour plus de détails.")
     sys.exit(1)
+
+# Add a check for numpy.random
+try:
+    from numpy import random
+    logging.info("numpy.random imported successfully")
+    print("numpy.random imported successfully")
+except ImportError as e:
+    logging.error(f"Error importing numpy.random: {e}")
+    print(f"Error importing numpy.random: {e}")
 
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
 from PyQt5.QtGui import QPixmap, QPainter, QFont
