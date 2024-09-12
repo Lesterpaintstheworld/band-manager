@@ -8,7 +8,8 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 from main import resource_path
-from udio_wrapper import UdioAuthenticator, UdioSongGenerator, UdioWrapper
+import requests
+import time
 from pydantic import BaseModel
 from typing import List
 
@@ -86,24 +87,25 @@ class ProductionTab(QWidget):
                 print("Please check your API key in the .env file")
                 self.client = None
 
-    def load_udio_token(self):
+    def load_suno_api(self):
         load_dotenv()
-        self.udio_token1 = os.getenv('UDIO_AUTH_TOKEN1')
-        self.udio_token2 = os.getenv('UDIO_AUTH_TOKEN2')
-        if not self.udio_token1 or not self.udio_token2:
-            self.chat_area.append("Error: Udio authentication tokens not found in .env file.")
-            self.chat_area.append("Please add UDIO_AUTH_TOKEN1 and UDIO_AUTH_TOKEN2 to your .env file.")
-            self.udio_wrapper = None
+        self.suno_api_url = os.getenv('SUNO_API_URL', 'http://localhost:3000')
+        if not self.suno_api_url:
+            self.chat_area.append("Error: Suno API URL not found in .env file.")
+            self.chat_area.append("Please add SUNO_API_URL to your .env file.")
+            self.suno_api = None
         else:
             try:
-                from udio_wrapper import UdioAuthenticator, UdioWrapper
-                authenticator = UdioAuthenticator(self.udio_token1, self.udio_token2)
-                self.udio_wrapper = UdioWrapper(authenticator)
-                self.chat_area.append("Udio connection initialized successfully.")
+                response = requests.get(f"{self.suno_api_url}/api/get_limit")
+                if response.status_code == 200:
+                    self.chat_area.append("Suno API connection initialized successfully.")
+                    self.suno_api = True
+                else:
+                    raise Exception(f"Failed to connect to Suno API. Status code: {response.status_code}")
             except Exception as e:
-                self.chat_area.append(f"Error initializing Udio connection: {str(e)}")
-                self.chat_area.append("Please check your Udio authentication tokens in the .env file.")
-                self.udio_wrapper = None
+                self.chat_area.append(f"Error initializing Suno API connection: {str(e)}")
+                self.chat_area.append("Please check your Suno API URL in the .env file.")
+                self.suno_api = None
 
     def load_system_prompt(self):
         try:
@@ -310,57 +312,77 @@ class ProductionTab(QWidget):
             logger.info(f"Starting song generation with prompt: {gpt_response['short_prompt']}")
 
             start_time = time.time()
-            # Generate the song
-            song_data = self.udio_wrapper.song_generator.generate_song(
-                song_title=gpt_response['short_prompt'],
-                song_description="Dummy song description"
-            )
+            # Generate the song using Suno API
+            payload = {
+                "prompt": gpt_response['short_prompt'],
+                "make_instrumental": False,
+                "wait_audio": False
+            }
+            response = requests.post(f"{self.suno_api_url}/api/generate", json=payload)
+            if response.status_code != 200:
+                raise Exception(f"Suno API request failed with status code: {response.status_code}")
+            
+            data = response.json()
             end_time = time.time()
             generation_time = end_time - start_time
-            logger.info(f"Song generation completed in {generation_time:.2f} seconds")
+            logger.info(f"Song generation request completed in {generation_time:.2f} seconds")
 
-            # Log the Udio API response
-            logger.info(f"Udio API response type: {type(song_data)}")
-            logger.info(f"Udio API response length: {len(song_data) if song_data else 'N/A'}")
-            if song_data:
-                logger.info(f"First 100 bytes of Udio API response: {song_data[:100]}")
-            else:
-                logger.warning("Udio API response is empty or None")
+            # Log the Suno API response
+            logger.info(f"Suno API response: {data}")
 
-            self.chat_area.append(f"Udio API response received. Length: {len(song_data) if song_data else 'N/A'}")
+            self.chat_area.append(f"Suno API response received. IDs: {data[0]['id']}, {data[1]['id']}")
 
-            if not song_data:
-                raise Exception("The generated song data is empty.")
+            # Wait for the audio to be ready
+            ids = f"{data[0]['id']},{data[1]['id']}"
+            audio_urls = []
+            for _ in range(60):  # Wait for up to 5 minutes
+                response = requests.get(f"{self.suno_api_url}/api/get?ids={ids}")
+                if response.status_code != 200:
+                    raise Exception(f"Failed to get audio information. Status code: {response.status_code}")
+                audio_info = response.json()
+                if all(info['status'] == 'streaming' for info in audio_info):
+                    audio_urls = [info['audio_url'] for info in audio_info]
+                    break
+                time.sleep(5)
 
-            # Save the audio file in the songs/ folder
-            song_filename = f"song_{int(time.time())}.mp3"
-            song_path = os.path.join("songs", song_filename)
-            os.makedirs("songs", exist_ok=True)
-            
-            logger.info(f"Saving song to {song_path}")
-            with open(song_path, 'wb') as f:
-                f.write(song_data)
-            logger.info(f"Song saved successfully. File size: {len(song_data)} bytes")
+            if not audio_urls:
+                raise Exception("Timeout: Audio generation took too long.")
+
+            # Download and save the audio files
+            song_paths = []
+            for i, url in enumerate(audio_urls):
+                song_filename = f"song_{int(time.time())}_{i}.mp3"
+                song_path = os.path.join("songs", song_filename)
+                os.makedirs("songs", exist_ok=True)
+                
+                response = requests.get(url)
+                if response.status_code != 200:
+                    raise Exception(f"Failed to download audio from {url}")
+                
+                with open(song_path, 'wb') as f:
+                    f.write(response.content)
+                logger.info(f"Song part {i+1} saved successfully at: {song_path}")
+                song_paths.append(song_path)
             
             self.result_area.clear()
-            self.result_area.append(f"Song generated and saved: {song_path}")
-            self.chat_area.append(f"Song generated and saved: {song_path}")
+            self.result_area.append(f"Songs generated and saved: {', '.join(song_paths)}")
+            self.chat_area.append(f"Songs generated and saved: {', '.join(song_paths)}")
             
-            # Play the song in the audio player
+            # Play the first song in the audio player
             logger.info("Attempting to play the generated song")
-            self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_path)))
+            self.player.setMedia(QMediaContent(QUrl.fromLocalFile(song_paths[0])))
             self.player.error.connect(self.handle_player_error)
             self.player.play()
             
             if self.player.error() == QMediaPlayer.NoError:
                 logger.info("Song playback started successfully")
-                QMessageBox.information(self, "Success", "The song has been generated successfully and is now playing.")
+                QMessageBox.information(self, "Success", "The songs have been generated successfully and the first one is now playing.")
             else:
                 logger.warning(f"Playback issue detected. Player error: {self.player.error()}")
-                QMessageBox.warning(self, "Playback Issue", "The song was generated successfully, but there might be an issue with playback. You can find the audio file at: " + song_path)
+                QMessageBox.warning(self, "Playback Issue", "The songs were generated successfully, but there might be an issue with playback. You can find the audio files at: " + ', '.join(song_paths))
             
             # Emit the production_updated signal with the new content
-            self.production_updated.emit(song_path)
+            self.production_updated.emit(song_paths[0])
         except Exception as e:
             error_message = f"An error occurred while generating the song: {str(e)}"
             self.chat_area.append(error_message)
