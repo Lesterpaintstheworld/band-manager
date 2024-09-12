@@ -10,7 +10,7 @@ class SunoSongGenerator:
         self.api_key = api_key
         self.logger = logging.getLogger(__name__)
 
-    def generate_song(self, title, prompt, gpt_description_prompt="", make_instrumental=False, model="chirp-v3.5"):
+    def generate_song(self, title, prompt, gpt_description_prompt="", custom_mode=False, make_instrumental=False, model="chirp-v3.5", callback_url="", disable_callback=False):
         try:
             self.logger.info(f"Generating song with prompt: {prompt}")
             
@@ -18,11 +18,12 @@ class SunoSongGenerator:
                 "title": title,
                 "prompt": prompt,
                 "gpt_description_prompt": gpt_description_prompt,
-                "custom_mode": False,
+                "custom_mode": custom_mode,
                 "make_instrumental": make_instrumental,
                 "model": model,
-                "disable_callback": True,
-                "api_key": self.api_key
+                "callback_url": callback_url,
+                "disable_callback": disable_callback,
+                "token": self.api_key
             }
             
             response = requests.post(f"{self.API_BASE_URL}/generate", json=payload)
@@ -42,7 +43,7 @@ class SunoSongGenerator:
     def get_audio_urls(self, work_id, max_attempts=60, delay=5):
         try:
             for _ in range(max_attempts):
-                response = requests.get(f"{self.API_BASE_URL}/get_result?workId={work_id}&api_key={self.api_key}")
+                response = requests.get(f"{self.API_BASE_URL}/get_result?workId={work_id}&token={self.api_key}")
                 response.raise_for_status()
                 result = response.json()
                 
@@ -56,10 +57,10 @@ class SunoSongGenerator:
             self.logger.error(f"Failed to get audio URLs: {str(e)}", exc_info=True)
             raise Exception(f"Failed to get audio URLs: {str(e)}")
 
-    def create_complete_song(self, title, prompt, gpt_description_prompt="", make_instrumental=False, model="chirp-v3.5"):
+    def create_complete_song(self, title, prompt, gpt_description_prompt="", custom_mode=False, make_instrumental=False, model="chirp-v3.5", callback_url="", disable_callback=False):
         try:
             # Generate initial song
-            work_id = self.generate_song(title, prompt, gpt_description_prompt, make_instrumental, model)
+            work_id = self.generate_song(title, prompt, gpt_description_prompt, custom_mode, make_instrumental, model, callback_url, disable_callback)
             
             # Get audio URLs
             audio_urls = self.get_audio_urls(work_id)

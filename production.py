@@ -305,7 +305,12 @@ class ProductionTab(QWidget):
             song_paths = self.suno_api.create_complete_song(
                 title=gpt_response['short_prompt'],
                 prompt=gpt_response['short_prompt'],
-                gpt_description_prompt=gpt_response.get('extend_prompts', [''])[0]
+                gpt_description_prompt=gpt_response.get('extend_prompts', [''])[0],
+                custom_mode=False,  # You can make this configurable if needed
+                make_instrumental=False,  # You can make this configurable if needed
+                model="chirp-v3.5",  # You can make this configurable if needed
+                callback_url="",  # You can add a callback URL if needed
+                disable_callback=True  # Set to True if you're not using a callback URL
             )
             
             end_time = time.time()
