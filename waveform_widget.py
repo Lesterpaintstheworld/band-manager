@@ -49,8 +49,8 @@ class WaveformWidget(QWidget):
             end = start + samples_per_pixel
             chunk = self.waveform_data[start:end]
             if len(chunk) > 0:
-                min_val = np.min(chunk) * amplitude_scale
-                max_val = np.max(chunk) * amplitude_scale
+                min_val = int(np.min(chunk) * amplitude_scale)
+                max_val = int(np.max(chunk) * amplitude_scale)
                 painter.drawLine(x, height//2 - min_val, x, height//2 - max_val)
 
         # Draw playback position
