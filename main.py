@@ -12,7 +12,8 @@ logging.info("Démarrage du programme")
 
 # Ajout du chemin du répertoire courant au sys.path
 current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, current_dir)
+if current_dir not in sys.path:
+    sys.path.append(current_dir)
 
 # Ajout du répertoire des bibliothèques Python au sys.path
 if getattr(sys, 'frozen', False):
