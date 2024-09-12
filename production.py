@@ -96,18 +96,34 @@ class ProductionTab(QWidget):
             self.chat_area.append("Please add SUNO_API_URL and SUNO_COOKIE to your .env file.")
             self.suno_api = None
         else:
-            try:
-                headers = {'Cookie': self.suno_cookie}
-                response = requests.get(f"{self.suno_api_url}/api/get_limit", headers=headers)
-                if response.status_code == 200:
-                    self.chat_area.append("Suno API connection initialized successfully.")
-                    self.suno_api = True
-                else:
-                    raise Exception(f"Failed to connect to Suno API. Status code: {response.status_code}")
-            except Exception as e:
-                self.chat_area.append(f"Error initializing Suno API connection: {str(e)}")
-                self.chat_area.append("Please check your Suno API URL and Cookie in the .env file.")
-                self.suno_api = None
+            max_retries = 3
+            retry_delay = 5  # seconds
+            for attempt in range(max_retries):
+                try:
+                    headers = {'Cookie': self.suno_cookie}
+                    response = requests.get(f"{self.suno_api_url}/api/get_limit", headers=headers, timeout=10)
+                    if response.status_code == 200:
+                        self.chat_area.append("Suno API connection initialized successfully.")
+                        self.suno_api = True
+                        break
+                    elif response.status_code == 503:
+                        if attempt < max_retries - 1:
+                            self.chat_area.append(f"Suno API temporarily unavailable. Retrying in {retry_delay} seconds...")
+                            time.sleep(retry_delay)
+                        else:
+                            raise Exception(f"Failed to connect to Suno API after {max_retries} attempts. Status code: 503")
+                    else:
+                        raise Exception(f"Failed to connect to Suno API. Status code: {response.status_code}")
+                except requests.RequestException as e:
+                    if attempt < max_retries - 1:
+                        self.chat_area.append(f"Network error. Retrying in {retry_delay} seconds...")
+                        time.sleep(retry_delay)
+                    else:
+                        self.chat_area.append(f"Error initializing Suno API connection: {str(e)}")
+                        self.chat_area.append("Please check your network connection and Suno API URL in the .env file.")
+                        self.suno_api = None
+            if self.suno_api is None:
+                self.chat_area.append("Failed to initialize Suno API after multiple attempts.")
 
     def load_suno_api(self):
         load_dotenv()
