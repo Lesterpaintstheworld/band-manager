@@ -140,14 +140,26 @@ Current Fan Count: {self.fans}
             return f"File {filename} not found."
 
     def update_fans(self, audience_size):
-        change = random.randint(-int(audience_size * 0.1), int(audience_size * 0.2))
+        # Calculate a base increase
+        base_increase = int(audience_size * 0.1)
+        
+        # Add a random factor
+        random_factor = random.randint(0, base_increase)
+        
+        # Calculate total change
+        change = base_increase + random_factor
+        
+        # Apply a multiplier to make the growth more significant
+        multiplier = 10
+        change *= multiplier
+        
         self.target_fans = max(1, self.fans + change)
         self.fan_change = change
         self.update_speed = 1000
         self.update_acceleration = 0.95
         self.timer.start(self.update_speed)
 
-        self.chat_area.append(f"\n\nFan count change: {change:+d}\nNew fan count: {self.target_fans}")
+        self.chat_area.append(f"\n\nFan count change: +{change:,}\nNew fan count: {self.target_fans:,}")
 
     def update_fan_display(self):
         if self.fans != self.target_fans:
