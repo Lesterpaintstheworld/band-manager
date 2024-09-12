@@ -12,7 +12,6 @@ import requests
 from pydantic import BaseModel
 from typing import List
 import random
-from udio_wrapper.udio_song_generator import SunoSongGenerator
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
