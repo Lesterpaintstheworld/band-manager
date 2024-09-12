@@ -15,7 +15,13 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, current_dir)
 
 # Ajout du répertoire des bibliothèques Python au sys.path
-python_lib = os.path.join(sys._MEIPASS, 'lib') if getattr(sys, 'frozen', False) else os.path.join(sys.prefix, 'lib')
+if getattr(sys, 'frozen', False):
+    # Si l'application est "gelée" (compilée avec PyInstaller)
+    python_lib = os.path.join(sys._MEIPASS, 'lib')
+else:
+    # Si l'application est exécutée normalement
+    python_lib = os.path.join(sys.prefix, 'Lib', 'site-packages')
+
 sys.path.insert(0, python_lib)
 
 logging.info(f"Python version: {sys.version}")
@@ -31,9 +37,12 @@ except ImportError as e:
     logging.error("Contenu du répertoire courant:")
     for item in os.listdir(current_dir):
         logging.error(f"- {item}")
-    logging.error("Contenu du répertoire Python lib:")
-    for item in os.listdir(python_lib):
-        logging.error(f"- {item}")
+    logging.error(f"Contenu du répertoire Python lib ({python_lib}):")
+    try:
+        for item in os.listdir(python_lib):
+            logging.error(f"- {item}")
+    except FileNotFoundError:
+        logging.error(f"Le répertoire {python_lib} n'existe pas.")
     sys.exit(1)
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
 from PyQt5.QtGui import QPixmap, QPainter, QFont
