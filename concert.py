@@ -101,6 +101,7 @@ Critique:
 {critique_content}
 
 Audience Size: {audience_size}
+Current Fan Count: {self.fans}
 
 {self.concert_system_prompt}"""
 
