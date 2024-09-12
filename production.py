@@ -89,11 +89,11 @@ class ProductionTab(QWidget):
 
     def load_suno_api(self):
         load_dotenv()
-        self.suno_api_url = os.getenv('SUNO_API_URL', 'https://api.suno.ai')
+        self.suno_api_url = 'https://api.suno.ai'
         self.suno_cookie = os.getenv('SUNO_COOKIE')
-        if not self.suno_api_url or not self.suno_cookie:
-            self.chat_area.append("Error: Suno API URL or Cookie not found in .env file.")
-            self.chat_area.append("Please add SUNO_API_URL and SUNO_COOKIE to your .env file.")
+        if not self.suno_cookie:
+            self.chat_area.append("Error: Suno API Cookie not found in .env file.")
+            self.chat_area.append("Please add SUNO_COOKIE to your .env file.")
             self.suno_api = None
         else:
             max_retries = 3
